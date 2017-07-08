@@ -272,6 +272,13 @@ axis([1 6 -.7 .3])
 
 
 %%
+
+if exist('Output','dir')==0
+    
+    mkdir('Output')
+        
+end
+
 cd(strcat(main_d,'/Output'));
 
 print(gcf,'-depsc2','karel_68_all_1950_2008.eps');
