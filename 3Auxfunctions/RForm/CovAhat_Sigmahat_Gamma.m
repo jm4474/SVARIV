@@ -1,4 +1,4 @@
-    function [WHataux,WHat,V] = CovAhat_Sigmahat_Gamma(p,X,Z,eta)
+    function [WHataux,WHat,V] = CovAhat_Sigmahat_Gamma(p,X,Z,eta,lags)
 % -------------------------------------------------------------------------
 % Computes the asymptotic variance of [vec(Ahat)',vech(Sigmahat)',vec(Gammahat)']'
 % 
@@ -37,7 +37,19 @@ vecAss1= reshape(auxeta,[n+(p*(n^2))+n^2+(n*k),1,T1aux]);
 %Each 2-D page contains [eta_t; vec(eta_tX_t') ; vec(eta_t*eta_t'-Sigma) ; vec(eta_tZ_t'-Gamma)]
 WhatAss1 = sum(bsxfun(@times,vecAss1,permute(vecAss1,[2,1,3])),3)./T1aux;
 %This is the covariance matrix we are interested in 
-
+Zaux = reshape(Z,[k,1,57]);
+%NWhatAss = (1-1/(8+1))*sum(Zaux(:,:,1:end-1).*Zaux(:,:,2:end).*...
+        %bsxfun(@times,etaaux(:,:,1:end-1),permute(etaaux(:,:,2:end),[2,1,3])),3);
+for n = 1:lags
+    NWhatAss = sum(Zaux(:,:,1:end-lags).*Zaux(:,:,lags+1:end).*...
+        bsxfun(@times,etaaux(:,:,1:end-lags),permute(etaaux(:,:,lags+1:end),[2,1,3])),3);
+    for i = 1:9
+        for j = 1:9
+            WhatAss1(252+i,252+j) = WhatAss1(252+i,252+j) + (1-n/(lags+1))*2*NWhatAss(i,j);
+        end
+    end
+    clear NWhatAss
+end
 
 
 %% Construct the selector matrix Vaux that gives: vech(Sigma)=Vaux*vec(Sigma)

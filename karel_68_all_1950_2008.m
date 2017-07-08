@@ -96,7 +96,7 @@ RForm.p=p;
 %a) Covariance matrix for vec(A,Sigma,Gammahat). This matrix will be used
 %to conduct frequentist inference about the IRFs. 
 
-    [RForm.WHatall,RForm.WHat,RForm.V] = CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta);                
+    [RForm.WHatall,RForm.WHat,RForm.V] = CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,8);                
   
  %The matrix RForm.WHatall is the covariance matrix of 
  % vec(Ahat)',vech(Sigmahat)',Gamma')'
