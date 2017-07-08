@@ -37,21 +37,21 @@ vecAss1= reshape(auxeta,[n+(p*(n^2))+n^2+(n*k),1,T1aux]);
 %Each 2-D page contains [eta_t; vec(eta_tX_t') ; vec(eta_t*eta_t'-Sigma) ; vec(eta_tZ_t'-Gamma)]
 WhatAss1 = sum(bsxfun(@times,vecAss1,permute(vecAss1,[2,1,3])),3)./T1aux;
 %This is the covariance matrix we are interested in 
-Zaux = reshape(Z,[k,1,57]);
+Zaux = reshape(Z,[k,1,T1aux]);
 %NWhatAss = (1-1/(8+1))*sum(Zaux(:,:,1:end-1).*Zaux(:,:,2:end).*...
         %bsxfun(@times,etaaux(:,:,1:end-1),permute(etaaux(:,:,2:end),[2,1,3])),3);
 %WhatAss2 = WhatAss1
-for n = 1:lags
-    NWhatAss = sum(Zaux(:,:,1:end-lags).*Zaux(:,:,lags+1:end).*...
-        bsxfun(@times,etaaux(:,:,1:end-lags),permute(etaaux(:,:,lags+1:end),[2,1,3])),3);
+for i_n = 1:lags
+    NWhatAss = sum(Zaux(:,:,1:end-i_n).*Zaux(:,:,i_n+1:end).*...
+        bsxfun(@times,etaaux(:,:,1:end-i_n),permute(etaaux(:,:,i_n+1:end),[2,1,3])),3);
     for i = 1:9
         for j = 1:9
-            WhatAss1(252+i,252+j) = WhatAss1(252+i,252+j) + (1-n/(lags+1)).*2.*NWhatAss(i,j);
+            WhatAss1(252+i,252+j) = WhatAss1(252+i,252+j) + (1-i_n/(lags+1))*(NWhatAss(i,j)+NWhatAss(j,i));
         end
     end
-    clear NWhatAss
+    clear NWhatAss 
 end
-
+clear i j i_n
 
 %% Construct the selector matrix Vaux that gives: vech(Sigma)=Vaux*vec(Sigma)
 I = eye(n);
@@ -66,7 +66,7 @@ Q1=(XSVARp'*XSVARp./T1aux);
 Q2=Z'*XSVARp/T1aux;
 Shat = [kron([zeros(n*p,1),eye(n*p)]*(Q1^(-1)),eye(n)), zeros((n^2)*p,n^2+(k*n)); ...
         zeros(n*(n+1)/2,((n^2)*p)+n), V, zeros(n*(n+1)/2,k*n);...
-         -kron(Q2*(Q1^(-1)),eye(n)), zeros(k*n,n^2),eye(k*n)];      
+         -kron(Q2*(Q1^(-1)),eye(n)), zeros(k*n,n^2),eye(k*n) ];      
 WHataux = (Shat)*(WhatAss1)*(Shat');
 
 %WHataux is the covariance matrix of vec(A),vech(Sigma),Gamma
