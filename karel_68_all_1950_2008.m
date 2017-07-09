@@ -53,12 +53,10 @@ disp('The first section defines the number of VAR lags that will be used to defi
 p = 2;
 
 %% 2) Load data (saved in structure "data")
-
 %--------------------------------------
 %(Ouput saved in the "data" structure)
 %(NOTE: we decided to use "structures" just to keep the workspace organized)
 %-------------------------------------- 
-
 
 disp('-')
 
@@ -167,11 +165,13 @@ RForm.p  = p;
 %------------------------------------------
 %(output saved in the "Inference.MSW" structure)
 %------------------------------------------
+
 tic;
 
 disp('d) Some comments regarding the MSW inference procedure:')
 
 %Set-up the inputs for the MSW function
+
 nvar   = 1;
 
 x      = -1;
@@ -186,7 +186,8 @@ addpath(main_d);
 
 %Report the estimated shock:
     
-%epsilonhat=Plugin.epsilonhat;    
+%epsilonhat=Plugin.epsilonhat;
+
 %epsilonhatstd=Plugin.epsilonhatstd;
 
 disp('The MSW routine takes only:')
