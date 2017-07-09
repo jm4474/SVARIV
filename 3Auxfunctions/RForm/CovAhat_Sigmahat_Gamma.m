@@ -22,34 +22,54 @@
 
 
 %% Definitions
-n = size(eta,1);
-k = size(Z,2);
+n      = size(eta,1);
+
+k      = size(Z,2);
+
 XSVARp = X; 
 
 
 matagg = [XSVARp,eta',Z]'; %The columns of this vector are (1;X_t; eta_t;Z_t)
-T1aux = size(eta,2); %This is the number of time periods
-T2aux = size(matagg,1); %This is the column dimension of (1;X_t;eta_t;Z_t)
+
+T1aux  = size(eta,2); %This is the number of time periods
+
+T2aux  = size(matagg,1); %This is the column dimension of (1;X_t;eta_t;Z_t)
+
 etaaux = reshape(eta,[n,1,T1aux]); %Each 2-D page contains eta_t
+
 mataggaux = permute(reshape(matagg,[T2aux,1,T1aux]),[2,1,3]); %Each 2-D page contains (1,X_t',\eta_t',Z_t')
+
 auxeta = bsxfun(@plus,bsxfun(@times,etaaux,mataggaux),-mean(bsxfun(@times,etaaux,mataggaux),3));
+
 %Each 2-D page contains [eta_t, eta_t X_t', eta_t eta_t'-Sigma, eta_tZ_t'-Gamma];
-vecAss1= reshape(auxeta,[n+(p*(n^2))+n^2+(n*k),1,T1aux]);
+
+vecAss1 = reshape(auxeta,[n+(p*(n^2))+n^2+(n*k),1,T1aux]);
+
 %Each 2-D page contains [eta_t; vec(eta_tX_t') ; vec(eta_t*eta_t'-Sigma) ; vec(eta_tZ_t'-Gamma)]
+
 WhatAss1 = sum(bsxfun(@times,vecAss1,permute(vecAss1,[2,1,3])),3)./T1aux;
+
 %This is the covariance matrix we are interested in 
 
 for i_n = 1:lags
+    
     NWhatAss = (1/(T1aux-i_n))*...
-        sum(bsxfun(@times,vecAss1(253:261,1,i_n+1:end),permute(vecAss1(253:261,1,1:end-i_n),[2,1,3])),3);
+        sum(bsxfun(@times,vecAss1((n+(p*(n^2))+n^2+1):end,1,i_n+1:end),...
+        permute(vecAss1((n+(p*(n^2))+n^2+1):end,1,1:end-i_n),[2,1,3])),3);
+    
     for i = 1:9
         for j = 1:9
-            WhatAss1(252+i,252+j) = WhatAss1(252+i,252+j) + (1-i_n/(lags+1))*(NWhatAss(i,j)+NWhatAss(j,i));
+            WhatAss1((n+(p*(n^2))+n^2+i),(n+(p*(n^2))+n^2+j)) = ...
+                WhatAss1((n+(p*(n^2))+n^2+i),(n+(p*(n^2))+n^2+j)) + ...
+                (1-i_n/(lags+1))*(NWhatAss(i,j)+NWhatAss(j,i));
         end
     end
-    clear NWhatAss 
+    
+    clear NWhatAss
+    
 end
-clear i j i_n
+
+clear i j i_n;
 
 %% Construct the selector matrix Vaux that gives: vech(Sigma)=Vaux*vec(Sigma)
 I = eye(n);
