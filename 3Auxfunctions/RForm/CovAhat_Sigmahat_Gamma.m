@@ -47,42 +47,16 @@ vecAss1 = reshape(auxeta,[n+(p*(n^2))+n^2+(n*k),1,T1aux]);
 
 %Each 2-D page contains [eta_t; vec(eta_tX_t') ; vec(eta_t*eta_t'-Sigma) ; vec(eta_tZ_t'-Gamma)]
 
-WhatAss1 = sum(bsxfun(@times,vecAss1,permute(vecAss1,[2,1,3])),3)./T1aux;
-
 % Auxiliary matrix to compute the HAC covariance matrix of eta_tZ_t'-Gamma
 
-AuxHAC1  = vecAss1(end-(n-1):end,:,:);
+AuxHAC1  = vecAss1(1:end,:,:);
 
-AuxHAC2  = reshape(AuxHAC1,[n,size(vecAss1,3)])';
+AuxHAC2  = reshape(AuxHAC1,[size(vecAss1,1),size(vecAss1,3)])';
 
 AuxHAC3  = NW_hac_STATA(AuxHAC2,lags);
 
-WhatAss1(end-(n-1):end,end-(n-1):end) = AuxHAC3; 
+WhatAss1 = AuxHAC3; 
 
-
-
-%This is the covariance matrix we are interested in 
-%{
-for i_n = 1:lags
-    
-    NWhatAss = (1/(T1aux-i_n))*...
-        sum(bsxfun(@times,vecAss1((n+(p*(n^2))+n^2+1):end,1,i_n+1:end),...
-        permute(vecAss1((n+(p*(n^2))+n^2+1):end,1,1:end-i_n),[2,1,3])),3);
-    
-    for i = 1:9
-        for j = 1:9
-            WhatAss1((n+(p*(n^2))+n^2+i),(n+(p*(n^2))+n^2+j)) = ...
-                WhatAss1((n+(p*(n^2))+n^2+i),(n+(p*(n^2))+n^2+j)) + ...
-                (1-i_n/(lags+1))*(NWhatAss(i,j)+NWhatAss(j,i));
-        end
-    end
-    
-    clear NWhatAss
-    
-end
-
-clear i j i_n;
-%}
 
 %% Construct the selector matrix Vaux that gives: vech(Sigma)=Vaux*vec(Sigma)
 I = eye(n);
