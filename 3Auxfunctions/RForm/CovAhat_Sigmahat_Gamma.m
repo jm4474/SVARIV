@@ -53,7 +53,7 @@ WhatAss1 = sum(bsxfun(@times,vecAss1,permute(vecAss1,[2,1,3])),3)./T1aux;
 
 AuxHAC1  = vecAss1(end-(n-1):end,:,:);
 
-AuxHAC2  = reshape(AuxHAC1,[n,size(WhatAss1,3)])';
+AuxHAC2  = reshape(AuxHAC1,[n,size(vecAss1,3)])';
 
 AuxHAC3  = NW_hac_STATA(AuxHAC2,lags);
 
