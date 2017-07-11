@@ -248,8 +248,9 @@ end
 %% 11) Display the information about the estimated confidence interval
 % and the first-stage. This part of the program is Optional.
 if display_on==1
-    disp(strcat('(the nominal confidence level is ',num2str(confidence*100),'%'));
+    disp(strcat('(the nominal confidence level is',' ',num2str(confidence*100),'%)'));
     
+    disp('--');
     disp('NOTE: The Wald statistic for the covariance between the instrument and the normalized variable is:')
     Waldstat= (((T^.5)*RForm.Gamma(nvar,1))^2)/RForm.WHat(((n^2)*RForm.p)+nvar,((n^2)*RForm.p)+nvar);
     display(Waldstat);
@@ -257,6 +258,8 @@ if display_on==1
     disp('Given the confidence level, if the Wald statistic is larger than:')
     disp(critval);
     disp('Our confidence set will be a bounded interval for every horizon (check the casedummy if not).')
+    
+    disp('--');
     
     %display('Also, the Wald statistic for the covariance between the instrument and the full vector of reduced-form residuals is')
     %WaldstatFull= (T)*(RForm.Gamma'*(RForm.WHat(((n^2)*RForm.p)+nvar:end,((n^2)*RForm.p)+nvar:end))^(-1)*RForm.Gamma);
