@@ -68,7 +68,6 @@ W2          = RForm.WHat(1+(RForm.n^2)*RForm.p:end,1+(RForm.n^2)*RForm.p:end);
 %Up to here, most of the computations were standard. From now on, we 
 %will rely heavily on the notation in Montiel-Stock-Watson. 
 
-
 %% 4) Definitions to apply the formulae in MSW for noncumulative IRFs
 
 %a) Definitions to compute the MSW confidence interval for
