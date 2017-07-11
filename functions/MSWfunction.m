@@ -257,7 +257,7 @@ if display_on==1
     
     disp('Given the confidence level, if the Wald statistic is larger than:')
     disp(critval);
-    disp('Our confidence set will be a bounded interval for every horizon (check the casedummy if not).')
+    disp('The weak-IV robust confidence set will be a bounded interval for every horizon (check "casedummy" if not).')
     
     disp('--');
     
