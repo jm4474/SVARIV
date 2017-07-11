@@ -256,19 +256,20 @@ RForm.n          = SVARinp.n;
     
 display(strcat('(total number of parameters estimated:',num2str(d),'; sample size:',num2str(T),')'));
 
-%% 5) Estimation of the asymptotic variance of A,Gamma
+%% 4) Estimation of the asymptotic variance of A,Gamma
 
-
-%a) Covariance matrix for vec(A,Sigma,Gammahat). This matrix will be used
+%a) Covariance matrix for vec(A,Gammahat). Used
 %to conduct frequentist inference about the IRFs. 
 
-    [RForm.WHatall,RForm.WHat,RForm.V] = CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,nw);                
-  
- %The matrix RForm.WHatall is the covariance matrix of 
- % vec(Ahat)',vech(Sigmahat)',Gamma')'
+[RForm.WHatall,RForm.WHat,RForm.V] = ...
+    CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,nw);                
+
+%NOTES:
+%The matrix RForm.WHatall is the covariance matrix of 
+% vec(Ahat)',vech(Sigmahat)',Gamma')'
  
- %The matrix RForm.WHat is the covariance matrix of only
- % vec(Ahat)',Gamma')' 
+%The matrix RForm.WHat is the covariance matrix of only
+% vec(Ahat)',Gamma')' 
  
 % The latter is all we need to conduct inference about the IRFs,
 % but the former is needed to conduct inference about FEVDs. 
