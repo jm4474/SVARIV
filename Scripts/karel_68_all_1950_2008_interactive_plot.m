@@ -280,22 +280,25 @@ disp('(output saved in "RFform" structure)')
 % The latter is all we need to conduct inference about the IRFs,
 % but the former is needed to conduct inference about FEVDs. 
 
-%% 5) Compute weak-IV robust confidence set suggested in MSW
-%(output saved in the "Inference.MSW" structure)
+%% 5) Compute standard and weak-IV robust confidence set suggested in MSW
 
-tic;
+disp('-')
 
-disp('d) Some comments regarding the MSW inference procedure:')
+disp('5) The fifth section reports standard and weak-IV robust confidence sets ');
+
+disp('(output saved in the "Inference.MSW" structure)')
 
 %Set-up the inputs for the MSW function
 
-nvar   = 1;
+nvar   =  1;  %Variable used for normalization
 
-x      = -1;
+x      = -1;  %Scale of the shock
 
-hori   = 6;
+hori   =  6;  %Number of horizons for the IRFs
 
 %Apply the MSW function
+
+tic;
 
 addpath(strcat(main_d,'/functions'));
 
@@ -306,6 +309,7 @@ addpath(strcat(main_d,'/functions'));
 %epsilonhat=Plugin.epsilonhat;
 
 %epsilonhatstd=Plugin.epsilonhatstd;
+
 
 disp('The MSW routine takes only:')
 
