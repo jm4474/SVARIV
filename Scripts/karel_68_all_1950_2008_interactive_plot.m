@@ -304,16 +304,15 @@ addpath(strcat(main_d,'/functions'));
 
 [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,1);
 
-%Report the estimated shock:
-    
-%epsilonhat=Plugin.epsilonhat;
-
-%epsilonhatstd=Plugin.epsilonhatstd;
-
-
 disp('The MSW routine takes only:')
 
 toc;
+
+%Report the estimated shock:
+    
+epsilonhat=Plugin.epsilonhat;
+
+epsilonhatstd=Plugin.epsilonhatstd;
 
 %% Extra
 
