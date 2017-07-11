@@ -1,18 +1,11 @@
-%% This script file implements standard inference for the SVAR-IV approach.
+%% This script file implements standard and weak-IV robust SVAR-IV inference.
 % This version: July 8th, 2017
-% We suggest you to run the script section by section
 % Comment: We have tested this script on a Macbook Pro 
 %         @2.4 GHz Intel Core i7 (8 GB 1600 MHz DDR3)
 %         Running Matlab R2016b.
 %         This script runs in about 10 seconds.
 
-% Companion Script: Marginal Tax Rates and Income: New Time Series evidence. 
-
-% We suggest you to run this script section by section. 
-
 clear; clc;
-
-% Change the main directory if needed
 
 cd ..
 
@@ -20,7 +13,7 @@ main_d = pwd;
 
 cd(main_d);
 
-disp('This script reports confidence intervals for IRFs estimated using the SVAR-IV')
+disp('This script reports confidence intervals for IRFs estimated using the SVAR-IV approach')
 
 disp('(created by Karel Mertens and Jose Luis Montiel Olea)')
 
@@ -33,7 +26,6 @@ disp('-')
 disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research assistance)')
 
 %% 1) Set number of VAR Lags, Newey West lags, the sub-dataset and confidence level.
-
 
 disp('-')
 
