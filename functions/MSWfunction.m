@@ -70,52 +70,85 @@ W2          = RForm.WHat(1+(RForm.n^2)*RForm.p:end,1+(RForm.n^2)*RForm.p:end);
 
 %% 4) Definitions to apply the formulae in MSW for noncumulative IRFs
 
-%a) Definitions to compute the MSW confidence interval for
-    %$\lambda_{k,i}$
-    n=RForm.n;
-    T=(size(RForm.eta,2));
-    e=eye(n);
-    ahat=zeros(n,hori+1); 
-    bhat=zeros(n,hori+1);
-    chat=zeros(n,hori+1);
-    Deltahat=zeros(n,hori+1);
-    MSWlbound=zeros(n,hori+1);
-    MSWubound=zeros(n,hori+1);
-    casedummy=zeros(n,hori+1);
+%a) Definitions to compute the MSW confidence interval for $\lambda_{k,i}$
 
-    for j =1:n
+n         = RForm.n;
+
+T         = (size(RForm.eta,2));
+
+e         = eye(n);
+
+ahat      = zeros(n,hori+1); 
+
+bhat      = zeros(n,hori+1);
+
+chat      = zeros(n,hori+1);
+
+Deltahat  = zeros(n,hori+1);
+    
+MSWlbound = zeros(n,hori+1);
+
+MSWubound = zeros(n,hori+1);
+
+casedummy = zeros(n,hori+1);
+
+for j =1:n
+    
     for ih=1:hori+1
-    ahat(j,ih)=(T*(RForm.Gamma(nvar,1)^2))-(critval*W2(nvar,nvar));
-    bhat(j,ih)=-2*T*x*(e(:,j)'*C(:,:,ih)*RForm.Gamma)*RForm.Gamma(nvar,1)...
+        
+    ahat(j,ih)     = (T*(RForm.Gamma(nvar,1)^2))-(critval*W2(nvar,nvar));
+    
+    bhat(j,ih)     = -2*T*x*(e(:,j)'*C(:,:,ih)*RForm.Gamma)*RForm.Gamma(nvar,1)...
         + 2*critval*x*(kron(RForm.Gamma',e(:,j)'))*G(:,:,ih)*W12(:,nvar)...
         + 2*critval*x*e(:,j)'*C(:,:,ih)*W2(:,nvar);
-    chat(j,ih)=((T^.5)*x*e(:,j)'*C(:,:,ih)*RForm.Gamma).^2 ...
+    
+    chat(j,ih)     = ((T^.5)*x*e(:,j)'*C(:,:,ih)*RForm.Gamma).^2 ...
         -critval*(x^2)*(kron(RForm.Gamma',e(:,j)'))*G(:,:,ih)*W1*...
         ((kron(RForm.Gamma',e(:,j)'))*G(:,:,ih))' ...
         -2*critval*(x^2)*(kron(RForm.Gamma',e(:,j)'))*G(:,:,ih)*W12*C(:,:,ih)'*e(:,j)...
         -critval*(x^2)*e(:,j)'*C(:,:,ih)*W2*C(:,:,ih)'*e(:,j); 
-    Deltahat(j,ih)= bhat(j,ih).^2-(4*ahat(j,ih)*chat(j,ih));
-    if ahat(j,ih)>0 && Deltahat(j,ih)>0;
-        casedummy(j,ih)=1;
-        MSWlbound(j,ih)=(-bhat(j,ih) - (Deltahat(j,ih)^.5))/(2*ahat(j,ih));
-        MSWubound(j,ih)=(-bhat(j,ih) + (Deltahat(j,ih)^.5))/(2*ahat(j,ih));
-    elseif ahat(j,ih)<0 && Deltahat(j,ih)>0;
-        casedummy(j,ih)=2;
-        MSWlbound(j,ih)=(-bhat(j,ih) + (Deltahat(j,ih)^.5))/(2*ahat(j,ih));
-        MSWubound(j,ih)=(-bhat(j,ih) - (Deltahat(j,ih)^.5))/(2*ahat(j,ih));
-    elseif ahat(j,ih)>0 && Deltahat(j,ih)<0;
-        casedummy(j,ih)=3;
-        MSWlbound(j,ih)=NaN;
-        MSWubound(j,ih)=NaN;
+    
+    Deltahat(j,ih) = bhat(j,ih).^2-(4*ahat(j,ih)*chat(j,ih));
+    
+    if ahat(j,ih)>0 && Deltahat(j,ih)>0
+        
+   casedummy(j,ih) = 1;
+   
+   MSWlbound(j,ih) = (-bhat(j,ih) - (Deltahat(j,ih)^.5))/(2*ahat(j,ih));
+        
+   MSWubound(j,ih) = (-bhat(j,ih) + (Deltahat(j,ih)^.5))/(2*ahat(j,ih));
+        
+    elseif ahat(j,ih)<0 && Deltahat(j,ih)>0
+        
+   casedummy(j,ih) = 2;
+   
+   MSWlbound(j,ih) = (-bhat(j,ih) + (Deltahat(j,ih)^.5))/(2*ahat(j,ih));
+   
+   MSWubound(j,ih) = (-bhat(j,ih) - (Deltahat(j,ih)^.5))/(2*ahat(j,ih));
+   
+    elseif ahat(j,ih)>0 && Deltahat(j,ih)<0
+        
+   casedummy(j,ih) = 3;
+   
+   MSWlbound(j,ih) = NaN;
+   
+   MSWubound(j,ih) = NaN;
+   
     else 
-        casedummy(j,ih)=4;
-        MSWlbound(j,ih)=-inf;
-        MSWubound(j,ih)=inf;
+        
+   casedummy(j,ih) = 4;
+   
+   MSWlbound(j,ih) = -inf;
+   
+   MSWubound(j,ih) = inf;
+   
     end
+    
     end
-    end
+end
 
     MSWlbound(nvar,1)=x;
+    
     MSWubound(nvar,1)=x;
     
 %% 5) Save all the output in the structure Inference.MSW    
