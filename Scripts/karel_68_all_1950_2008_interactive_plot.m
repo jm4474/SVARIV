@@ -258,6 +258,12 @@ display(strcat('(total number of parameters estimated:',num2str(d),'; sample siz
 
 %% 4) Estimation of the asymptotic variance of A,Gamma
 
+disp('-')
+
+disp('4) The fourth section estimates the asymptotic covariance matrix of the reduced-form VAR parameters');
+
+disp('(output saved in "RFform" structure)')
+
 %a) Covariance matrix for vec(A,Gammahat). Used
 %to conduct frequentist inference about the IRFs. 
 
@@ -274,10 +280,8 @@ display(strcat('(total number of parameters estimated:',num2str(d),'; sample siz
 % The latter is all we need to conduct inference about the IRFs,
 % but the former is needed to conduct inference about FEVDs. 
 
-%% 5) Compute the MSW confidence set
-%------------------------------------------
+%% 5) Compute weak-IV robust confidence set suggested in MSW
 %(output saved in the "Inference.MSW" structure)
-%------------------------------------------
 
 tic;
 
