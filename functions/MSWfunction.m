@@ -19,6 +19,7 @@ function [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,d
 %       RForm.Gamma= Estimator of E[z_t eta_t]
 %
 %    display_on: dummy variable. 
+%
 % -Output:
 %  InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
 %        PLugin: Structure containing standard plug-in inference
@@ -27,11 +28,10 @@ function [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,d
 critval=norminv(1-((1-confidence)/2),0,1)^2;
 
 %% 1) Create the MA coefficients based on the AL matrix
-%(and we also compute the matrix of derivatives of the MA coeffs)
 
 addpath('functions/StructuralIRF') 
 
-Caux     = [eye(RForm.n),MARep(RForm.AL,RForm.p,hori)]; 
+Caux        = [eye(RForm.n),MARep(RForm.AL,RForm.p,hori)]; 
 %The function MARep uses the reduced-form estimator vec(A) to 
 %compute the implied MA coefficients. You can replace this function
 %by your own routine, but make sure that the dimensions match. 
@@ -59,12 +59,14 @@ Chol(:,:,2) = reshape(sum(bsxfun(@times,Ccum,B1chol'),2),[RForm.n,hori+1]);
 
 %% 3) Label the submatrices of the asy var of (vecA,Gamma)  
 
-W1       =RForm.WHat(1:(RForm.n^2)*RForm.p,1:(RForm.n^2)*RForm.p);
-W12=RForm.WHat(1:(RForm.n^2)*RForm.p,1+(RForm.n^2)*RForm.p:end);
-W2=RForm.WHat(1+(RForm.n^2)*RForm.p:end,1+(RForm.n^2)*RForm.p:end);
+W1          = RForm.WHat(1:(RForm.n^2)*RForm.p,1:(RForm.n^2)*RForm.p);
+
+W12         = RForm.WHat(1:(RForm.n^2)*RForm.p,1+(RForm.n^2)*RForm.p:end);
+
+W2          = RForm.WHat(1+(RForm.n^2)*RForm.p:end,1+(RForm.n^2)*RForm.p:end);
 
 %Up to here, most of the computations were standard. From now on, we 
-%will rely heavily on the notation in our paper. 
+%will rely heavily on the notation in Montiel-Stock-Watson. 
 
 
 %% 4) Definitions to apply the formulae in MSW for noncumulative IRFs
