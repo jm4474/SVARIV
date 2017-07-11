@@ -1,37 +1,30 @@
 function [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,display_on)
-%Reports the confidence interval for IRF coefficients described in Montiel-Olea, Stock, and Watson (2016). This version: October 17th, 2016. 
-%-------------------
-%Inputs
-%-------------------
-%1) CONFIDENCE = this is the NOMINAL confidence level of the MSW confidence 
-%interval (scalar in (0,1))
-%We use the nominal confidence level to define a critical value for our
-%procedure:
+% -Reports the confidence interval for IRF coefficients described in Montiel-Olea, Stock, and Watson (2017). This version: July 11th, 2017. 
+% -Syntax:
+%       [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,display_on)
+% -Inputs:
+%    confidence: confidence level                      (1 times 1)
+%          nvar: variable defining the normalization   (1 times 1)
+%             x: scale of the shock                    (1 times 1)
+%          hori: number of horizons                    (1 times 1)
+%         RForm: reduced-form structure.               (structure)
+%                
+%                The structure must contain the following fields:
+%                AL= n x np matrix of reduced-form coefficients
+%                p = number of lags used in the estimation of AL
+%                n = dimension of the SVAR
+%             Sigma= n x n matrix of reduced-form residuals
+%        RForm.What= (n^2p + n) covariance matrix of vec(A),Gamma
+%         RForm.eta= n x T matrix of reduced-form residuals
+%       RForm.Gamma= Estimator of E[z_t eta_t]
+%
+%    display_on: dummy variable. 
+% -Output:
+%  InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
+%        PLugin: Structure containing standard plug-in inference
+%          Chol: Cholesky IRFs
+%
 critval=norminv(1-((1-confidence)/2),0,1)^2;
-%Critval should be 3.8415 if the confidence is 95%
-%
-%2) NVAR = variable defining the normalization
-%(e.g., if the quantity of oil is the first variable in the system
-% and we want to use this variable for normalization we set nvar=1)
-%
-%3) x = scale of the shock
-%(e.g., if the structural oil supply shock decreases oil produced in 20%,
-%then x=-20)
-%
-%4) HORI= number of horizons for the IRFs
-%
-%5) RFORM = Matlab structure containing the following fields:
-%5.1) AL= n x np matrix of reduced-form coefficients
-%5.2) p = number of lags used in the estimation of AL
-%5.3) n = dimension of the SVAR
-%5.4) Sigma= n x n matrix of reduced-form residuals
-%5.5) RForm.What= (n^2p + n) covariance matrix of vec(A),Gamma
-%5.6) RForm.eta= n x T matrix of reduced-form residuals
-%5.7) RForm.Gamma= Estimator of E[z_t eta_t]
-%
-%6) DISPLAY_ON= dummy 0 1 variable. If display_on=1, then the function 
-%displays some information about the inference procedure.
-%See section 8 of this code
 
 %% 1) Create the MA coefficients based on the AL matrix
 %(and we also compute the matrix of derivatives of the MA coeffs)
