@@ -316,127 +316,9 @@ epsilonhat=Plugin.epsilonhat;
 
 epsilonhatstd=Plugin.epsilonhatstd;
 
-%% Extra
-
-%% 6) Draws from the reduced-form parameters to conduct "Standard" Bootstrap inference
-%------------------------------------------
-%(output saved in the "Inference" structure)
-%------------------------------------------
-
-    %a) Generate Samples from vec(A,Gammahat)
-    
-    seed = load(strcat(main_d,'/seed/seedMay12.mat')); %The seed file is in the Seed folder
-    
-    seed = seed.seed;
-    
-    rng(seed); clear seed
-    
-    %Inference.gvar=[randn(dall,1000),zeros(dall,1)];
-    
-    %Adjust the covariance matrix to make it symmetric
-    
-    RForm.Whatalladj  = (RForm.WHatall+RForm.WHatall')/2;
-    
-    [aux1,aux2]       = eig(RForm.Whatalladj);
-    
-    RForm.Whatallpos  = aux1*max(aux2,0)*aux1';
-    
-    Inference.gvar    = [mvnrnd(zeros(1000,dall),(RForm.Whatallpos)/T)',zeros(dall,1)];
-    
-    Inference.Draws   = bsxfun(@plus,Inference.gvar,...
-                        [RForm.AL(:);RForm.V*RForm.Sigma(:);RForm.Gamma(:)]);
-
-    %The vector "Inference.Draws" represents a vector of 1000
-    %from a multivariate normal vector (of dimension dall) centered
-    %at [vec(A)', vech(Sigma)',Gamma']' with covariance matrix 
-    %(RForm.WHatall/T). Thus, it represents a draw from the asy. dist
-    %of the reduced-form parameters.    
-    
-    
-%% 8) Map from (A,Gamma) to IRF and from (A,Sigma,Gamma to IRFs)
- 
-%   Definitions for this section
-
-     I = size(Inference.Draws,2);
-     
-     disp('f) The number of draws from the asymptotic distribution of vec(A,Gamma)')
-     
-     display(strcat('used to implement bootstrap is:',num2str(I)));
-
-    %a) Evaluate the IRFs at each draw of A,Gamma
-    e=eye(n); %the columns of this identity matrix will be used to evaluate IRFs and FEVDs 
-    
-    tic;
-    
-    disp('The numerical procedure to implement standard inference is running...')  
-      
-   for ip = 1:I
-      %i) Generate the draws for AL and check that they fall in the 
-      %   stationarity region
-      
-      AL        = reshape(Inference.Draws(1:(n^2)*p,ip),[n,n*p]);
-      
-      %ii) Generate the draws from Sigma and check they are positive definite
-      
-      vechSigma = Inference.Draws((n^2)*p+1:(n^2)*p+(n*(n+1)/2),ip);
-      
-      Sigma     = tril(ones(n),0); Sigma(Sigma==1) = vechSigma';
-      
-      Sigma     = Sigma + tril(Sigma,-1)';
-      
-      %This is a simple way to create a matrix Sigma from the matrix vech(Sigma)
-      
-      if min(eig(Sigma))>0
-          
-          Inference.pdSigma(:,ip) = 1;
-          
-      else
-          
-          Inference.pdSigma(:,ip) = 0;
-          
-      end
-      
-      %iii) Draws from Gamma
-      
-      Gamma     = reshape(Inference.Draws(((n^2)*p)+(n*(n+1)/2)+1:end,ip),[n,k]);
-     
-      %iV) Reduced-form MA coefficients
-      
-      Cauxsim   = [eye(n),MARep(AL,p,hori)]; 
-      
-      Csim      = reshape(Cauxsim,[n,n,hori+1]);
-      
-      
-      %V)  Obtain the plug-in estimator for each draw
-      
-      B1        = x*Gamma./Gamma(nvar,1);    
-      
-      %v)   Generate the normalized IRFs for each draw
-      %1 is for standard IRF. 2 is for cumulative
-      
-      Inference.IRFZ(:,:,ip,1) = reshape(sum(bsxfun(@times,Csim,B1'),2),[n,hori+1]);
-      
-      clear AL vechSigma Gamma Csim Cauxsim  B1 B1aux
-      
-   end
-   
-    disp('The numerical procedure is over.')
-    
-    toc;
-
-%% 9) Implement "Standard" Bootstrap Inference
-
-   aux                  = reshape(Inference.pdSigma,[1,1,I]);
-   
-   Inference.bootsIRFZ  = quantile(Inference.IRFZ(:,:,aux==1,:),...
-                          [((1-confidence)/2),1-((1-confidence)/2)],3);
-     
-%% 10)
+%% 6) Plot Results
 
 addpath(strcat(main_d,'/functions/figuresfun'));
-
-
-%% Plots
 
 figure(1)
 
@@ -448,7 +330,9 @@ plots.name(3,:)  = {'Log Real GDP'};
 
 plots.name(4,:)  = {'Unemployment Rate'};
 
-plots.order       = [1,3,2,4];
+plots.order      = [1,3,2,4];
+
+caux             = norminv(1-((1-confidence)/2),0,1);
 
 for iplot = 1:4
     
@@ -456,13 +340,19 @@ for iplot = 1:4
     
     plot(Plugin.IRF(iplot,:),'b'); hold on
     
-    [~,~] = jbfill(1:1:hori+1,Inference.bootsIRFZ(iplot,:,2,1),...
-        Inference.bootsIRFZ(iplot,:,1,1),[204/255 204/255 204/255],...
+    [~,~] = jbfill(1:1:hori+1,InferenceMSW.MSWubound(iplot,:),...
+        InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
         [204/255 204/255 204/255],0,0.5); hold on
     
-    h1 = plot(InferenceMSW.MSWubound(iplot,:),'--b'); hold on
+    dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
     
-    h2 = plot(InferenceMSW.MSWlbound(iplot,:),'--b'); hold on
+    lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+    
+    h1 = plot(dmub,'--b'); hold on
+    
+    h2 = plot(lmub,'--b'); hold on
+    
+    clear dmub lmub
     
     h3 = plot([1 6],[0 0],'black'); hold off
     
@@ -472,7 +362,7 @@ for iplot = 1:4
     
     if iplot == 1
         
-        legend('Point Estimator','Asy Dist. Boots','MSW-WeakIV')
+        legend('SVAR-IV Estimator','MSW C.I(68%)','D-Method C.I.')
         
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
@@ -480,7 +370,7 @@ for iplot = 1:4
         
         legend boxoff
         
-        legend('location','northwest')
+        legend('location','southeast')
      
     end
       
