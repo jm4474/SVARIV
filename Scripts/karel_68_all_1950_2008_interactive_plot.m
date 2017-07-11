@@ -199,13 +199,15 @@ end
                                                                              
 cd ..
 
+clear ctype dtype ok1 ok2 prompt1 prompt2 strs1 strs2
+
 %% 3) Least-squares, reduced-form estimation
 
 disp('-')
 
 disp('3) The third section estimates the reduced-form VAR parameters');
 
-disp('(output saved in "RFform" structure)')
+disp('(output saved in "RForm" structure)')
 
 addpath(strcat(main_d,'/functions/RForm'));
 
@@ -262,7 +264,7 @@ disp('-')
 
 disp('4) The fourth section estimates the asymptotic covariance matrix of the reduced-form VAR parameters');
 
-disp('(output saved in "RFform" structure)')
+disp('(output saved in "RForm" structure)')
 
 %a) Covariance matrix for vec(A,Gammahat). Used
 %to conduct frequentist inference about the IRFs. 
