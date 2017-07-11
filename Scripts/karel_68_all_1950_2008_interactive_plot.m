@@ -408,7 +408,6 @@ print(gcf,'-depsc2','karel_68_all_1950_2008_interactive.eps');
 
 %% 
 
-
 save('karel_68_all_1950_2008_interactive.mat');
 
 
