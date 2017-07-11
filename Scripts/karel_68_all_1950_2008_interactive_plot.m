@@ -274,7 +274,7 @@ display(strcat('(total number of parameters estimated:',num2str(d),'; sample siz
 % The latter is all we need to conduct inference about the IRFs,
 % but the former is needed to conduct inference about FEVDs. 
 
-%% 6) Compute the MSW confidence set
+%% 5) Compute the MSW confidence set
 %------------------------------------------
 %(output saved in the "Inference.MSW" structure)
 %------------------------------------------
@@ -309,7 +309,7 @@ toc;
 
 %% Extra
 
-%% Draws from the reduced-form parameters to conduct "Standard" Bootstrap inference
+%% 6) Draws from the reduced-form parameters to conduct "Standard" Bootstrap inference
 %------------------------------------------
 %(output saved in the "Inference" structure)
 %------------------------------------------
