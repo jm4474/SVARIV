@@ -362,7 +362,8 @@ for iplot = 1:4
     
     if iplot == 1
         
-        legend('SVAR-IV Estimator','MSW C.I(68%)','D-Method C.I.')
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+            'D-Method C.I.')
         
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
