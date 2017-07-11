@@ -393,7 +393,13 @@ for iplot = 1:4
     
 end
 
-%%
+%% 7) Save the output and plots in ./Output/Mat and ./Output/Figs
+
+disp('-')
+
+disp('7) The final section saves the .mat files and figures in the Output folder')
+
+%Check if the Output File exists, and if not create one.
 
 if exist('Output','dir')==0
     
@@ -401,15 +407,34 @@ if exist('Output','dir')==0
         
 end
 
-cd(strcat(main_d,'/Output'));
+if exist('Output/Mat','dir')==0
+    
+    mkdir('Output/Mat')
+        
+end
 
-print(gcf,'-depsc2','karel_68_all_1950_2008_interactive.eps');
+if exist('Output/Figs','dir')==0
+    
+    mkdir('Output/Figs')
+        
+end
 
+cd(strcat(main_d,'/Output/Mat'));
 
-%% 
+output_label = strcat(date,'_p=',num2str(p));
 
-save('karel_68_all_1950_2008_interactive.mat');
+save(strcat('karel_68_all_1950_2008_',output_label,'.mat'),...
+     'InferenceMSW','Plugin','RForm','SVARinp');
 
+figure(1)
+ 
+cd(strcat(main_d,'/Output/Figs'));
+
+print(gcf,'-depsc2',strcat('karel_68_all_1950_2008_',output_label,'.eps'));
+
+cd(main_d);
+
+clear plots output_label main_d k e_LP
 
 
 

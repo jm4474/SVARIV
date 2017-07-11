@@ -291,6 +291,8 @@ if display_on==1
     Waldstat= (((T^.5)*RForm.Gamma(nvar,1))^2)/RForm.WHat(((n^2)*RForm.p)+nvar,((n^2)*RForm.p)+nvar);
     display(Waldstat);
     
+    InferenceMSW.Waldstat = Waldstat;
+    
     disp('Given the confidence level, if the Wald statistic is larger than:')
     disp(critval);
     disp('The weak-IV robust confidence set will be a bounded interval for every horizon (check "casedummy" if not).')
