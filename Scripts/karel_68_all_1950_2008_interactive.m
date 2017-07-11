@@ -12,25 +12,13 @@
 
 clear; clc;
 
-%cd ..
-
 % Change the main directory if needed
+
+cd ..
 
 main_d = pwd;
 
 cd(main_d);
-
-% OPTIONS:
-
-% The following options are avaiable for this script:
-
-% -confidence level:
-
-confidence     = .68;
-
-% -Name of the external instrument:
-
-instrumentname = 'Karel';
 
 disp('This script reports confidence intervals for IRFs estimated using the SVAR-IV')
 
@@ -44,34 +32,59 @@ disp('-')
 
 disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research assistance)')
 
-%% 1) Set number of VAR Lags and choose the data used
+%% 1) Set number of VAR Lags, Newey West lags, the sub-dataset and confidence level.
 
 
 disp('-')
 
-disp('1) The first section defines the number of VAR lags and datasets that will be used to define the control variables')
+disp('1) The first section defines the number of VAR Lags,Newey West lags, the sub-dataset and confidence level that will be used for local projection.')
 
-prompt1 = 'Please input the lag.';
+prompt1 = 'Please input the number of VAR lag (We suggest that you input 2 as the default setting).';
 
 p = input(prompt1); 
 
-prompt2 = 'Please choose the data type from ALL(BR2011)/ALL(PS2003)/TOP 1%/TOP 5%/TOP 10%/TOP 5%-1%/TOP10%-5%/BOTTOM 99%/BOTTOM 90%.';
+prompt2 = 'Please input the number of Newey West lag (We suggest that you input 8 as the default setting).';
 
-str1 = input(prompt2,'s');
+nw = input(prompt2);
 
-if (strcmp(str1,'ALL(BR2011)')==1)||(strcmp(str1,'ALL(PS2003)')==1)
-    prompt3 = 'Please choose the type of instrumental variables from ALL(BR2011)/ALL(PS2007)';
-    str2 = input(prompt3,'s');
+ok1 = 0; ok2 = 0;
+
+while ok1 == 0
+    
+    strs1        = {'ALL(BR2011)', 'ALL(PS2003)','TOP 1%','TOP 5%',...
+               'TOP 10%','TOP 5%-1%','TOP 10%-5%','BOTTOM 99%','BOTTOM 90%'};
+           
+    [dtype, ok1] = listdlg('PromptString','Select the sub-dataset','SelectionMode','Single',...
+                      'ListString', strs1);
+                  
+end
+
+while ok2 == 0
+    
+    strs2        = {'68%','90%','95%'};
+    
+    [ctype, ok2] = listdlg('PromptString','Select the confidence level','SelectionMode','Single',...
+                      'ListString', strs2);
+                  
+end
+
+% Confidence level
+
+if ctype == 1
+    
+        confidence = .68;
+    
+elseif ctype == 2
+    
+        confidence = .90;
+        
 else
-    str2 = str1;
+    
+        confidence = .95;
+        
 end
 
 %% 2) Load data (saved in structure "data")
-
-%--------------------------------------
-%(Ouput saved in the "data" structure)
-%(NOTE: we decided to use "structures" just to keep the workspace organized)
-%-------------------------------------- 
 
 disp('-')
 
@@ -82,105 +95,119 @@ cd(strcat(main_d,'/Data'));
 [data.years, ~, ~]                      = xlsread('DATA_Mertens2015',... 
                                           'AMTR (Figure 1)', 'A6:A64');
                                       
-if strcmp(str1,'ALL(BR2011)') == 1
+if dtype == 1
+    
     [data.Var1_AMTR, ~, ~]              = xlsread('DATA_Mertens2015',...
                                           'AMTR (Figure 1)', 'B6:B64');
-elseif strcmp(str1,'ALL(PS2003)') == 1
+                                      
+    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
+                                          'LOG AVG INCOME', 'B6:B64');
+                                        % LOG RGDP, UNRATE, INFLATION, FFR
+                                        % LOG GOV, LOG RSTPRICES, DLOGRDEBT
+                                        
+    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
+                                          'PROXIES (Table 3)','B6:B64');
+                                       
+elseif dtype == 2
+    
     [data.Var1_AMTR, ~, ~]              = xlsread('DATA_Mertens2015',...
                                           'AMTR (Figure 1)', 'C6:C64');
-elseif strcmp(str1,'TOP 1%') == 1
+                                      
+    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
+                                          'LOG AVG INCOME', 'B6:B64');
+                                       
+    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
+                                          'PROXIES (Table 3)','C6:C64');
+                                       
+elseif dtype == 3
+    
     [data.Var1_AMTR, ~, ~]              = xlsread('DATA_Mertens2015',...
                                           'AMTR (Figure 1)', 'D6:D64');
-elseif strcmp(str1,'TOP 5%') == 1
+                                      
+    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
+                                          'LOG AVG INCOME', 'C6:C64');
+                                       
+    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
+                                          'PROXIES (Table 3)','D6:D64');
+                                       
+elseif dtype == 4
+    
     [data.Var1_AMTR, ~, ~]              = xlsread('DATA_Mertens2015',...
                                           'AMTR (Figure 1)', 'E6:E64');
-elseif strcmp(str1,'TOP 10%') == 1
+                                      
+    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
+                                          'LOG AVG INCOME', 'D6:D64');
+                                       
+    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
+                                          'PROXIES (Table 3)','E6:E64');
+                                       
+elseif dtype == 5
+    
     [data.Var1_AMTR, ~, ~]              = xlsread('DATA_Mertens2015',...
                                           'AMTR (Figure 1)', 'F6:F64');
-elseif strcmp(str1,'TOP 5%-1%') == 1
+                                      
+    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
+                                          'LOG AVG INCOME', 'E6:E64');
+                                       
+    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
+                                          'PROXIES (Table 3)','F6:F64');
+                                       
+elseif dtype == 6
+    
     [data.Var1_AMTR, ~, ~]              = xlsread('DATA_Mertens2015',...
                                           'AMTR (Figure 1)', 'G6:G64');
-elseif strcmp(str1,'TOP 10%-5%') == 1
+                                      
+    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
+                                          'LOG AVG INCOME', 'F6:F64');
+                                       
+    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
+                                          'PROXIES (Table 3)','G6:G64');
+                                       
+elseif dtype == 7
+    
     [data.Var1_AMTR, ~, ~]              = xlsread('DATA_Mertens2015',...
                                           'AMTR (Figure 1)', 'H6:H64');
-elseif strcmp(str1,'BOTTOM 99%') == 1
+
+    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
+                                          'LOG AVG INCOME', 'G6:G64');
+                                       
+    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
+                                          'PROXIES (Table 3)','H6:H64');
+                                       
+elseif dtype == 8
+    
     [data.Var1_AMTR, ~, ~]              = xlsread('DATA_Mertens2015',...
                                           'AMTR (Figure 1)', 'I6:I64');
+                                      
+    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
+                                          'LOG AVG INCOME', 'H6:H64');
+                                       
+    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
+                                          'PROXIES (Table 3)','I6:I64');
+                                       
 else
+    
     [data.Var1_AMTR, ~, ~]              = xlsread('DATA_Mertens2015',...
                                           'AMTR (Figure 1)', 'J6:J64');
+                                      
+    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
+                                          'LOG AVG INCOME', 'I6:I64');
+                                      
+    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
+                                          'PROXIES (Table 3)','J6:J64');
+                                      
 end
-                                                                            
-if strcmp(str1,'ALL(BR2011)') == 1
-    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
-                                           'LOG AVG INCOME', 'B6:B64');
-elseif strcmp(str1,'ALL(PS2003)') == 1
-    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
-                                           'LOG AVG INCOME', 'B6:B64');
-elseif strcmp(str1,'TOP 1%') == 1
-    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
-                                           'LOG AVG INCOME', 'C6:C64');
-elseif strcmp(str1,'TOP 5%') == 1
-    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
-                                           'LOG AVG INCOME', 'D6:D64');
-elseif strcmp(str1,'TOP 10%') == 1
-    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
-                                           'LOG AVG INCOME', 'E6:E64');
-elseif strcmp(str1,'TOP 5%-1%') == 1
-    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
-                                           'LOG AVG INCOME', 'F6:F64');
-elseif strcmp(str1,'TOP 10%-5%') == 1
-    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
-                                           'LOG AVG INCOME', 'G6:G64');
-elseif strcmp(str1,'BOTTOM 99%') == 1
-    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
-                                           'LOG AVG INCOME', 'H6:H64');
-else
-    [data.Var2_LogIncome,~,~]           = xlsread('DATA_Mertens2015',...
-                                           'LOG AVG INCOME', 'I6:I64');
-end
-
+                                                                           
 [data.Var3_Controls,~,~]                = xlsread('DATA_Mertens2015', ...
                                            'CONTROLS','B6:H64');
                                         % LOG RGDP, UNRATE, INFLATION, FFR
                                         % LOG GOV, LOG RSTPRICES, DLOGRDEBT
                                                                              
-if strcmp(str2,'ALL(BR2011)') == 1
-    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
-                                           'PROXIES (Table 3)','B6:B64');
-elseif strcmp(str2,'ALL(PS2007)') == 1
-    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
-                                           'PROXIES (Table 3)','C6:C64');
-elseif strcmp(str2,'TOP 1%') == 1
-    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
-                                           'PROXIES (Table 3)','D6:D64');
-elseif strcmp(str2,'TOP 5%') == 1
-    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
-                                           'PROXIES (Table 3)','E6:E64');
-elseif strcmp(str2,'TOP 10%') == 1
-    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
-                                           'PROXIES (Table 3)','F6:F64');
-elseif strcmp(str2,'TOP 5%-1%') == 1
-    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
-                                           'PROXIES (Table 3)','G6:G64');
-elseif strcmp(str2,'TOP 10%-5%') == 1
-    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
-                                           'PROXIES (Table 3)','H6:H64');
-elseif strcmp(str2,'BOTTOM 99%') == 1
-    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
-                                           'PROXIES (Table 3)','I6:I64');
-else
-    [data.Var4_ExtIV,~,~]               = xlsread('DATA_Mertens2015',...
-                                           'PROXIES (Table 3)','J6:J64');
-end
-
 cd ..
 
 %% 3) Least-squares, reduced-form estimation
 
-addpath(strcat(main_d,'/3Auxfunctions/RForm'));
-
-%SVARinp.ydata =[log(1-data.Var1_AMTR),data.Var2_LogIncome,data.Var3_Controls];
+addpath(strcat(main_d,'/functions/RForm'));
 
 SVARinp.ydata = [-log(1-data.Var1_AMTR),data.Var2_LogIncome,data.Var3_Controls];
 
@@ -242,7 +269,7 @@ RForm.p  = p;
 %a) Covariance matrix for vec(A,Sigma,Gammahat). This matrix will be used
 %to conduct frequentist inference about the IRFs. 
 
-    [RForm.WHatall,RForm.WHat,RForm.V] = CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,8);                
+    [RForm.WHatall,RForm.WHat,RForm.V] = CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,nw);                
   
  %The matrix RForm.WHatall is the covariance matrix of 
  % vec(Ahat)',vech(Sigmahat)',Gamma')'
@@ -257,11 +284,13 @@ RForm.p  = p;
 %------------------------------------------
 %(output saved in the "Inference.MSW" structure)
 %------------------------------------------
+
 tic;
 
 disp('d) Some comments regarding the MSW inference procedure:')
 
 %Set-up the inputs for the MSW function
+
 nvar   = 1;
 
 x      = -1;
@@ -270,13 +299,14 @@ hori   = 6;
 
 %Apply the MSW function
 
-addpath(main_d);
+addpath(strcat(main_d,'/functions'));
 
 [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,1);
 
 %Report the estimated shock:
     
-%epsilonhat=Plugin.epsilonhat;    
+%epsilonhat=Plugin.epsilonhat;
+
 %epsilonhatstd=Plugin.epsilonhatstd;
 
 disp('The MSW routine takes only:')
@@ -292,7 +322,7 @@ toc;
 
     %a) Generate Samples from vec(A,Gammahat)
     
-    seed = load(strcat(main_d,'/4Seed/seedMay12.mat')); %The seed file is in the Seed folder
+    seed = load(strcat(main_d,'/seed/seedMay12.mat')); %The seed file is in the Seed folder
     
     seed = seed.seed;
     
@@ -341,7 +371,7 @@ toc;
       %i) Generate the draws for AL and check that they fall in the 
       %   stationarity region
       
-      AL=reshape(Inference.Draws(1:(n^2)*p,ip),[n,n*p]);
+      AL        = reshape(Inference.Draws(1:(n^2)*p,ip),[n,n*p]);
       
       %ii) Generate the draws from Sigma and check they are positive definite
       
@@ -349,13 +379,18 @@ toc;
       
       Sigma     = tril(ones(n),0); Sigma(Sigma==1) = vechSigma';
       
-      Sigma     = Sigma + tril(Sigma,-1)'; 
+      Sigma     = Sigma + tril(Sigma,-1)';
+      
       %This is a simple way to create a matrix Sigma from the matrix vech(Sigma)
       
       if min(eig(Sigma))>0
+          
           Inference.pdSigma(:,ip) = 1;
+          
       else
+          
           Inference.pdSigma(:,ip) = 0;
+          
       end
       
       %iii) Draws from Gamma
@@ -365,6 +400,7 @@ toc;
       %iV) Reduced-form MA coefficients
       
       Cauxsim   = [eye(n),MARep(AL,p,hori)]; 
+      
       Csim      = reshape(Cauxsim,[n,n,hori+1]);
       
       
@@ -389,14 +425,12 @@ toc;
 
    aux                  = reshape(Inference.pdSigma,[1,1,I]);
    
-   %Inference.bootsIRFZ=quantile(Inference.IRFZ(:,:,aux==1,:),[.16,.84],3);
-   
    Inference.bootsIRFZ  = quantile(Inference.IRFZ(:,:,aux==1,:),...
                           [((1-confidence)/2),1-((1-confidence)/2)],3);
      
 %% 10)
 
-addpath(strcat(main_d,'/3Auxfunctions/figuresfun'));
+addpath(strcat(main_d,'/functions/figuresfun'));
 
 
 %% Plots

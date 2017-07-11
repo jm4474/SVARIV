@@ -36,7 +36,7 @@ critval=norminv(1-((1-confidence)/2),0,1)^2;
 %% 1) Create the MA coefficients based on the AL matrix
 %(and we also compute the matrix of derivatives of the MA coeffs)
 
-addpath('3Auxfunctions/StructuralIRF') 
+addpath('functions/StructuralIRF') 
 Caux=[eye(RForm.n),MARep(RForm.AL,RForm.p,hori)]; 
 %The function MARep uses the reduced-form estimator vec(A) to 
 %compute the implied MA coefficients. You can replace this function
