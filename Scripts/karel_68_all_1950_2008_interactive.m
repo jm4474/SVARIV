@@ -207,61 +207,60 @@ cd ..
 
 %% 3) Least-squares, reduced-form estimation
 
+disp('-')
+
+disp('3) The third section estimates the reduced-form VAR parameters');
+
+disp('(output saved in "RFform" structure)')
+
 addpath(strcat(main_d,'/functions/RForm'));
 
-SVARinp.ydata = [-log(1-data.Var1_AMTR),data.Var2_LogIncome,data.Var3_Controls];
+SVARinp.ydata    = ...
+    [-log(1-data.Var1_AMTR),data.Var2_LogIncome,data.Var3_Controls];
 
-SVARinp.Z     = data.Var4_ExtIV;
+SVARinp.Z        = data.Var4_ExtIV;
 
-SVARinp.n     = size(SVARinp.ydata,2);
+SVARinp.n        = size(SVARinp.ydata,2);
 
-%% 4) Reduced-form VAR estimation 
-%---------------------------------------
-%(Output saved in the "RForm" Structure)    
-%---------------------------------------
-
-RForm.p  = p; 
+RForm.p          = p; %RForm.p is the number of lags in the model
 
 
 %a) Estimation of (AL, Sigma) and the reduced-form innovations
 
-    %RForm.p is the number of lags in the model
-    
-    %NOTE: You can replace the function "RForm_VAR.m" by your own Matlab
-    %function to estimate reduced-form parameters. 
-      
-    [RForm.mu,RForm.AL,RForm.Sigma,RForm.eta,RForm.X,RForm.Y] = RForm_VAR(SVARinp.ydata,p);
+[RForm.mu, ...
+ RForm.AL, ...
+ RForm.Sigma,...
+ RForm.eta,...
+ RForm.X,...
+ RForm.Y]        = RForm_VAR(SVARinp.ydata,p);
 
-%b) Estimation of Gammahat
+%b) Estimation of Gammahat (n times 1)
 
-    RForm.Gamma= RForm.eta*SVARinp.Z(p+1:end,1)/(size(RForm.eta,2)); %r times k
-    
-    %We need to take the instrument starting at period (p+1), because
-    %we only report the reduced-form errors for the first p entries of Y.
+RForm.Gamma      = RForm.eta*SVARinp.Z(p+1:end,1)/(size(RForm.eta,2)); 
+%(We need to take the instrument starting at period (p+1), because
+%we there are no reduced-form errors for the first p entries of Y.)
 
 %c) Add initial conditions and the external IV to the RForm structure
     
-    RForm.Y0=SVARinp.ydata(1:p,:);
+RForm.Y0         = SVARinp.ydata(1:p,:);
     
-    RForm.externalIV=SVARinp.Z(p+1:end,1);
+RForm.externalIV = SVARinp.Z(p+1:end,1);
     
-    RForm.n=SVARinp.n;
+RForm.n          = SVARinp.n;
     
 %d) Definitions for next section
 
-    n    = RForm.n;
+    n            = RForm.n;
     
-    T    = (size(RForm.eta,2));
+    T            = (size(RForm.eta,2));
     
-    k    = size(RForm.Gamma,2);
+    k            = size(RForm.Gamma,2);
     
-    d    = ((n^2)*p)+(n);     %This is the size of (vec(A)',Gamma')'
+    d            = ((n^2)*p)+(n);     %This is the size of (vec(A)',Gamma')'
     
-    dall = d+ (n*(n+1))/2;    %This is the size of (vec(A)',vech(Sigma), Gamma')'
+    dall         = d+ (n*(n+1))/2;    %This is the size of (vec(A)',vech(Sigma), Gamma')'
     
-    display(strcat('c) Total number of parameters estimated:',num2str(d)));
-    
-    display(strcat('(and the sample size is T=',num2str(T),')'));  
+display(strcat('(total number of parameters estimated:',num2str(d),'; sample size:',num2str(T),')'));
 
 %% 5) Estimation of the asymptotic variance of A,Gamma
 
