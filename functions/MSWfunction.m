@@ -30,27 +30,36 @@ critval=norminv(1-((1-confidence)/2),0,1)^2;
 %(and we also compute the matrix of derivatives of the MA coeffs)
 
 addpath('functions/StructuralIRF') 
-Caux=[eye(RForm.n),MARep(RForm.AL,RForm.p,hori)]; 
+
+Caux     = [eye(RForm.n),MARep(RForm.AL,RForm.p,hori)]; 
 %The function MARep uses the reduced-form estimator vec(A) to 
 %compute the implied MA coefficients. You can replace this function
 %by your own routine, but make sure that the dimensions match. 
-C= reshape(Caux,[RForm.n,RForm.n,hori+1]); %Put Caux in a 3-dimensional array
 
-Ccum=cumsum(C,3); %Compute the cumulative MA coefficients as we report both 
+C           = reshape(Caux,[RForm.n,RForm.n,hori+1]); 
+%Put Caux in a 3-dimensional array
+
+Ccum        = cumsum(C,3); 
+%Compute the cumulative MA coefficients as we report both 
 %cumulative and noncumulative IRFs
-[G,Gcum] = Gmatrices(RForm.AL,MARep(RForm.AL,RForm.p,hori),RForm.p,hori,RForm.n); 
+
+[G,Gcum]    = Gmatrices(RForm.AL,MARep(RForm.AL,RForm.p,hori),RForm.p,hori,RForm.n); 
 %(and the derivatives).
 
 %% 2) Compute the Cholesky estimator for comparison
 
-B1chol=chol(RForm.Sigma)'; %Compute the Cholesky estimator for comparison
-B1chol=x*(B1chol(:,1)./B1chol(nvar,1));
-Chol(:,:,1)=reshape(sum(bsxfun(@times,C,B1chol'),2),[RForm.n,hori+1]);
-Chol(:,:,2)=reshape(sum(bsxfun(@times,Ccum,B1chol'),2),[RForm.n,hori+1]);
+B1chol      = chol(RForm.Sigma)'; 
+%Compute the Cholesky estimator for comparison
+
+B1chol      = x*(B1chol(:,1)./B1chol(nvar,1));
+
+Chol(:,:,1) = reshape(sum(bsxfun(@times,C,B1chol'),2),[RForm.n,hori+1]);
+
+Chol(:,:,2) = reshape(sum(bsxfun(@times,Ccum,B1chol'),2),[RForm.n,hori+1]);
 
 %% 3) Label the submatrices of the asy var of (vecA,Gamma)  
 
-W1=RForm.WHat(1:(RForm.n^2)*RForm.p,1:(RForm.n^2)*RForm.p);
+W1       =RForm.WHat(1:(RForm.n^2)*RForm.p,1:(RForm.n^2)*RForm.p);
 W12=RForm.WHat(1:(RForm.n^2)*RForm.p,1+(RForm.n^2)*RForm.p:end);
 W2=RForm.WHat(1+(RForm.n^2)*RForm.p:end,1+(RForm.n^2)*RForm.p:end);
 
