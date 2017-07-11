@@ -1,5 +1,5 @@
 %% This script file implements standard and weak-IV robust SVAR-IV inference.
-% This version: July 8th, 2017
+% This version: July 11th, 2017
 % Comment: We have tested this script on a Macbook Pro 
 %         @2.4 GHz Intel Core i7 (8 GB 1600 MHz DDR3)
 %         Running Matlab R2016b.
@@ -29,17 +29,19 @@ disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research 
 
 disp('-')
 
-disp('1) The first section defines the number of VAR Lags,Newey West lags, the sub-dataset and confidence level that will be used for local projection.')
+disp('1) The first section defines the number of VAR Lags, Newey West lags, the sub-dataset and confidence level that will be used for local projection.')
 
-prompt1 = 'Please input the number of VAR lag (We suggest that you input 2 as the default setting).';
+prompt1 = 'Please input the number of VAR lag (our baseline is 2).';
 
 p = input(prompt1); 
 
-prompt2 = 'Please input the number of Newey West lag (We suggest that you input 8 as the default setting).';
+prompt2 = 'Please input the number of Newey-West lags (our baseline is 8).';
 
-nw = input(prompt2);
+nw      = input(prompt2);
 
-ok1 = 0; ok2 = 0;
+ok1     = 0; 
+
+ok2     = 0;
 
 while ok1 == 0
     
