@@ -1,18 +1,11 @@
-%% This script file implements standard inference for the SVAR-IV approach.
-% This version: July 8th, 2017
-% We suggest you to run the script section by section
+%% This script file implements standard and weak-IV robust SVAR-IV inference.
+% This version: July 11th, 2017
 % Comment: We have tested this script on a Macbook Pro 
 %         @2.4 GHz Intel Core i7 (8 GB 1600 MHz DDR3)
 %         Running Matlab R2016b.
 %         This script runs in about 10 seconds.
 
-% Companion Script: Marginal Tax Rates and Income: New Time Series evidence. 
-
-% We suggest you to run this script section by section. 
-
 clear; clc;
-
-% Change the main directory if needed
 
 cd ..
 
@@ -20,7 +13,7 @@ main_d = pwd;
 
 cd(main_d);
 
-disp('This script reports confidence intervals for IRFs estimated using the SVAR-IV')
+disp('This script reports confidence intervals for IRFs estimated using the SVAR-IV approach')
 
 disp('(created by Karel Mertens and Jose Luis Montiel Olea)')
 
@@ -34,27 +27,28 @@ disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research 
 
 %% 1) Set number of VAR Lags, Newey West lags, the sub-dataset and confidence level.
 
-
 disp('-')
 
-disp('1) The first section defines the number of VAR Lags,Newey West lags, the sub-dataset and confidence level that will be used for local projection.')
+disp('1) The first section defines the number of VAR Lags, Newey West lags, the sub-dataset and confidence level that will be used for local projection.')
 
-prompt1 = 'Please input the number of VAR lag (We suggest that you input 2 as the default setting).';
+prompt1 = 'Please input the number of VAR lag (our baseline is 2).';
 
 p = input(prompt1); 
 
-prompt2 = 'Please input the number of Newey West lag (We suggest that you input 8 as the default setting).';
+prompt2 = 'Please input the number of Newey-West lags (our baseline is 8).';
 
-nw = input(prompt2);
+nw      = input(prompt2);
 
-ok1 = 0; ok2 = 0;
+ok1     = 0; 
+
+ok2     = 0;
 
 while ok1 == 0
     
     strs1        = {'ALL(BR2011)', 'ALL(PS2003)','TOP 1%','TOP 5%',...
                'TOP 10%','TOP 5%-1%','TOP 10%-5%','BOTTOM 99%','BOTTOM 90%'};
            
-    [dtype, ok1] = listdlg('PromptString','Select the sub-dataset','SelectionMode','Single',...
+    [dtype, ok1] = listdlg('PromptString','Select the dataset','SelectionMode','Single',...
                       'ListString', strs1);
                   
 end
@@ -205,13 +199,15 @@ end
                                                                              
 cd ..
 
+clear ctype dtype ok1 ok2 prompt1 prompt2 strs1 strs2
+
 %% 3) Least-squares, reduced-form estimation
 
 disp('-')
 
 disp('3) The third section estimates the reduced-form VAR parameters');
 
-disp('(output saved in "RFform" structure)')
+disp('(output saved in "RForm" structure)')
 
 addpath(strcat(main_d,'/functions/RForm'));
 
@@ -262,59 +258,67 @@ RForm.n          = SVARinp.n;
     
 display(strcat('(total number of parameters estimated:',num2str(d),'; sample size:',num2str(T),')'));
 
-%% 5) Estimation of the asymptotic variance of A,Gamma
+%% 4) Estimation of the asymptotic variance of A,Gamma
 
+disp('-')
 
-%a) Covariance matrix for vec(A,Sigma,Gammahat). This matrix will be used
+disp('4) The fourth section estimates the asymptotic covariance matrix of the reduced-form VAR parameters');
+
+disp('(output saved in "RForm" structure)')
+
+%a) Covariance matrix for vec(A,Gammahat). Used
 %to conduct frequentist inference about the IRFs. 
 
-    [RForm.WHatall,RForm.WHat,RForm.V] = CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,nw);                
-  
- %The matrix RForm.WHatall is the covariance matrix of 
- % vec(Ahat)',vech(Sigmahat)',Gamma')'
+[RForm.WHatall,RForm.WHat,RForm.V] = ...
+    CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,nw);                
+
+%NOTES:
+%The matrix RForm.WHatall is the covariance matrix of 
+% vec(Ahat)',vech(Sigmahat)',Gamma')'
  
- %The matrix RForm.WHat is the covariance matrix of only
- % vec(Ahat)',Gamma')' 
+%The matrix RForm.WHat is the covariance matrix of only
+% vec(Ahat)',Gamma')' 
  
 % The latter is all we need to conduct inference about the IRFs,
 % but the former is needed to conduct inference about FEVDs. 
 
-%% 6) Compute the MSW confidence set
-%------------------------------------------
-%(output saved in the "Inference.MSW" structure)
-%------------------------------------------
+%% 5) Compute standard and weak-IV robust confidence set suggested in MSW
 
-tic;
+disp('-')
 
-disp('d) Some comments regarding the MSW inference procedure:')
+disp('5) The fifth section reports standard and weak-IV robust confidence sets ');
+
+disp('(output saved in the "Inference.MSW" structure)')
 
 %Set-up the inputs for the MSW function
 
-nvar   = 1;
+nvar   =  1;  %Variable used for normalization
 
-x      = -1;
+x      = -1;  %Scale of the shock
 
-hori   = 6;
+hori   =  6;  %Number of horizons for the IRFs
 
 %Apply the MSW function
+
+tic;
 
 addpath(strcat(main_d,'/functions'));
 
 [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,1);
 
-%Report the estimated shock:
-    
-%epsilonhat=Plugin.epsilonhat;
-
-%epsilonhatstd=Plugin.epsilonhatstd;
-
 disp('The MSW routine takes only:')
 
 toc;
 
+%Report the estimated shock:
+    
+epsilonhat=Plugin.epsilonhat;
+
+epsilonhatstd=Plugin.epsilonhatstd;
+
 %% Extra
 
-%% Draws from the reduced-form parameters to conduct "Standard" Bootstrap inference
+%% 6) Draws from the reduced-form parameters to conduct "Standard" Bootstrap inference
 %------------------------------------------
 %(output saved in the "Inference" structure)
 %------------------------------------------
@@ -436,92 +440,68 @@ addpath(strcat(main_d,'/functions/figuresfun'));
 
 figure(1)
 
-subplot(2,2,1)
+plots.name(1,:)  = {'Log(1/1-AMTR)'};
 
-plot(Plugin.IRF(1,:),'b'); hold on
+plots.name(2,:)  = {'Log Income'};
 
-[~,~] = jbfill(1:1:hori+1,Inference.bootsIRFZ(1,:,2,1),...
-        Inference.bootsIRFZ(1,:,1,1),[204/255 204/255 204/255],...
+plots.name(3,:)  = {'Log Real GDP'};
+
+plots.name(4,:)  = {'Unemployment Rate'};
+
+plots.order       = [1,3,2,4];
+
+for iplot = 1:4
+    
+    subplot(2,2,plots.order(1,iplot));
+    
+    plot(Plugin.IRF(iplot,:),'b'); hold on
+    
+    [~,~] = jbfill(1:1:hori+1,Inference.bootsIRFZ(iplot,:,2,1),...
+        Inference.bootsIRFZ(iplot,:,1,1),[204/255 204/255 204/255],...
         [204/255 204/255 204/255],0,0.5); hold on
-
-plot(InferenceMSW.MSWubound(1,:),'--b'); hold on
-
-h1    = plot(InferenceMSW.MSWlbound(1,:),'--b'); hold on
-
-h2    = plot([1 6],[0 0],'black'); hold off
-
-xlabel('Year')
-
-title('1/(1-AMTR)')
-
-legend('Point Estimator','Asy Dist. Boots','MSW-WeakIV')
-
-set(get(get(h1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-legend boxoff
-
-legend('location','northwest')
-
-axis([1 6 -1.4 .6])
-
-subplot(2,2,2)
-
-plot(Plugin.IRF(3,:),'b'); hold on
-
-[~,~] = jbfill(1:1:hori+1,Inference.bootsIRFZ(3,:,2,1),Inference.bootsIRFZ(3,:,1,1),[204/255 204/255 204/255],[204/255 204/255 204/255],0,0.5); hold on
-
-plot(InferenceMSW.MSWubound(3,:),'--b'); hold on
-
-plot(InferenceMSW.MSWlbound(3,:),'--b'); hold on
-
-plot([1 6],[0 0],'black');
-
-hold off
-
-xlabel('Year')
-
-title('Log Real GDP')
-
-axis([1 6 -.4 1.6])
-
-subplot(2,2,3)
-
-plot(Plugin.IRF(2,:),'b'); hold on 
-
-[~,~] = jbfill(1:1:hori+1,Inference.bootsIRFZ(2,:,2,1),Inference.bootsIRFZ(2,:,1,1),[204/255 204/255 204/255],[204/255 204/255 204/255],0,0.5); hold on
-
-plot(InferenceMSW.MSWubound(2,:),'--b'); hold on
-
-plot(InferenceMSW.MSWlbound(2,:),'--b'); hold on
-
-plot([1 6],[0 0],'black'); hold off
-
-xlabel('Year')
-
-title('Log Income')
-
-axis([1 6 -.5 2.5])
-
-subplot(2,2,4)
-
-plot(Plugin.IRF(4,:),'b'); hold on
-
-[~,~] = jbfill(1:1:hori+1,Inference.bootsIRFZ(4,:,2,1),Inference.bootsIRFZ(4,:,1,1),[204/255 204/255 204/255],[204/255 204/255 204/255],0,0.5); hold on
-
-plot(InferenceMSW.MSWubound(4,:),'--b'); hold on
-
-plot(InferenceMSW.MSWlbound(4,:),'--b'); hold on
-
-plot([1 6],[0 0],'black'); hold off
-
-xlabel('Year')
-
-title('Unemployment Rate')
-
-axis([1 6 -.7 .3])
-
+    
+    h1 = plot(InferenceMSW.MSWubound(iplot,:),'--b'); hold on
+    
+    h2 = plot(InferenceMSW.MSWlbound(iplot,:),'--b'); hold on
+    
+    h3 = plot([1 6],[0 0],'black'); hold off
+    
+    xlabel('Year')
+    
+    title(plots.name(iplot,:));
+    
+    if iplot == 1
+        
+        legend('Point Estimator','Asy Dist. Boots','MSW-WeakIV')
+        
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        legend boxoff
+        
+        legend('location','northwest')
+     
+    end
+      
+    if iplot == 1
+        
+        axis([1 6 -1.4 .6]);
+        
+    elseif iplot == 2
+            
+        axis([1 6 -.5 2.5]);
+            
+    elseif iplot == 3
+        
+        axis([1 6 -.4 1.6]);
+                
+    elseif iplot == 4
+                    
+        axis([1 6 -.7 .3]);
+    end
+    
+end
 
 %%
 
@@ -533,16 +513,10 @@ end
 
 cd(strcat(main_d,'/Output'));
 
-print(gcf,'-depsc2','karel_68_all_1950_2008_specification_testing.eps');
+print(gcf,'-depsc2','karel_68_all_1950_2008_interactive.eps');
 
 
 %% 
 
 
-save('karel_68_all_1950_2008_specification_testing.mat');
-
-
-
-
-
-
+save('karel_68_all_1950_2008_interactive.mat');
