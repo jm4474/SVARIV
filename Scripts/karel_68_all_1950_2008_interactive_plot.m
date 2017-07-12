@@ -29,7 +29,7 @@ disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research 
 
 disp('-')
 
-disp('1) The first section defines the number of VAR Lags, Newey West lags, the sub-dataset and confidence level that will be used for local projection.')
+disp('1) The first section defines the number of VAR Lags, Newey West lags, the sub-dataset and confidence level that will be used for SVAR-IV.')
 
 prompt1 = 'Please input the number of VAR lag (our baseline is 2).';
 
@@ -430,8 +430,3 @@ print(gcf,'-depsc2',strcat('karel_',output_label,'.eps'));
 cd(main_d);
 
 clear plots output_label main_d k strs1 dtype
-
-
-
-
-
