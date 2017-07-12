@@ -429,5 +429,5 @@ cd(strcat(main_d,'/Output/Figs'));
 print(gcf,'-depsc2',strcat('IRF_SVAR',output_label,'.eps'));
  
 cd(main_d);
- 
+
 clear plots output_label main_d labelstrs dtype
