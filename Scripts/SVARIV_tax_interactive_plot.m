@@ -412,7 +412,7 @@ if exist('Output/Figs','dir')==0
 end
  
 labelstrs        = {'ALL(BR2011)', 'ALL(PS2003)','TOP1','TOP5',...
-               'TOP10','TOP5-1','TOP10-5','BOTTOM99','BOTTOM99'};
+               'TOP10','TOP5-1','TOP10-5','BOTTOM99','BOTTOM90'};
  
 cd(strcat(main_d,'/Output/Mat'));
  
