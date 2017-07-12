@@ -199,7 +199,7 @@ end
                                                                              
 cd ..
 
-clear ctype dtype ok1 ok2 prompt1 prompt2 strs1 strs2
+clear ctype ok1 ok2 prompt1 prompt2 strs2
 
 %% 3) Least-squares, reduced-form estimation
 
@@ -422,20 +422,21 @@ end
 
 cd(strcat(main_d,'/Output/Mat'));
 
-output_label = strcat(date,'_p=',num2str(p));
+output_label = strcat(date,'_p=',num2str(p),'_',char(strs1(1,dtype)),'_',...
+               num2str(100*confidence),'%');
 
-save(strcat('karel_68_all_1950_2008_',output_label,'.mat'),...
+save(strcat('karel_',output_label,'.mat'),...
      'InferenceMSW','Plugin','RForm','SVARinp');
 
 figure(1)
  
 cd(strcat(main_d,'/Output/Figs'));
 
-print(gcf,'-depsc2',strcat('karel_68_all_1950_2008_',output_label,'.eps'));
+print(gcf,'-depsc2',strcat('karel_',output_label,'.eps'));
 
 cd(main_d);
 
-clear plots output_label main_d k e_LP
+clear plots output_label main_d k strs1 dtype
 
 
 
