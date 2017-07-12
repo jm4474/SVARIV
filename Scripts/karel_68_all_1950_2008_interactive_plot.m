@@ -436,8 +436,3 @@ print(gcf,'-depsc2',strcat('karel_68_all_1950_2008_',output_label,'.eps'));
 cd(main_d);
 
 clear plots output_label main_d k e_LP
-
-
-
-
-
