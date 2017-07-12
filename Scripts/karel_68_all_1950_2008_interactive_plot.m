@@ -322,17 +322,25 @@ addpath(strcat(main_d,'/functions/figuresfun'));
 
 figure(1)
 
-plots.name(1,:)  = {'Log(1/1-AMTR)'};
+plots.name(1,:) = {'Log(1/1-AMTR)'};
 
-plots.name(2,:)  = {'Log Income'};
+plots.name(2,:) = {'Log Income'};
 
-plots.name(3,:)  = {'Log Real GDP'};
+plots.name(3,:) = {'Log Real GDP'};
 
-plots.name(4,:)  = {'Unemployment Rate'};
+plots.name(4,:) = {'Unemployment Rate'};
 
-plots.order      = [1,3,2,4];
+plots.axis(1,:) = [1 6 -1.4 .6];
 
-caux             = norminv(1-((1-confidence)/2),0,1);
+plots.axis(2,:) = [1 6 -.5 2.5];
+
+plots.axis(3,:) = [1 6 -.4 1.6];
+
+plots.axis(4,:) = ([1 6 -.7 .3]);
+
+plots.order     = [1,3,2,4];
+
+caux            = norminv(1-((1-confidence)/2),0,1);
 
 for iplot = 1:4
     
@@ -374,23 +382,8 @@ for iplot = 1:4
         legend('location','southeast')
      
     end
-      
-    if iplot == 1
-        
-        axis([1 6 -1.4 .6]);
-        
-    elseif iplot == 2
-            
-        axis([1 6 -.5 2.5]);
-            
-    elseif iplot == 3
-        
-        axis([1 6 -.4 1.6]);
-                
-    elseif iplot == 4
-                    
-        axis([1 6 -.7 .3]);
-    end
+    
+    axis(plots.axis(iplot,:))
     
 end
 
