@@ -10,33 +10,45 @@ function [C] = MARep(AL,p,hori)
 % Outputs:
 % - C: MA representation coefficients
 % 
-% This version: March 31, 2015
-% Please, cite Gafarov, B. and Montiel-Olea, J.L. (2015) 
-% "ON THE MAXIMUM AND MINIMUM RESPONSE TO AN IMPULSE IN SVARS"
+% This version: July 17, 2017
 % -------------------------------------------------------------------------
 
+%% 1) Reshape AL into a 3-D array
 
-%% Reshape AL into a 3-D array
-n = size(AL,1);
-vecAL = reshape(AL,[n,n,p]); 
+n         = size(AL,1);
 
+vecAL     = reshape(AL,[n,n,p]); 
 
-%% Initialize the value of the auxiliary array vecALrevT
+%% 2) Initialize the value of the auxiliary array vecALrevT
+
 vecALrevT = zeros(n,n,hori);
-for i=1:hori
-    if i<(hori-p)+1
-        vecALrevT(:,:,i) = zeros(n,n);
-    else
-        vecALrevT(:,:,i) = vecAL(:,:,(hori-i)+1)';
-    end
-end
-vecALrevT = reshape(vecALrevT,[n,n*hori]);
 
+for ihori     = 1:hori
+    
+    if  ihori < (hori-p)+1
+        
+        vecALrevT(:,:,ihori) = zeros(n,n);
+    
+    else
+        
+        vecALrevT(:,:,ihori) = vecAL(:,:,(hori-ihori)+1)';
+    end
+    
+end
+
+vecALrevT     = reshape(vecALrevT,[n,n*hori]);
+
+% vecALrevT   = [0,0, ... vecAL(:,:,p), ... vecAL(:,:,1)];
 
 %% MA coefficients
-C = repmat(vecAL(:,:,1),[1,hori]);
-for i=1:hori-1
-    C(:,(n*i)+1:(n*(i+1))) = [eye(n),C(:,1:n*i)] * vecALrevT(:,(hori*n-(n*(i+1)))+1:end)';  
+
+C             = repmat(vecAL(:,:,1),[1,hori]);
+
+for     ihori = 1:hori-1
+    
+    C(:,(n*ihori)+1:(n*(ihori+1))) = [eye(n),C(:,1:n*ihori)] ...
+        * vecALrevT(:,(hori*n-(n*(ihori+1)))+1:end)';
+    
 end
 
 end
