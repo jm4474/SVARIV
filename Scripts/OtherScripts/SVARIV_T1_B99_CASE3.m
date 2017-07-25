@@ -37,7 +37,7 @@ disp('1) The first section defines the number of VAR Lags, Newey West lags and c
  
 p = 2; 
  
-confidence = .68;
+confidence = .9;
  
 %% 2) Load data (saved in structure "data")
  
@@ -306,7 +306,7 @@ output_label = strcat('_p=',num2str(p),'_Top1Bottom99_2inst',...
                num2str(100*confidence));
  
 save(strcat('IRF_SVAR',output_label,'.mat'),...
-     'InferenceMSW','Plugin','RForm','SVARinp');
+     'InferenceMSW','RForm','SVARinp');
  
 figure(1)
  
