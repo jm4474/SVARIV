@@ -5,7 +5,7 @@ function [WHataux,WHat,V] = CovAhat_Sigmahat_Gamma(p,X,Z,eta,lags)
 % -Inputs:
 %       p: VAR lags                                    (1 times 1)
 %       X: VAR "right-hand" variables                  (T times (np+1))
-%       Z: external instrument                         (T times 1)
+%       Z: external instrument                         (T times k)
 %     eta: eta                                         (n times T)
 %    lags: Newey-West lags                             (1 times 1)
 % -Output:
@@ -42,7 +42,7 @@ vecAss1 = reshape(auxeta,[n+(p*(n^2))+n^2+(n*k),1,T1aux]);
 
 %Each 2-D page contains [eta_t; vec(eta_tX_t') ; vec(eta_t*eta_t'-Sigma) ; vec(eta_tZ_t'-Gamma)]
 
-% Auxiliary matrix to compute the HAC covariance matrix of eta_tZ_t'-Gamma
+% Auxiliary matrix to compute the HAC covariance matrix
 
 AuxHAC1  = vecAss1(1:end,:,:);
 
