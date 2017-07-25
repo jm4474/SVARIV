@@ -15,7 +15,7 @@ function [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confide
 %        f: function handle (depends on AL, Sigma, Gamma, hori, x, nvar)
 %    vecAL: point estimator of vec(AL)
 %vechSigma: point estimator of vech(Sigma)
-% vecGamma: point estimator of vec(Gamma)
+%    Gamma: point estimator of vec(Gamma)
 %  Whatall: Covariance mat of (vec(A)', vech(Sigma)', vec(Gamma)')              
 %  -Output:
 %       AL: Least-squares estimator of the VAR coefficients
@@ -23,8 +23,9 @@ function [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confide
 %      eta: VAR model residuals
 %        X: VAR model regressors
 %        Y: VAR matrix of endogenous regressors
-%   
-% -Note  : estimation always includes a constant
+%  -Output:
+%     IRFs: 3d structure containing all of the bootstrap draws of IRF
+% bootsIRF: alpha/2 and 1-alpha/2 quantiles of IRFs
 % 
 % This version: July 17th, 2017
 % Last edited by José Luis Montiel-Olea
@@ -52,6 +53,8 @@ gvar    = [mvnrnd(zeros(I,dall),(Whatall)/T)',...
     
 Draws   = bsxfun(@plus,gvar,...
           [vecAL;vechSigma;Gamma(:)]);
+
+k       = size(Gamma,1)/n;      
 
 %The vector "Draws" represents a vector of I draws
 %from a multivariate normal vector (of dimension dall) centered
@@ -97,7 +100,7 @@ for idraws = 1:ndraws
       %iii) Draws from Gamma
       
     Gamma = reshape(Draws(((n^2)*p)+(n*(n+1)/2)+1:end,idraws),...
-              [n,1]);             
+              [n,k]);             
           
     IRFs(:,:,idraws) = f(AL,Sigma,Gamma,hori,x,nvar);
             
