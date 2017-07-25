@@ -37,7 +37,7 @@ disp('1) The first section defines the number of VAR Lags, Newey West lags and c
  
 p = 2; 
  
-confidence = .9;
+confidence = .68;
  
 %% 2) Load data (saved in structure "data")
  
