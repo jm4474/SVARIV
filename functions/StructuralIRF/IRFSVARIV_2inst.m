@@ -30,11 +30,11 @@ Gamma1    = Gamma(:,1);
 
 Gamma2    = Gamma(:,2);
 
-aux1      = (Sigma^(-1))*Gamma1;
+aux1      = Sigma\Gamma1;
 
-aux2      = (Sigma^(-1))*Gamma2;
+aux2      = Sigma\Gamma2;
 
-Gamma3    = (Gamma1-((aux1(end-1,1)/aux2(end-1,1))*Gamma2));
+Gamma3    = (Gamma1-((aux1(2,1)/aux2(2,1))*Gamma2));
       
 B1        = x*Gamma3./Gamma3(nvar,1);    
       
