@@ -22,7 +22,7 @@ n      = size(eta,1);
 
 k      = size(Z,2);
 
-w      = size(X,2) - (n*p);
+m      = size(X,2) - (n*p);
 
 XSVARp = X; 
 
@@ -41,7 +41,7 @@ auxeta = bsxfun(@plus,bsxfun(@times,etaaux,mataggaux),-mean(bsxfun(@times,etaaux
 
 %Each 2-D page contains [eta_t W_t', eta_t X_t', eta_t eta_t'-Sigma, eta_tZ_t'-Gamma];
 
-vecAss1 = reshape(auxeta,[(n*w)+(p*(n^2))+n^2+(n*k),1,T1aux]);
+vecAss1 = reshape(auxeta,[(n*m)+(p*(n^2))+n^2+(n*k),1,T1aux]);
 
 %Each 2-D page contains [vec(eta_tW_t'); vec(eta_tX_t') ; vec(eta_t*eta_t'-Sigma) ; vec(eta_tZ_t'-Gamma)]
 
@@ -73,7 +73,7 @@ Q1       = (XSVARp'*XSVARp./T1aux);
 
 Q2       = Z'*XSVARp/T1aux;
 
-Shat     = [kron([zeros(n*p,w),eye(n*p)]*(Q1^(-1)),eye(n)), zeros((n^2)*p,n^2+(k*n)); ...
+Shat     = [kron([zeros(n*p,m),eye(n*p)]*(Q1^(-1)),eye(n)), zeros((n^2)*p,n^2+(k*n)); ...
         zeros(n*(n+1)/2,((n^2)*p)+n), V, zeros(n*(n+1)/2,k*n);...
          -kron(Q2*(Q1^(-1)),eye(n)), zeros(k*n,n^2),eye(k*n) ];  
      
