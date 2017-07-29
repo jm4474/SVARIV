@@ -20,7 +20,7 @@ function [mu,AL,Sigma,eta,X,Y] = RForm_VAR(TSL,p,W)
 % This version: July 29th, 2017
 % Last edited by José Luis Montiel-Olea
 
-%% 1) The lags of Y_t and Y_t
+%% 1) The lags of Y_t and Y_t itself
 
 aux  = lagmatrix(TSL,1:1:p);
 
