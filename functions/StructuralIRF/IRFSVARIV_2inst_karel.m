@@ -35,7 +35,7 @@ if min(eig(Sigma))>0
     
 % This is neccessary because otherwise we get a warning message
 
-SigmaT = chol(SigmaTSigmaTp,'lower'); %I THINK THIS IS A TYPO. SHOULD BE LOWER
+SigmaT = chol(SigmaTSigmaTp,'lower');
 
 DT     = [b11iSig;b21iSig]*SigmaT;
 
