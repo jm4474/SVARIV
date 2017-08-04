@@ -101,7 +101,9 @@ disp('(output saved in "RForm" structure)')
 addpath(strcat(main_d,'/functions/RForm'));
  
 SVARinp.ydata    = ...
-    [-log(1-data.Var1_AMTR),data.Var2_LogIncome,data.Var3_Controls];
+    [-log(1-data.Var1_AMTR), data.Var3_Controls2, ...
+    data.Var2_LogIncome, data.Var3_Controls3, ...
+    data.Var3_Controls1];
  
 SVARinp.Z        = data.Var4_ExtIV;
  
@@ -236,7 +238,9 @@ plots.axis(5,:) = [0 5 -1.4 .6];
  
 plots.axis(6,:) = [0 5 -.5 2.5];
 
-plots.index     = [1,2,3,4,10,11];
+%plots.index     = [1,2,3,4,10,11];
+
+plots.index     = [1,3,5,6,2,4];
  
 plots.order     = [1,3,5,6,2,4];
  
