@@ -13,7 +13,7 @@ function [IRFSVARIV,dIRFdmu] = IRFSVARIV_2inst_j(AL,Sigma,Gamma,hori,x,nvar,c)
 %        j: shock over which the restriction is imposed  (1 or 2)
 %  -Output:
 %IRFSVARIV: vector of IRFs                               (n x hori+1)    
-%   
+%dIRFdmu  : vector of derivatives of the IRFs            (n^2p + n(n+1)/2 + 2n x n x hori+1)   
 % 
 % This version: July 17th, 2017
 % Last edited by José Luis Montiel-Olea
@@ -37,6 +37,8 @@ Cauxsim      = [eye(n),MARep(AL,p,hori)];
 Csim         = reshape(Cauxsim,[n,n,hori+1]);
 
 IRFSVARIV    = reshape(sum(bsxfun(@times,Csim,B1'),2),[n,hori+1]);
+
+if nargout > 1
 
 %% Auxiliary Section 1 
 %  Derivative of Bcircj w.r.t. mu = [vec(A), vec(Sigma), vec(Gamma)];
@@ -70,7 +72,7 @@ dB_jdmu          = dBcircdmu*[(x*eye(n))-(aux(:,j)*B1')]./(Bcircj(j,1));
 [G,~]    = Gmatrices(AL,MARep(AL,p,hori),p,hori,n); 
 % 3D array of n^2 times (n^2 p) matrices
 
-dIRFdmu  = zeros(((n^2)*p)+(n^2)+2*n,n,hori+1);
+dIRFdmu  = zeros(((n^2)*p)+(n*(n+1)/2)+2*n,n,hori+1);
 
 for i_hori = 1: hori+1
     
@@ -78,10 +80,11 @@ for i_hori = 1: hori+1
        
       dIRFdmu(:,i_var,i_hori) = dB_jdmu*Csim(:,:,i_hori)'*aux(:,i_var) ...
                               + [ kron(B1',aux(:,i_var)')*G(:,:,i_hori), ...
-                                 zeros(1,(n^2)+(2*n))]';       
+                                 zeros(1,(n*(n+1)/2)+(2*n))]';       
    end
     
 end
 
+end
 end
 
