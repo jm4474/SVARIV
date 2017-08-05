@@ -30,7 +30,9 @@ p           = size(AL,2)/n;
 
 dcdvecA     = zeros((n^2)*p,n);
 
-dcdvecSigma = -kron(Sigmainv,Sigmainv)*kron(aux(:,2),aux);
+M           = vechtovec(n);
+
+dcdvecSigma = -M'*kron(Sigmainv,Sigmainv)*kron(aux(:,2),aux);
 
 der_c        = [ dcdvecA; dcdvecSigma ];
 
