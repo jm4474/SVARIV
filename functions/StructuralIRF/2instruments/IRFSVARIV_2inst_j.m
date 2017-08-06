@@ -9,7 +9,7 @@ function [IRFSVARIV,dIRFdmu] = IRFSVARIV_2inst_j(AL,Sigma,Gamma,hori,x,nvar,c)
 %     hori: number of horizons to evaluate IRFs          (1 x 1)  
 %        x: scale                                        (1 x 1)
 %     nvar: normalizing variable                         (1 x 1)
-%        c: zero restriction                             c(AL,Sigma)
+%        c: zero restriction                             c(AL,Sigma,Gamma)
 %        j: shock over which the restriction is imposed  (1 or 2)
 %  -Output:
 %IRFSVARIV: vector of IRFs                               (n x hori+1)    
@@ -26,7 +26,7 @@ j            = nvar;
 
 p            = size(AL,2)/n;
 
-[crest,der_c]= c(AL,Sigma);
+[crest,der_c]= c(AL,Sigma,Gamma);
 
 Bcircj       = (Gamma*[0,-1;1,0]*Gamma')*crest;
 
@@ -41,9 +41,9 @@ IRFSVARIV    = reshape(sum(bsxfun(@times,Csim,B1'),2),[n,hori+1]);
 if nargout > 1
 
 %% Auxiliary Section 1 
-%  Derivative of Bcircj w.r.t. mu = [vec(A), vec(Sigma), vec(Gamma)];
+%  Derivative of Bcircj w.r.t. mu = [vec(A), vech(Sigma), vec(Gamma)];
 
-dBcircjdvecAvecS = der_c*(Gamma*[0,-1;1,0]*Gamma')';
+dBcircjdvecmu    = der_c*(Gamma*[0,-1;1,0]*Gamma')';
 
 T1               = zeros(2*n,n);
 
@@ -58,7 +58,8 @@ T                = [T1,T2];
 dBcircjdvecGamma = kron( [0,-1;1,0]*Gamma'*crest , eye(n)) ...
                  + T'*kron(crest, [0,-1;1,0]'*Gamma');
              
-dBcircdmu        = [dBcircjdvecAvecS; dBcircjdvecGamma];  
+dBcircdmu        = dBcircjdvecmu + ...
+                   [zeros(((n^2)*p)+(n*(n+1)/2),n);dBcircjdvecGamma];  
 
 %% Auxiliary Section 2
 %  Derivative of B_j with respect to mu
