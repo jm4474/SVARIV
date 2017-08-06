@@ -497,7 +497,12 @@ figure(1)
  
 cd(strcat(main_d,'/Output/Figs'));
  
-print(gcf,'-depsc2',strcat('IRF_SVAR',output_label,'.eps'));
+print(gcf,'-depsc2',strcat('IRF_SVAR_Top1',output_label,'.eps'));
+ 
+
+figure(2)
+  
+print(gcf,'-depsc2',strcat('IRF_SVAR_Bottom99',output_label,'.eps'));
  
 cd(main_d);
  
