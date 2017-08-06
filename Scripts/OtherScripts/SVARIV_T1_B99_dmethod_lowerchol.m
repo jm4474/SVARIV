@@ -173,7 +173,7 @@ disp('(output saved in "RForm" structure)')
 % The latter is all we need to conduct inference about the IRFs,
 % but the former is needed to conduct inference about FEVDs. 
 
-%% 5) Point estimator
+%% 5) Point estimator for the IRFs with respect to the first shock
 %  (Lower Cholesky Identification)
 
 %Set-up the inputs 
@@ -186,7 +186,7 @@ hori   =  6;  %Number of horizons for the IRFs
 
 disp('-')
 
-disp('5) This section reports points estimators and conducts "standard" delta-method inference based on a "lower Cholesky" identification scheme.')
+disp('5) This section reports points estimators based on a "lower Cholesky" identification scheme.')
 
 addpath(strcat(main_d,'/functions/StructuralIRF'));
 
@@ -196,6 +196,10 @@ addpath(strcat(main_d,'/functions/StructuralIRF/2instruments'));
                       hori,x,nvar,@lowerchol_id);
                   
 %% 6) Delta-Method Standard Errors
+
+disp('-')
+
+disp('6) This section conducts "standard" delta-method inference based on a "lower Cholesky" identification scheme.')
 
 InferenceMSW.dmethod = zeros(size(InferenceMSW.IRFSVARIV));
 
@@ -226,7 +230,7 @@ seed   = seed.seed;
 
 disp('-')
 
-disp('5) This section samples from the asy dist of the reduced-form parameters to conduct "standard" inference.')
+disp('7) This section samples from the asy dist of the reduced-form parameters to conduct "standard" inference.')
 
 disp('Standard inference based on sampling from the asy. dist. takes only:')  
 
@@ -244,11 +248,11 @@ tic;
 
 toc;
 
-%% 7) Plot Results
+%% 8) Plot Results
 
 disp('-')
 
-disp('6) This section plots the CIs based on MSW bootstrap-type procedure')
+disp('8) This section plots the CIs based on MSW bootstrap-type procedure')
  
 addpath(strcat(main_d,'/functions/figuresfun'));
  
@@ -340,88 +344,92 @@ for iplot = 1:6
     
 end
 
-%% 5) Compute the bootstrap-type confidence set suggested in MSW
-
-%Set-up the inputs for the MSW function
- 
-nvar   =  1;  %Variable used for normalization
- 
-x      = -1;  %Scale of the shock
- 
-hori   =  6;  %Number of horizons for the IRFs
-
-seed   = load(strcat(main_d,'/seed/seedMay12.mat')); 
-    
-seed   = seed.seed;
+%% 9) Point estimator for the IRFs with respect to the second shock
+%  (Lower Cholesky Identification)
 
 disp('-')
 
-disp('5) This section samples from the asy dist of the reduced-form parameters to conduct "standard" inference.')
+disp('9) This section reports points estimators for the IRFs of the second shock based on a "lower Cholesky" identification scheme.')
+
+[InferenceMSW.IRFSVARIV2, InferenceMSW.dIRFdmu2] = IRFSVARIV_2inst_j(RForm.AL,RForm.Sigma,RForm.Gamma,...
+                      hori,x,2,@lowerchol_id_minusj);
+
+%% 10) Delta-method standard errors for the second shock IRFs
+
+disp('-')
+
+disp('10) This section conducts "standard" delta-method inference for the responses to the second shock based on a "lower Cholesky" identification scheme.')
+
+InferenceMSW.dmethod2 = zeros(size(InferenceMSW.IRFSVARIV2));
+
+for h   = 1:hori+1
+    
+    for i_var = 1:n
+        
+        InferenceMSW.dmethod2(i_var,h) = (InferenceMSW.dIRFdmu2(:,i_var,h)'...
+                                        *RForm.WHatall...
+                                        *InferenceMSW.dIRFdmu2(:,i_var,h)./T).^.5;                                                
+    end
+    
+end
+
+%% 11) Bootstrap comparison
+
+disp('-')
+
+disp('11) This section samples from the asy dist of the reduced-form parameters to conduct "standard" inference on the second shock.')
 
 disp('Standard inference based on sampling from the asy. dist. takes only:')  
 
 addpath(strcat(main_d,'/functions/StructuralIRF'));
 
+f     = @(AL,Sigma,Gamma,hori,x,nvar)...
+        IRFSVARIV_2inst_j(AL,Sigma,Gamma,hori,x,nvar,@lowerchol_id_minusj);
+
 tic;
 
-[InferenceMSW.IRFs,InferenceMSW.bootsIRFs] = ...
-                  Gasydistboots(seed, 1000, n, p, nvar, x, hori, confidence, T,...
+[InferenceMSW.IRFs2,InferenceMSW.bootsIRFs2] = ...
+                  Gasydistboots(seed, 1000, n, p, 2, x, hori, confidence, T,...
                   RForm.AL(:),RForm.V*RForm.Sigma(:),RForm.Gamma(:),...
-                  RForm.WHatall,@IRFSVARIV_2inst);              
+                  RForm.WHatall,f);              
 
 toc;
-  
-%% 6) Plot Results
+
+%% 12) Plot Results
 
 disp('-')
 
-disp('6) This section plots the CIs based on MSW bootstrap-type procedure')
+disp('12) This section plots the CIs based on MSW bootstrap-type procedure')
  
 addpath(strcat(main_d,'/functions/figuresfun'));
  
-figure(1)
- 
-plots.name(1,:) = {'Log(1/1-AMTR) Top 1%'};
- 
-plots.name(2,:) = {'Log Income Top 1%'};
- 
-plots.name(3,:) = {'Log Real GDP'};
- 
-plots.name(4,:) = {'Unemployment Rate'};
+figure(2)
 
-plots.name(5,:) = {'Log(1/1-AMTR) Bottom 99%'};
-
-plots.name(6,:) = {'Log Income Bottom 99%'};
- 
-plots.axis(1,:) = [0 5 -1.4 .6];
- 
-plots.axis(2,:) = [0 5 -.5 2.5];
- 
-plots.axis(3,:) = [0 5 -.4 1.6];
- 
-plots.axis(4,:) = [0 5 -.7 .3];
-
-plots.axis(5,:) = [0 5 -1.4 .6];
- 
-plots.axis(6,:) = [0 5 -.5 2.5];
-
-%plots.index     = [1,2,3,4,10,11];
-
-plots.index     = [1,3,5,6,2,4];
- 
-plots.order     = [1,3,5,6,2,4];
- 
-caux            = norminv(1-((1-confidence)/2),0,1);
- 
 for iplot = 1:6
     
     subplot(3,2,plots.order(1,iplot));
     
-    plot(0:1:hori,InferenceMSW.IRFs(plots.index(1,iplot),:,end),'b'); hold on
+    plot(0:1:hori,InferenceMSW.IRFSVARIV2(plots.index(1,iplot),:,end),'b'); hold on
     
-    [~,~] = jbfill(0:1:hori,InferenceMSW.bootsIRFs(plots.index(1,iplot),:,2),...
-        InferenceMSW.bootsIRFs(plots.index(1,iplot),:,1),[204/255 204/255 204/255],...
-        [204/255 204/255 204/255],0,0.5); hold on
+    %[~,~] = jbfill(0:1:hori,InferenceMSW.bootsIRFs(plots.index(1,iplot),:,2),...
+        %InferenceMSW.bootsIRFs(plots.index(1,iplot),:,1),[204/255 204/255 204/255],...
+        %[204/255 204/255 204/255],0,0.5); hold on
+    
+    g1    =  plot(0:1:hori,InferenceMSW.bootsIRFs2(plots.index(1,iplot),:,2),':b'); hold on
+    
+    dmub  =  InferenceMSW.IRFSVARIV2(plots.index(1,iplot),:) + ...
+             (caux*InferenceMSW.dmethod2(plots.index(1,iplot),:)); 
+    
+    lmub  =  InferenceMSW.IRFSVARIV2(plots.index(1,iplot),:) - ...
+             (caux*InferenceMSW.dmethod2(plots.index(1,iplot),:)); 
+    
+    h1 = plot(0:1:hori,dmub,'--b'); hold on
+    
+    g2    =  plot(0:1:hori,InferenceMSW.bootsIRFs2(plots.index(1,iplot),:,1),':b'); hold on
+    
+    h2 = plot(0:1:hori,lmub,'--b'); hold on
+    
+    clear dmub lmub   
     
     h3 = plot([0 5],[0 0],'black'); hold off
     
@@ -431,8 +439,14 @@ for iplot = 1:6
     
     if iplot == 1
         
-        legend('SVAR-IV Estimator',strcat('MSWBoots C.I (',num2str(100*confidence),'%)'))
-                       
+        legend('SVAR-IV Estimator',...
+            strcat('MSWBoots C.I (',num2str(100*confidence),'%)'),...
+            strcat('Delta Method C.I (',num2str(100*confidence),'%)'));
+        
+        set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
         set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
         legend boxoff
@@ -444,12 +458,12 @@ for iplot = 1:6
     axis(plots.axis(iplot,:))
     
 end
- 
-%% 7) Save the output and plots in ./Output/Mat and ./Output/Figs
+
+%% 13) Save the output and plots in ./Output/Mat and ./Output/Figs
  
 disp('-')
  
-disp('7) The final section saves the .mat files and figures in the Output folder')
+disp('13) The final section saves the .mat files and figures in the Output folder')
  
 %Check if the Output File exists, and if not create one.
  
@@ -473,7 +487,7 @@ end
  
 cd(strcat(main_d,'/Output/Mat'));
  
-output_label = strcat('_p=',num2str(p),'_Top1Bottom99_2inst',...
+output_label = strcat('_p=',num2str(p),'_Top1Bottom99_2inst_lower',...
                num2str(100*confidence));
  
 save(strcat('IRF_SVAR',output_label,'.mat'),...
