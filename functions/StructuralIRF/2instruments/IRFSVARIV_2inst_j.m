@@ -2,7 +2,7 @@ function [IRFSVARIV,dIRFdmu] = IRFSVARIV_2inst_j(AL,Sigma,Gamma,hori,x,nvar,c)
 %  -Computes IRFs identified using two external instruments possibly
 %  correlated with the two target shocks
 %  -Syntax:
-%    [ IRFSVARIV ] = IRFSVARIV(AL,Gamma,hori,x,nvar)
+%    [ IRFSVARIV, dIRFdmu ] = IRFSVARIV(AL,Gamma,hori,x,nvar)
 %  -Inputs:     
 %       AL: matrix of autoregressive coefficients        (n x np)
 %    Gamma: covariances between zt and etat              (n x 2)
