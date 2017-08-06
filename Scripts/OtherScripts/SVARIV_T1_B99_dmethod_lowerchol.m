@@ -292,17 +292,21 @@ for iplot = 1:6
     
     plot(0:1:hori,InferenceMSW.IRFSVARIV(plots.index(1,iplot),:,end),'b'); hold on
     
-    [~,~] = jbfill(0:1:hori,InferenceMSW.bootsIRFs(plots.index(1,iplot),:,2),...
-        InferenceMSW.bootsIRFs(plots.index(1,iplot),:,1),[204/255 204/255 204/255],...
-        [204/255 204/255 204/255],0,0.5); hold on
+    %[~,~] = jbfill(0:1:hori,InferenceMSW.bootsIRFs(plots.index(1,iplot),:,2),...
+        %InferenceMSW.bootsIRFs(plots.index(1,iplot),:,1),[204/255 204/255 204/255],...
+        %[204/255 204/255 204/255],0,0.5); hold on
+    
+    g1    =  plot(0:1:hori,InferenceMSW.bootsIRFs(plots.index(1,iplot),:,2),':b'); hold on
     
     dmub  =  InferenceMSW.IRFSVARIV(plots.index(1,iplot),:) + ...
-             (caux*InferenceMSW.dmethod(plots.index(1,iplot),:));
+             (caux*InferenceMSW.dmethod(plots.index(1,iplot),:)); 
     
     lmub  =  InferenceMSW.IRFSVARIV(plots.index(1,iplot),:) - ...
-             (caux*InferenceMSW.dmethod(plots.index(1,iplot),:));
+             (caux*InferenceMSW.dmethod(plots.index(1,iplot),:)); 
     
     h1 = plot(0:1:hori,dmub,'--b'); hold on
+    
+    g2    =  plot(0:1:hori,InferenceMSW.bootsIRFs(plots.index(1,iplot),:,1),':b'); hold on
     
     h2 = plot(0:1:hori,lmub,'--b'); hold on
     
@@ -319,6 +323,8 @@ for iplot = 1:6
         legend('SVAR-IV Estimator',...
             strcat('MSWBoots C.I (',num2str(100*confidence),'%)'),...
             strcat('Delta Method C.I (',num2str(100*confidence),'%)'));
+        
+        set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
