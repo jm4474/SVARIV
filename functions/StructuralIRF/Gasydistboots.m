@@ -16,7 +16,7 @@ function [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confide
 %    vecAL: point estimator of vec(AL)
 %vechSigma: point estimator of vech(Sigma)
 %    Gamma: point estimator of vec(Gamma)
-%  Whatall: Covariance mat of (vec(A)', vech(Sigma)', vec(Gamma)')              
+%  Whatall: Covariance mat of (vec(AL)', vech(Sigma)', vec(Gamma)')              
 %  -Output:
 %       AL: Least-squares estimator of the VAR coefficients
 %    Sigma: Least-squares estimator of the VAR residuals
