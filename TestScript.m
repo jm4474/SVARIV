@@ -2,27 +2,38 @@
 % This is a test version to see whether the SVARIV_Luigi function is working: Auguest 13th, 2018
 % Comment: We have tested this script on a Macbook Pro 
  
+direct = pwd;
+
 %% 1) Set number of VAR Lags, Newey West lags and confidence level.
  
-p = 2; 
+p           = 2; 
  
-confidence = .68;
+confidence  = .68;
 
-columnnames = ["Log(1/1-AMTR)", "Log Income", "Log Real GDP", "Unemployment Rate", "a", "b", "c", "d", "e"];
+% Define the variables in the SVAR
+columnnames = [{'Log(1/1-AMTR)'}, ...
+               {'Log Income'}, ...
+               {'Log Real GDP'},...
+               {'Unemployment Rate'},...
+               {'a'}, {'b'}, {'c'}, {'d'}, {'e'}];
 
-time = 'Year';
+time        = 'Year';
 
-NWlags = 8;
+NWlags      = 8;
 
-norm = 1;
+norm        = 1;
 
-scale = -1;
+scale       = -1;
 
-horizons = 6;
+horizons    = 6;
  
 %% 2) Load data (saved in structure "data")
+%  These are the variables that were defined in line 14 above. 
+%  The time units should be on a single.xls file called Time.xls
+%  All the VAR variables should be on a single .xls file called Data.xls
+%  The external instrument should be in a single .xls file called ExtIV.xls
 
-cd('/Users/luigicaloi/Documents/Pepe/SVARIV/Data');
+cd(strcat(pwd,'/Data'));
  
     [data.years, ~, ~]                  = xlsread('DATA_Mertens2015',... 
                                           'AMTR (Figure 1)', 'A6:A64');
@@ -52,20 +63,17 @@ cd ..
  
 %% 3 Test
  
-disp('3) The third section estimates the reduced-form VAR parameters');
- 
 ydata    = ...
     [-log(1-data.Var1_AMTR),data.Var2_LogIncome,data.Var3_Controls];
  
 z        = data.Var4_ExtIV;
  
 
-savdir = '/Users/luigicaloi/Documents/Pepe/SVARIV/Output';
+savdir = strcat(direct,'/Output');
  
-cd '/Users/luigicaloi/Documents';
+addpath(strcat(direct,'/functions'));
 
-addpath('/Users/luigicaloi/Documents/Pepe/SVARIV/functions');
-
-[Plugin, InferenceMSW, Chol] = SVARIV_Luigi(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, time);
+[Plugin, InferenceMSW, Chol] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, time);
  
-
+%To Do: Provide a description of each of the inputs, so that the user knows
+%       what are we talking about. 
