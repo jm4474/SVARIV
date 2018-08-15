@@ -1,4 +1,4 @@
-function [Plugin, InferenceMSW, Chol] = SVARIV_Luigi(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, time)
+function [Plugin, InferenceMSW, Chol] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, time)
 % Implements standard and weak-IV robust SVAR-IV inference.
 %-Syntax:
 %       [Plugin, InferenceMSW, Chol] = SVARIV_Luigi(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir)
@@ -32,7 +32,7 @@ olddir = pwd; % Save user's dir in order to return to the user with the same dir
 
 currentcd = mfilename('fullpath');
 
-currentcd = extractBetween(currentcd, '' , '/SVARIV_Luigi');
+currentcd = extractBetween(currentcd, '' , '/SVARIV_General');
 
 currentcd = currentcd{1};
 
