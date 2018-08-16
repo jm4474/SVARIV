@@ -8,7 +8,7 @@ direct = pwd;
  
 p           = 2; %Number of lags in the VAR model
  
-confidence  = .68; %Value for the standard and weak-IV robust confidence set
+confidence  = .68; %Confidence Level for the standard and weak-IV robust confidence set
 
 % Define the variables in the SVAR
 columnnames = [{'Log(1/1-AMTR)'}, ...
@@ -17,26 +17,28 @@ columnnames = [{'Log(1/1-AMTR)'}, ...
                {'Unemployment Rate'},...
                {'Inflation'}, {'FFR'}, {'Log GOV'}, {'Log RSTPrices'}, {'DLOG RDEBT'}];
 
-time        = 'Year';  % Time unit for the dataset (e.g. year, month, etc.
+time        = 'Year';  % Time unit for the dataset (e.g. year, month, etc).
 
-NWlags      = 8;  % Newey-West lags
+NWlags      = 8;  % Newey-West lags(if it is neccessary to account for time series autocorrelation)
+                  % (set it to 0 to compute heteroskedasticity robust std errors)
 
 norm        = 1; % Variable used for normalization
 
 scale       = -1; % Scale of the shock
 
-horizons    = 6; %Number of horizons for the Impulse Response Functions(IRFs)
-
+horizons    = 5; %Number of horizons for the Impulse Response Functions(IRFs)
+                 %(does not include the impact or horizon 0)
+                 
 IRFselect   = [1, 3, 5, 8];
-% The program generates a figure with the IRFs for all variables. However,
-% you can specify with the IRFselect (variables of interest) which variables
-% you also want to generate indepedent figures. 
+% By default, the program generates a single figure with the IRFs for ALL variables
+% in the VAR. However, IRFselect allows the user to generate an indepedent
+% figure displaying only some specific variables of interest. 
+% The program also saves the IRFs in IRFselect as separate .eps files (To Do)
 
 % Make sure to match the indices above and to the variables in your
 % dataset. E.g. the above vector will select the variables "AMTR,
 % Log Real GDP, Inflation and DLOG RDEBT."
 
- 
 %% 2) Load data (saved in structure "data")
 %  These are the variables that were defined in line 14 above. 
 %  The time units should be on a single.xls file called Time.xls
@@ -57,7 +59,7 @@ cd(strcat(pwd,'/Data'));
                                       
     z                                   = xlsread('ExtIV',...
                                           'A2:A60');
-                                        %External IV. 59x1 vector.
+                                        %External IV, not included in the VAR. 59x1 vector.
                                       
 cd ..
  
@@ -91,8 +93,6 @@ addpath(strcat(direct,'/functions'));
 %       InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
 %       Chol: Cholesky IRFs
 
-
-
 %% 4) "Standard" bootstrap-type inference based on samples from the asy dist.
 
 seed            = load(strcat(direct,'/seed/seedMay12.mat')); 
@@ -101,7 +101,7 @@ seed            = seed.seed;
 
 disp('-')
 
-disp('7) This section samples from the asy dist of the reduced-form parameters to conduct "standard" inference.')
+disp('Section 4 in this script samples from the asy dist of the reduced-form parameters to conduct "standard" inference.')
 
 disp('Standard inference based on sampling from the asy. dist. takes only:')  
 
@@ -109,8 +109,10 @@ tic;
 
 n            = RForm.n;  %number of variables in the VAR
 
-T = size(ydata, 2); % Number of observations/time periods.
- 
+T  = size(ydata, 2); % Number of observations/time periods.
+
+NB = 1000;           % Number of bootstrap repliactions 
+
 [~,InferenceMSW.bootsIRFs] = ...
                   Gasydistboots(seed, 1000, n, p, norm, scale, horizons, confidence, T,...
                   RForm.AL(:),RForm.V*RForm.Sigma(:),RForm.Gamma(:),...
@@ -122,7 +124,7 @@ toc;
 
 disp('-')
 
-disp('8) This section compares inference based on sampling from the asy-dist with delta-method inference')
+disp('Finally, this section compares inference based on sampling from the asy-dist with delta-method inference')
 
 figure(3)
 
@@ -144,10 +146,6 @@ for iplot = 1:n
     
     
     plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
-    
-    %[~,~] = jbfill(0:1:hori,InferenceMSW.bootsIRFs(iplot,:,2),...
-        %InferenceMSW.bootsIRFs(iplot,:,1),[204/255 204/255 204/255],...
-        %[204/255 204/255 204/255],0,0.5); hold on
     
     g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2),':b'); hold on
     
