@@ -1,4 +1,4 @@
-function [Plugin, InferenceMSW, Chol] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, time)
+function [Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time)
 % Implements standard and weak-IV robust SVAR-IV inference.
 %-Syntax:
 %       [Plugin, InferenceMSW, Chol] = SVARIV_Luigi(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir)
@@ -13,12 +13,14 @@ function [Plugin, InferenceMSW, Chol] = SVARIV_General(p,confidence, ydata, z, N
 %       horizons:    Number of horizons for the Impulse Response Functions(IRFs)                    (1 times 1)
 %       savdir:      Directory where the figures generated will be saved                            (String)
 %       columnnames: Vector with the names for the endogenous variables, in the same order as ydata (1 times n)
+%       IRFselect:   Indices for the variables that the user wants separate IRF plots for           (1 times q)
 %       time:        Time unit for the dataset (e.g. year, month, etc.)                             (String)
 %
 % -Output:
-%       PLugin: Structure containing standard plug-in inference
+%       PLugin:       Structure containing standard plug-in inference
 %       InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
-%       Chol: Cholesky IRFs
+%       Chol:         Cholesky IRFs
+%       RForm:        Structure containing the reduced form parameters
 %
 % This version: August 14th, 2018
 % Comment: We have tested this function on a Macbook Pro 
@@ -57,7 +59,7 @@ disp('-')
 disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research assistance)')
 
  
-%% 3) Least-squares, reduced-form estimation
+%% 2) Least-squares, reduced-form estimation
 
 addpath(strcat(main_d,'/functions/RForm'));
 
@@ -127,10 +129,7 @@ disp('-')
 disp('5) The fifth section reports standard and weak-IV robust confidence sets ');
  
 disp('(output saved in the "Inference.MSW" structure)')
- 
 
- 
-hori   =  6;  %Number of horizons for the IRFs
  
 %Apply the MSW function
  
@@ -153,7 +152,7 @@ caux            = norminv(1-((1-confidence)/2),0,1);
 
  
 for iplot = 1:SVARinp.n
-    
+        
     if SVARinp.n > ceil(sqrt(SVARinp.n)) * floor(sqrt(SVARinp.n))
             
         subplot(ceil(sqrt(SVARinp.n)),ceil(sqrt(SVARinp.n)),plots.order(1,iplot));
@@ -164,9 +163,9 @@ for iplot = 1:SVARinp.n
         
     end
     
-    plot(0:1:hori,Plugin.IRF(iplot,:),'b'); hold on
+    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
     
-    [~,~] = jbfill(0:1:hori,InferenceMSW.MSWubound(iplot,:),...
+    [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
         InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
         [204/255 204/255 204/255],0,0.5); hold on
     
@@ -174,17 +173,20 @@ for iplot = 1:SVARinp.n
     
     lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
     
-    h1 = plot(0:1:hori,dmub,'--b'); hold on
+    h1 = plot(0:1:horizons,dmub,'--b'); hold on
     
-    h2 = plot(0:1:hori,lmub,'--b'); hold on
+    h2 = plot(0:1:horizons,lmub,'--b'); hold on
     
     clear dmub lmub
     
-    h3 = plot([0 hori],[0 0],'black'); hold off
+    h3 = plot([0 horizons],[0 0],'black'); hold off
     
     xlabel(time)
     
     title(columnnames(iplot));
+        
+    xlim([0 horizons-1]);
+
     
     if iplot == 1
         
@@ -200,8 +202,7 @@ for iplot = 1:SVARinp.n
         legend('location','southeast')
      
     end
-    
-    
+        
 end
 
 %% 7) Save the output and plots in ./Output/Mat and ./Output/Figs
@@ -249,5 +250,69 @@ cd(main_d);
 clear plots output_label main_d labelstrs dtype
 
 cd(olddir);
+
+%% 8) Select the Impulse Response Functions 
+
+figure(2)
+ 
+plots.order     = 1:length(IRFselect);
+ 
+caux            = norminv(1-((1-confidence)/2),0,1);
+
+for i = 1:length(IRFselect) 
+
+    iplot = IRFselect(i);
+    
+    if length(IRFselect) > ceil(sqrt(length(IRFselect))) * floor(sqrt(length(IRFselect)))
+            
+        subplot(ceil(sqrt(length(IRFselect))),ceil(sqrt(length(IRFselect))),plots.order(1,i));
+    
+    else
+        
+        subplot(ceil(sqrt(length(IRFselect))),floor(sqrt(length(IRFselect))),plots.order(1,i));
+        
+    end
+    
+    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+    
+    [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+        InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+        [204/255 204/255 204/255],0,0.5); hold on
+    
+    dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+    
+    lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+    
+    h1 = plot(0:1:horizons,dmub,'--b'); hold on
+    
+    h2 = plot(0:1:horizons,lmub,'--b'); hold on
+    
+    clear dmub lmub
+    
+    h3 = plot([0 horizons],[0 0],'black'); hold off
+    
+    xlabel(time)
+    
+    title(columnnames(iplot));
+    
+    xlim([0 horizons-1]);
+    
+    if iplot == 1
+        
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+            'D-Method C.I.')
+        
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        legend boxoff
+        
+        legend('location','southeast')
+     
+    end
+    
+    
+end
 
 end

@@ -1,13 +1,13 @@
-function [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,display_on)
+function [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,horizons,RForm,display_on)
 % -Reports the confidence interval for IRF coefficients described in Montiel-Olea, Stock, and Watson (2017). This version: July 11th, 2017. 
 % -Syntax:
 %       [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,display_on)
 % -Inputs:
-%    confidence: confidence level                      (1 times 1)
-%          nvar: variable defining the normalization   (1 times 1)
-%             x: scale of the shock                    (1 times 1)
-%          hori: number of horizons                    (1 times 1)
-%         RForm: reduced-form structure.               (structure)
+%    confidence: confidence level                            (1 times 1)
+%          nvar: variable defining the normalization         (1 times 1)
+%             x: scale of the shock                          (1 times 1)
+%      horizons: number of horizons including year of impact (1 times 1)
+%         RForm: reduced-form structure.                     (structure)
 %                
 %                The structure must contain the following fields:
 %                AL= n x np matrix of reduced-form coefficients
@@ -31,13 +31,13 @@ critval = norminv(1-((1-confidence)/2),0,1)^2;
 
 addpath('functions/StructuralIRF') 
 
-Caux        = [eye(RForm.n),MARep(RForm.AL,RForm.p,hori)]; 
+Caux        = [eye(RForm.n),MARep(RForm.AL,RForm.p,horizons)]; 
 %The function MARep uses the reduced-form estimator vec(A) to 
 %compute the implied MA coefficients. You can replace this function
 %by your own routine, but make sure that the dimensions match.
 %Using the data from SVARIV_tax, Caux is a 9x63 matrix. 
 
-C           = reshape(Caux,[RForm.n,RForm.n,hori+1]); 
+C           = reshape(Caux,[RForm.n,RForm.n,horizons+1]); 
 %Put Caux in a 3-dimensional array
 %Each page in the third dimension represents the MA coefficients for that
 %time horizon
@@ -46,7 +46,7 @@ Ccum        = cumsum(C,3);
 %Compute the cumulative MA coefficients as we report both 
 %cumulative and noncumulative IRFs
 
-[G,Gcum]    = Gmatrices(RForm.AL,MARep(RForm.AL,RForm.p,hori),RForm.p,hori,RForm.n); 
+[G,Gcum]    = Gmatrices(RForm.AL,MARep(RForm.AL,RForm.p,horizons),RForm.p,horizons,RForm.n); 
 %(and the derivatives).
 
 %% 2) Compute the Cholesky estimator for comparison
@@ -56,9 +56,9 @@ B1chol      = chol(RForm.Sigma)';
 
 B1chol      = x*(B1chol(:,1)./B1chol(nvar,1));
 
-Chol(:,:,1) = reshape(sum(bsxfun(@times,C,B1chol'),2),[RForm.n,hori+1]);
+Chol(:,:,1) = reshape(sum(bsxfun(@times,C,B1chol'),2),[RForm.n,horizons+1]);
 
-Chol(:,:,2) = reshape(sum(bsxfun(@times,Ccum,B1chol'),2),[RForm.n,hori+1]);
+Chol(:,:,2) = reshape(sum(bsxfun(@times,Ccum,B1chol'),2),[RForm.n,horizons+1]);
 
 %% 3) Label the submatrices of the asy var of (vecA,Gamma)  
 
@@ -81,23 +81,23 @@ T         = (size(RForm.eta,2));  % Number of observations (number of time perio
 
 e         = eye(n); 
 
-ahat      = zeros(n,hori+1); 
+ahat      = zeros(n,horizons+1); 
 
-bhat      = zeros(n,hori+1);
+bhat      = zeros(n,horizons+1);
 
-chat      = zeros(n,hori+1);
+chat      = zeros(n,horizons+1);
 
-Deltahat  = zeros(n,hori+1);
+Deltahat  = zeros(n,horizons+1);
     
-MSWlbound = zeros(n,hori+1);
+MSWlbound = zeros(n,horizons+1);
 
-MSWubound = zeros(n,hori+1);
+MSWubound = zeros(n,horizons+1);
 
-casedummy = zeros(n,hori+1);
+casedummy = zeros(n,horizons+1);
 
 for j =1:n
     
-    for ih=1:hori+1
+    for ih=1:horizons+1
         
     ahat(j,ih)     = (T*(RForm.Gamma(nvar,1)^2))-(critval*W2(nvar,nvar));
     
@@ -180,15 +180,15 @@ InferenceMSW.T         = T;
 
 %% 6) For comparison purposes, we report the standard delta-method CI    
 
-lambdahat                  = zeros(n,hori+1);
+lambdahat                  = zeros(n,horizons+1);
 
-DmethodVar                 = zeros(n,hori+1);
+DmethodVar                 = zeros(n,horizons+1);
 
-Dmethodlbound              = zeros(n,hori+1);
+Dmethodlbound              = zeros(n,horizons+1);
 
-Dmethodubound              = zeros(n,hori+1);
+Dmethodubound              = zeros(n,horizons+1);
 
-for ih = 1:hori + 1
+for ih = 1:horizons + 1
     
     for ivar = 1:n
         
@@ -226,22 +226,22 @@ Plugin.IRFstderror         = (DmethodVar.^.5)./((T^.5)*abs(RForm.Gamma(nvar,1)))
 
 %% 8) Definitions to apply the formulae in MSW for cumulative IRFs     
 
-ahatcum      = zeros(n,hori+1);
+ahatcum      = zeros(n,horizons+1);
 
-bhatcum      = zeros(n,hori+1);
+bhatcum      = zeros(n,horizons+1);
 
-chatcum      = zeros(n,hori+1);
+chatcum      = zeros(n,horizons+1);
 
-Deltahatcum  = zeros(n,hori+1);
+Deltahatcum  = zeros(n,horizons+1);
 
-MSWlboundcum = zeros(n,hori+1);
+MSWlboundcum = zeros(n,horizons+1);
 
-MSWuboundcum = zeros(n,hori+1);
+MSWuboundcum = zeros(n,horizons+1);
 
-casedummycum = zeros(n,hori+1);
+casedummycum = zeros(n,horizons+1);
 
 for j = 1:n
-    for ih = 1:hori+1
+    for ih = 1:horizons+1
 
         ahatcum(j,ih)          = (T*(RForm.Gamma(nvar,1)^2))-(critval*W2(nvar,nvar));
 
@@ -315,15 +315,15 @@ InferenceMSW.casedummycum = casedummycum; clear casedummy
     
 %% 10) We also report the standard delta-method CI for cumulative IRFs   
 
-lambdahatcum     = zeros(n,hori+1);
+lambdahatcum     = zeros(n,horizons+1);
 
-DmethodVarcum    = zeros(n,hori+1);
+DmethodVarcum    = zeros(n,horizons+1);
 
-Dmethodlboundcum = zeros(n,hori+1);
+Dmethodlboundcum = zeros(n,horizons+1);
 
-Dmethoduboundcum = zeros(n,hori+1);
+Dmethoduboundcum = zeros(n,horizons+1);
         
-for ih = 1:hori + 1
+for ih = 1:horizons + 1
     
     for ivar = 1:n
         
