@@ -46,18 +46,17 @@ main_d = pwd;
 
 cd(main_d);   %the main dir is the SVARIV folder
 
-disp('This script reports confidence intervals for IRFs estimated using the SVAR-IV approach')
+disp('This function reports confidence intervals for IRFs estimated using the SVAR-IV approach described in MSW(18)')
  
 disp('(created by Karel Mertens and Jose Luis Montiel Olea)')
  
 disp('-')
  
-disp('This version: July 2017')
+disp('This version: August 2018')
  
 disp('-')
  
 disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research assistance)')
-
  
 %% 2) Least-squares, reduced-form estimation
 
@@ -126,7 +125,7 @@ dall         = d+ (n*(n+1))/2;    %This is the size of (vec(A)',vec(Sigma), Gamm
  
 disp('-')
  
-disp('5) The fifth section reports standard and weak-IV robust confidence sets ');
+disp('The fifth section in SVAR-IV general reports standard and weak-IV robust confidence sets ');
  
 disp('(output saved in the "Inference.MSW" structure)')
 
