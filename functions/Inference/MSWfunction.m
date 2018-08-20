@@ -6,7 +6,9 @@ function [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,horizons,RFo
 %    confidence: confidence level                            (1 times 1)
 %          nvar: variable defining the normalization         (1 times 1)
 %             x: scale of the shock                          (1 times 1)
-%      horizons: number of horizons including year of impact (1 times 1)
+%      horizons: Number of horizons for the Impulse Response 
+%                Functions (IRFs) (does not include the 
+%                impact or horizon 0)                        (1 times 1)
 %         RForm: reduced-form structure.                     (structure)
 %                
 %                The structure must contain the following fields:
@@ -364,7 +366,7 @@ Plugin.IRFstderrorcum         = (DmethodVarcum.^.5)./((T^.5)*abs(RForm.Gamma(nva
 % and the first-stage. This part of the program is Optional.
 if display_on==1
     
-    disp(strcat('(the nominal confidence level is',' ',num2str(confidence*100),'%)'));
+    disp(strcat('(the nominal confidence level is ', num2str(confidence*100),'%)'));
     
     disp('--');
     
@@ -376,7 +378,7 @@ if display_on==1
     
     InferenceMSW.Waldstat = Waldstat;
     
-    disp('Given the confidence level, if the Wald statistic is larger than:')
+    fprintf('Given the confidence level, if the Wald statistic is larger than: \n\n');
     
     disp(critval);
     

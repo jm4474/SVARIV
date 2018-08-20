@@ -1,4 +1,4 @@
-function [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confidence, T, vecAL, vechSigma, Gamma, Whatall, f)
+function [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, horizons, confidence, T, f, SVARinp, NWlags, RForm)
 %  -Provides inference for SVAR-IV based on samples from the asy. dist.
 %  -Syntax:
 %    [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confidence, vecAL, vechSigma, Gamma, Whatall)
@@ -9,7 +9,7 @@ function [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confide
 %        p: number of lags in the VAR
 %     nvar: normalizing variable
 %        x: scale
-%     hori: horizons
+% horizons: number of horizons (IRFs) (does not include the impact or horizon 0)
 %confidence: confidence level
 %        T: time periods
 %        f: function handle (depends on AL, Sigma, Gamma, hori, x, nvar)
@@ -30,31 +30,82 @@ function [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confide
 % This version: July 17th, 2017
 % Last edited by José Luis Montiel-Olea
 
-%% 1) Set the seed
+%% 1) Create an RForm (if necessary)
+
+
+%a) Estimation of (AL, Sigma) and the reduced-form innovations
+if (nargin == 12)
+
+    % This essentially checks whether the user provided or not his RForm. If
+    % the user didn't, then we calculate it. If the user did, we skip this section and
+    % use his/her RForm.
+    
+    [RForm.mu, ...
+     RForm.AL, ...
+     RForm.Sigma,...
+     RForm.eta,...
+     RForm.X,...
+     RForm.Y]        = RForm_VAR(SVARinp.ydata, p);
+ 
+ %RForm.AL(:),RForm.V*RForm.Sigma(:),RForm.Gamma(:), RForm.WHatall
+
+    %b) Estimation of Gammahat (n times 1)
+
+    RForm.Gamma      = RForm.eta*SVARinp.Z(p+1:end,1)/(size(RForm.eta,2));   %sum(u*z)/T. Used for the computation of impulse response.
+    %(We need to take the instrument starting at period (p+1), because
+    %we there are no reduced-form errors for the first p entries of Y.)
+
+    %c) Add initial conditions and the external IV to the RForm structure
+
+    RForm.Y0         = SVARinp.ydata(1:p,:);
+
+    RForm.externalIV = SVARinp.Z(p+1:end,1);
+
+    RForm.n          = SVARinp.n;
+    
+    RForm.AL = RForm.AL(:);
+    
+    [RForm.WHatall,RForm.WHat,RForm.V] = ...
+    CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,NWlags);                
+    
+
+elseif (nargin == 13)
+
+    % We will use the user's RForm
+
+else 
+
+    % Error, not enough inputs.
+
+end
+
+vechSigma = RForm.V*RForm.Sigma(:);
+
+%% 2) Set the seed
 
 rng(seed); clear seed
 
 %% 2) Make sure that Whatall is symmetric and positive semidefinite
 
-dall        = size(Whatall,1);
+dall        = size(RForm.WHatall,1);
 
-Whatall     = (Whatall + Whatall')/2;
+WHatall     = (RForm.WHatall + RForm.WHatall')/2;
     
-[aux1,aux2] = eig(Whatall);
+[aux1,aux2] = eig(WHatall);
     
-Whatall     = aux1*max(aux2,0)*aux1'; 
+WHatall     = aux1*max(aux2,0)*aux1'; 
 
 %% 3) Generate draws from the Gaussian asy. dist. 
 % (centered at point estimators)
 
-gvar    = [mvnrnd(zeros(I,dall),(Whatall)/T)',...
+gvar    = [mvnrnd(zeros(I,dall),(WHatall)/T)',...
                      zeros(dall,1)];
           %Added an extra column of zeros to access point estimators       
     
 Draws   = bsxfun(@plus,gvar,...
-          [vecAL;vechSigma;Gamma(:)]);
+          [RForm.AL;vechSigma;RForm.Gamma(:)]);
 
-k       = size(Gamma,1)/n;      
+k       = size(RForm.Gamma,1)/n;      
 
 %The vector "Draws" represents a vector of I draws
 %from a multivariate normal vector (of dimension dall) centered
@@ -69,7 +120,7 @@ ndraws     = size(Draws,2);
      
 pdSigma    = zeros(1,ndraws);
 
-IRFs       = zeros(n, hori+1, ndraws);
+IRFs       = zeros(RForm.n, horizons+1, ndraws);
     
 for idraws = 1:ndraws
     
@@ -102,7 +153,7 @@ for idraws = 1:ndraws
     Gamma = reshape(Draws(((n^2)*p)+(n*(n+1)/2)+1:end,idraws),...
               [n,k]);             
           
-    IRFs(:,:,idraws) = f(AL,Sigma,Gamma,hori,x,nvar);
+    IRFs(:,:,idraws) = f(AL,Sigma,Gamma,horizons,x,nvar);
             
     clear AL vechSigma Gamma 
       
