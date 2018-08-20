@@ -366,9 +366,7 @@ Plugin.IRFstderrorcum         = (DmethodVarcum.^.5)./((T^.5)*abs(RForm.Gamma(nva
 % and the first-stage. This part of the program is Optional.
 if display_on==1
     
-    disp(strcat('(the nominal confidence level is ', num2str(confidence*100),'%)'));
-    
-    disp('--');
+    disp('-');
     
     disp('NOTE: The Wald statistic for the covariance between the instrument and the normalized variable is:')
     
