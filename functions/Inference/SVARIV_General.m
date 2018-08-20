@@ -71,9 +71,13 @@ cd(main_d);   %the main dir is the SVARIV folder
 
 disp('-');
 
-disp('The SVARIV_General function reports confidence intervals for IRFs estimated using the SVAR-IV approach described in MSW(18)')
- 
+disp('The SVARIV_General function reports standard and weak-IV robust confidence sets for IRFs estimated using the SVAR-IV approach described in MSW(18)');
+
 disp('(created by Karel Mertens and Jose Luis Montiel Olea)')
+
+disp('(output saved in the "Inference.MSW" structure)')
+
+disp(strcat('The nominal confidence level is ',num2str(100*confidence),'%'))
  
 disp('-')
  
@@ -165,14 +169,7 @@ dall         = d+ (n*(n+1))/2;    %This is the size of (vec(A)',vec(Sigma), Gamm
 
 %% 4) Compute standard and weak-IV robust confidence set suggested in MSW
  
-disp('-')
- 
-disp('The fourth section in SVAR-IV general reports standard and weak-IV robust confidence sets ');
- 
-disp('(output saved in the "Inference.MSW" structure)')
-
- 
-%Apply the MSW function
+ %Apply the MSW function
  
 tic;
  
