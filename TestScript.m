@@ -1,5 +1,5 @@
 %% This script file implements standard and weak-IV robust SVAR-IV inference.
-% This is a test version to see whether the SVARIV_Luigi function is working: Auguest 13th, 2018
+% This is a test version to see whether the SVARIV_Luigi function is working: August 20th, 2018
 % Comment: We have tested this script on a Macbook Pro 
  
 direct = pwd;
@@ -8,7 +8,7 @@ direct = pwd;
  
 fprintf('This script is an example on how to use the function SVARIV_General to report confidence intervals for  IRFs \n');
 
-fprintf('estimated using the SVAR-IV approach described in MSW(18) and the function Gasydistboots.\n');
+fprintf('estimated using the SVAR-IV approach described in MSW(18).\n');
 
 disp('-');
 
@@ -37,7 +37,7 @@ scale       = -1; % Scale of the shock
 horizons    = 5; %Number of horizons for the Impulse Response Functions(IRFs)
                  %(does not include the impact or horizon 0)
                  
-IRFselect   = [1, 3, 5, 8];
+IRFselect   = [1, 3, 2, 4];
 % By default, the program generates a single figure with the IRFs for ALL variables
 % in the VAR. However, IRFselect allows the user to generate an indepedent
 % figure displaying only some specific variables of interest. 
@@ -79,7 +79,7 @@ cd ..
 
 disp('-')
 
-disp('Section 3 in this script calls the SVARIV_General function and samples from the asy dist of the reduced-form parameters to conduct "standard" inference.')
+disp('Section 3 in this script calls the SVARIV_General function')
 
 savdir = strcat(direct,'/Output');  %selected directory where the output files will be saved
  
@@ -105,7 +105,7 @@ addpath(strcat(direct,'/functions/Inference'));
 %       time:        Time unit for the dataset (e.g. year, month, etc.)                             (String)
 %
 % -Output:
-%       PLugin: Structure containing standard plug-in inference
+%       Plugin: Structure containing standard plug-in inference
 %       InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
 %       Chol: Cholesky IRFs
 
