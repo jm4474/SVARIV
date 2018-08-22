@@ -1,13 +1,13 @@
-function [ IRFSVARIV ] = IRFSVARIV(AL,Sigma,Gamma,hori,x,nvar)
+function [ IRFSVARIV ] = IRFSVARIV(AL,Sigma,Gamma,horizons,scale,norm)
 %  -Computes IRFs identified using an external instrument
 %  -Syntax:
 %    [ IRFSVARIV ] = IRFSVARIV(AL,Gamma,hori,x,nvar)
 %  -Inputs:     
 %       AL: matrix of autoregressive coefficients        (n x np)
 %    Gamma: covariances between zt and etat              (n x 1)
-%     hori: number of horizons to evaluate IRFs          (1 x 1)  
-%        x: scale                                        (1 x 1)
-%     nvar: normalizing variable                         (1 x 1)
+%     horizons: number of horizons to evaluate IRFs      (1 x 1)  
+%        scale: scale of the shock                       (1 x 1)
+%     norm: normalizing variable                         (1 x 1)
 %  -Output:
 %IRFSVARIV: vector of IRFs                               (n x hori+1)    
 %   
@@ -22,13 +22,17 @@ n         = size(Sigma,1);
 
 p         = size(AL,2)/n;
 
-Cauxsim   = [eye(n),MARep(AL,p,hori)]; 
+%Reduced-form MA coefficients
+Cauxsim   = [eye(n),MARep(AL,p,horizons)]; 
       
-Csim      = reshape(Cauxsim,[n,n,hori+1]);
+Csim      = reshape(Cauxsim,[n,n,horizons+1]);
+
+Ccumsim   = cumsum(Csim,3);
       
-B1        = x*Gamma./Gamma(nvar,1);    
+B1        = scale*Gamma./Gamma(norm,1);    
       
-IRFSVARIV = reshape(sum(bsxfun(@times,Csim,B1'),2),[n,hori+1]);
+IRFSVARIV(:,:,1) = reshape(sum(bsxfun(@times,Csim,B1'),2),[n,horizons+1]);
+IRFSVARIV(:,:,2) = reshape(sum(bsxfun(@times,Ccumsim,B1'),2),[n,horizons+1]);
 
 end
 

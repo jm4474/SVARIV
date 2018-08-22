@@ -1,7 +1,10 @@
 %% This script file implements standard and weak-IV robust SVAR-IV inference.
-% This is a test version to see whether the SVARIV_Luigi function is working: August 20th, 2018
-% Comment: We have tested this script on a Macbook Pro 
- 
+% This is a test version to see whether the SVARIV_General function is working: August 20th, 2018
+%Comment: We have tested this function on an iMac 
+%         @3.4 GHz Intel Core i5 (16 GB 2400 MHz DDR4)
+%         Running Matlab R2018a.
+%         This script runs in about 3.5 seconds. 
+tic 
 direct = pwd;
 
 %% 1) Set number of VAR Lags, Newey West lags and confidence level.
@@ -37,13 +40,21 @@ scale       = -1; % Scale of the shock
 horizons    = 5; %Number of horizons for the Impulse Response Functions(IRFs)
                  %(does not include the impact or horizon 0)
                  
-IRFselect   = [1, 3, 2, 4];
+IRFselect   = [2,4];
 % By default, the program generates a single figure with the IRFs for ALL variables
 % in the VAR. However, IRFselect allows the user to generate an indepedent
 % figure displaying only some specific variables of interest. 
-% The program also saves the IRFs in IRFselect as separate .eps files (To Do)
+% The program also saves the IRFs in IRFselect as separate .eps files 
 
 % Make sure to match the indices above and to the variables in your
+% dataset. E.g. the above vector will select the variables "AMTR,
+% Log Real GDP, Inflation and DLOG RDEBT."
+
+cumselect = [3,5]; 
+%cumselect allows the user to generate cumulative IRF plots displaying only 
+%some specific variables of interest. 
+
+% Make sure to match the indices above to the variables in your
 % dataset. E.g. the above vector will select the variables "AMTR,
 % Log Real GDP, Inflation and DLOG RDEBT."
 
@@ -72,7 +83,9 @@ cd(strcat(pwd,'/Data'));
     z                                   = xlsread('ExtIV',...
                                           'A2:A60');
                                         %External IV, not included in the VAR. 59x1 vector.
-                                      
+
+dataset_name = 'ALL(PS2003)'; %Input name of dataset, this will be used when creating names of data files and plots                                        
+                                        
 cd ..
  
 %% 3) Test
@@ -82,27 +95,31 @@ disp('-')
 disp('Section 3 in this script calls the SVARIV_General function')
 
 savdir = strcat(direct,'/Output');  %selected directory where the output files will be saved
- 
+
+addpath(strcat(direct,'/functions/MasterFunction')); 
+
 addpath(strcat(direct,'/functions/Inference'));
 
-[Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time);
+[Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time, dataset_name);
  
 % A more in depth description of the function can be found within the
 % function file. For clarity purposes, we briefly describe the function
 % below:
 %
 % -Inputs:
-%       p:           Number of lags in the VAR model                                                (1 times 1)                                          
-%       confidence:  Value for the standard and weak-IV robust confidence set                       (1 times 1) 
-%       ydata:       Endogenous variables from the VAR model                                        (T times n) 
-%       z:           External instrumental variable                                                 (T times 1)
-%       NWlags:      Newey-West lags                                                                (1 times 1)
-%       norm:        Variable used for normalization                                                (1 times 1)
-%       scale:       Scale of the shock                                                             (1 times 1)
-%       horizons:    Number of horizons for the Impulse Response Functions(IRFs)                    (1 times 1)
-%       savdir:      Directory where the figures generated will be saved                            (String)
-%       columnnames: Vector with the names for the endogenous variables, in the same order as ydata (1 times n)
-%       time:        Time unit for the dataset (e.g. year, month, etc.)                             (String)
+%       p:            Number of lags in the VAR model                                                    (1 times 1)                                          
+%       confidence:   Value for the standard and weak-IV robust confidence set                           (1 times 1) 
+%       ydata:        Endogenous variables from the VAR model                                            (T times n) 
+%       z:            External instrumental variable                                                     (T times 1)
+%       NWlags:       Newey-West lags                                                                    (1 times 1)
+%       norm:         Variable used for normalization                                                    (1 times 1)
+%       scale:        Scale of the shock                                                                 (1 times 1)
+%       horizons:     Number of horizons for the Impulse Response Functions(IRFs)                        (1 times 1)
+%       savdir:       Directory where the figures generated will be saved                                (String)
+%       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 times n)
+%       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 times q)
+%       time:         Time unit for the dataset (e.g. year, month, etc.)                                 (String)
+%       dataset_name: The name of the dataset used for generating the figures (used in the output label) (String)
 %
 % -Output:
 %       Plugin: Structure containing standard plug-in inference
@@ -125,8 +142,6 @@ disp('Section 4 in this script samples from the asy dist of the reduced-form par
 
 disp('Standard inference based on sampling from the asy. dist. takes only:')  
 
-tic;
-
 n            = size(ydata, 2);  %number of variables in the VAR
 
 T  = size(ydata, 1);            % Number of observations/time periods.
@@ -139,17 +154,12 @@ SVARinp.ydata = ydata;
 
 SVARinp.n = n;
 
-addpath('functions/StructuralIRF');
+addpath('functions/Inference');
 
 [~,InferenceMSW.bootsIRFs] = ...
                   Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T,...
-                  @IRFSVARIV, SVARinp, NWlags);
+                  @IRFSVARIV, SVARinp, NWlags, RForm);
               
-              
-
-toc;
-
-%RForm.AL(:),RForm.V*RForm.Sigma(:),RForm.Gamma(:), RForm.WHatall
 
 %% 5) Comparison of "standard" bootstrap inference and the delta-method
 
@@ -178,7 +188,7 @@ for iplot = 1:n
     
     plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
     
-    g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2),':b'); hold on
+    g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,1),':b'); hold on
     
     dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
     
@@ -186,7 +196,7 @@ for iplot = 1:n
     
     h1    = plot(0:1:horizons,dmub,'--b'); hold on
     
-    g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1),':b'); hold on
+    g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,1),':b'); hold on
     
     h2    = plot(0:1:horizons,lmub,'--b'); hold on
     
@@ -247,7 +257,7 @@ end
  
 cd(strcat(direct,'/Output/Mat'));
  
-output_label = strcat('_p=',num2str(p),'_ALL(PS2003)_',...
+output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
                'bootstrap_', num2str(100*confidence));
  
 save(strcat('IRF_SVAR',output_label,'.mat'));
@@ -259,3 +269,71 @@ cd(strcat(direct,'/Output/Figs'));
 print(gcf,'-depsc2',strcat('IRF_SVAR',output_label,'.eps'));
  
 cd(direct);
+
+
+%% 7)Comparison of "standard" bootstrap inference and the delta-method (Selected Cumulative) 
+
+figure(4)
+ 
+plots.order     = 1:length(cumselect);
+ 
+caux            = norminv(1-((1-confidence)/2),0,1);
+
+for i = 1:length(cumselect) 
+
+    iplot = cumselect(i);
+    
+    if length(cumselect) > ceil(sqrt(length(cumselect))) * floor(sqrt(length(cumselect)))
+            
+        subplot(ceil(sqrt(length(cumselect))),ceil(sqrt(length(cumselect))),plots.order(1,i));
+    
+    else
+        
+        subplot(ceil(sqrt(length(cumselect))),floor(sqrt(length(cumselect))),plots.order(1,i));
+        
+    end
+    
+    plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+    
+    g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,2),':b'); hold on
+    
+    dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+    
+    lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+    
+    h1    = plot(0:1:horizons,dmub,'--b'); hold on
+    
+    g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,2),':b'); hold on
+    
+    h2    = plot(0:1:horizons,lmub,'--b'); hold on
+    
+    clear dmub lmub
+    
+    h3 = plot([0 5],[0 0],'black'); hold off
+    
+    xlabel(time)
+    
+    title(columnnames(iplot));
+    
+    xlim([0 horizons]);
+    
+    if iplot == 1
+        
+        legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
+            'D-Method C.I.')
+        
+        set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        legend boxoff
+        
+        legend('location','southeast')
+     
+    end
+    
+    
+end
+toc

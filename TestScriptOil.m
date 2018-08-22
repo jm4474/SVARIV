@@ -25,14 +25,14 @@ columnnames = [{'Percent Change in Global Crude Oil Production'}, ...
 
 time        = 'Month';  % Time unit for the dataset (e.g. year, month, etc).
 
-NWlags      = 8;  % Newey-West lags(if it is neccessary to account for time series autocorrelation)
+NWlags      = 0;  % Newey-West lags(if it is neccessary to account for time series autocorrelation)
                   % (set it to 0 to compute heteroskedasticity robust std errors)
 
 norm        = 1; % Variable used for normalization
 
-scale       = -1; % Scale of the shock
+scale       = -20; % Scale of the shock
 
-horizons    = 5; %Number of horizons for the Impulse Response Functions(IRFs)
+horizons    = 20; %Number of horizons for the Impulse Response Functions(IRFs)
                  %(does not include the impact or horizon 0)
                  
 IRFselect   = [1, 2];
@@ -70,10 +70,7 @@ cd(strcat(pwd,'/5MSW_November_2016/2data'));
     
     years = xlsread('time');
     
-    
-
-
-
+dataset_name = "OilData";
 cd(direct)
  
 %% 3) Test
@@ -83,10 +80,12 @@ disp('-')
 disp('Section 3 in this script calls the SVARIV_General function and samples from the asy dist of the reduced-form parameters to conduct "standard" inference.')
 
 savdir = strcat(direct,'/Output');  %selected directory where the output files will be saved
- 
+
+addpath(strcat(direct,'/functions/MasterFunction'));
+
 addpath(strcat(direct,'/functions/Inference'));
 
-[Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time);
+[Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time, dataset_name);
  
 % A more in depth description of the function can be found within the
 % function file. For clarity purposes, we briefly describe the function
@@ -129,6 +128,8 @@ n            = RForm.n;  %number of variables in the VAR
 T  = size(ydata, 2); % Number of observations/time periods.
 
 NB = 1000;           % Number of bootstrap repliactions 
+
+addpath('functions/Inference');
 
 [~,InferenceMSW.bootsIRFs] = ...
                   Gasydistboots(seed, 1000, n, p, norm, scale, horizons, confidence, T,...

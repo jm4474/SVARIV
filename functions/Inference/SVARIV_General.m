@@ -1,22 +1,23 @@
-function [Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time)
+function [Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time, dataset_name, RForm)
 % Implements standard and weak-IV robust SVAR-IV inference.
 %-Syntax:
 %       [Plugin, InferenceMSW, Chol] = SVARIV_Luigi(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir)
 % -Inputs:
-%       p:           Number of lags in the VAR model                                                (1 times 1)                                          
-%       confidence:  Value for the standard and weak-IV robust confidence set                       (1 times 1) 
-%       ydata:       Endogenous variables from the VAR model                                        (T times n) 
-%       z:           External instrumental variable                                                 (T times 1)
-%       NWlags:      Newey-West lags                                                                (1 times 1)
-%       norm:        Variable used for normalization                                                (1 times 1)
-%       scale:       Scale of the shock                                                             (1 times 1)
-%       horizons:    Number of horizons for the Impulse Response Functions (IRFs) 
-%                    (does not include the impact horizon 0)                                      (1 times 1)
-%       savdir:      Directory where the figures generated will be saved                            (String)
-%       columnnames: Vector with the names for the endogenous variables, in the same order as ydata (1 times n)
-%       IRFselect:   Indices for the variables that the user wants separate IRF plots for           (1 times q)
-%       time:        Time unit for the dataset (e.g. year, month, etc.)                             (String)
-%       RForm:       Structure containing the reduced form estimates (more details below).         (Structure)
+%       p:            Number of lags in the VAR model                                                    (1 times 1)                                          
+%       confidence:   Value for the standard and weak-IV robust confidence set                           (1 times 1) 
+%       ydata:        Endogenous variables from the VAR model                                            (T times n) 
+%       z:            External instrumental variable                                                     (T times 1)
+%       NWlags:       Newey-West lags                                                                    (1 times 1)
+%       norm:         Variable used for normalization                                                    (1 times 1)
+%       scale:        Scale of the shock                                                                 (1 times 1)
+%       horizons:     Number of horizons for the Impulse Response Functions (IRFs) 
+%                     (does not include the impact horizon 0)                                            (1 times 1)
+%       savdir:       Directory where the figures generated will be saved                                (String)
+%       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 times n)
+%       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 times q)
+%       time:         Time unit for the dataset (e.g. year, month, etc.)                                 (String)
+%       RForm_user:   Structure containing the reduced form estimates (more details below).              (Structure)
+%       dataset_name: The name of the dataset used for generating the figures (used in the output label) (String)
 %
 % -Output:
 %       PLugin:       Structure containing standard plug-in inference
@@ -26,11 +27,6 @@ function [Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p,confidence, ydat
 %
 % Note: this function calls the functions MSWFunction, RForm_VAR, CovAhat_Sigmahat_Gamma and jbfill
 %
-% This version: August 14th, 2018
-% Comment: We have tested this function on a Macbook Pro 
-%         @2.4 GHz Intel Core i7 (8 GB 1600 MHz DDR3)
-%         Running Matlab R2016b.
-%         This script runs in about 10 seconds.
 %
 % Note: Note: By default the function estimates the reduced form, but you can
 % provide your estimates with a RForm structure. For that, the user must
@@ -77,7 +73,7 @@ disp('(created by Karel Mertens and Jose Luis Montiel Olea)')
 
 disp('(output saved in the "Inference.MSW" structure)')
 
-disp(strcat('The nominal confidence level is ',num2str(100*confidence),'%'))
+disp(strcat('The nominal confidence level is ', num2str(100*confidence),'%'))
  
 disp('-')
  
@@ -95,14 +91,14 @@ SVARinp.Z = z;
 
 SVARinp.n        = size(ydata,2); %number of columns(variables)
 
-RForm.p          = p; %RForm.p is the number of lags in the model
+RForm.p          = p; %RForm_user.p is the number of lags in the model
 
 %% 2) Least-squares, reduced-form estimation
 
 addpath(strcat(main_d,'/functions/RForm'));
 
 %a) Estimation of (AL, Sigma) and the reduced-form innovations
-if (nargin == 12)
+if (nargin == 13)
 
     % This essentially checks whether the user provided or not his RForm. If
     % the user didn't, then we calculate it. If the user did, we skip this section and
@@ -129,7 +125,7 @@ if (nargin == 12)
 
     RForm.n          = SVARinp.n;
 
-elseif (nargin == 13)
+elseif (nargin == 14)
 
     % We will use the user's RForm
 
@@ -170,8 +166,6 @@ dall         = d+ (n*(n+1))/2;    %This is the size of (vec(A)',vec(Sigma), Gamm
 %% 4) Compute standard and weak-IV robust confidence set suggested in MSW
  
  %Apply the MSW function
- 
-tic;
  
 addpath(strcat(main_d,'/functions/Inference'));
  
@@ -270,7 +264,7 @@ end
  
 cd(strcat(main_d,'/Output/Mat'));
  
-output_label = strcat('_p=',num2str(p),'_ALL(PS2003)_',...
+output_label = strcat('_p=',num2str(p),'_',dataset_name,'_', ...
                num2str(100*confidence));
  
 save(strcat('IRF_SVAR',output_label,'.mat'),...
@@ -362,7 +356,7 @@ for i = 1:length(IRFselect)
 
     iplot = IRFselect(i);
     
-    figure(3+i);
+    figure(4+i);
     
     plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
     
@@ -419,13 +413,13 @@ for i = 1:length(IRFselect)
  
     cd(strcat(main_d,'/Output/MatIRFselect'));
  
-    output_label = strcat('_p=',num2str(p),'_ALL(PS2003)_',...
+    output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
                     num2str(100*confidence), '_', num2str(iplot));
  
     save(strcat('IRF_SVAR',output_label,'.mat'),...
         'InferenceMSW','Plugin','RForm','SVARinp');
  
-    figure(3+i)
+    figure(4+i)
  
     cd(strcat(main_d,'/Output/FigsIRFselect'));
  
