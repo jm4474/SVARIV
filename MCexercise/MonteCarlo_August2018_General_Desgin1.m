@@ -472,6 +472,8 @@ namdir = strcat(date,'_','K','_','p=',num2str(MC.p),num2str(confidence),'_Design
 
 output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)),'.eps');
 
+save_count = 1;
+
 if exist(namdir,'dir')
     
     cd(namdir);
@@ -486,11 +488,15 @@ end
 
 figure(graphcount-1)
 
-print(gcf,'-depsc2',strcat(num2str(graphcount-1),'MC_Coverage_Cumulative_', output_label));
+print(gcf,'-depsc2',strcat(num2str(save_count),'MC_Coverage_Cumulative_', output_label));
+
+save_count = save_count + 1;
 
 figure(graphcount-2)
 
-print(gcf,'-depsc2',strcat(num2str(graphcount-2),'MC_Coverage_', output_label));
+print(gcf,'-depsc2',strcat(num2str(save_count),'MC_Coverage_', output_label));
+
+save_count = save_count + 1;
 
 save(strcat('MC_Coverage_',dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)),'.mat'));
 
@@ -652,7 +658,9 @@ for i = 1:(length(cumselect))
     
     figure(graphcount - i)
     
-    print(gcf,'-depsc2',strcat(num2str(graphcount-i),'MC_Coverage_Separate_Cumulative_', output_label));
+    print(gcf,'-depsc2',strcat(num2str(save_count),'MC_Coverage_Separate_Cumulative_', output_label));
+    
+    save_count = save_count + 1;
 
 end
 
@@ -660,7 +668,9 @@ for i = length(cumselect)+1:(length(IRFselect)+length(cumselect))
     
     figure(graphcount - i)
 
-    print(gcf,'-depsc2',strcat(num2str(graphcount-i),'MC_Coverage_Separate_', output_label, num2str(graphcount-i)));
+    print(gcf,'-depsc2',strcat(num2str(save_count),'MC_Coverage_Separate_', output_label, num2str(graphcount-i)));
+    
+    save_count = save_count + 1;
     
 end
 

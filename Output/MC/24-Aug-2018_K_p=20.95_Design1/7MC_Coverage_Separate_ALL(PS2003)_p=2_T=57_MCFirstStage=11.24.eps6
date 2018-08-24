@@ -1,7 +1,7 @@
 %!PS-Adobe-3.0 EPSF-3.0
 %%Creator: (MATLAB, The Mathworks, Inc. Version 9.4.0.813654 \(R2018a\). Operating System: Mac OS X)
-%%Title: ./8MC_Coverage_Separate_ALL\(PS2003\)_p=2_T=57_MCFirstStage=11.24.eps8
-%%CreationDate: 2018-08-24T16:56:29
+%%Title: ./7MC_Coverage_Separate_ALL\(PS2003\)_p=2_T=57_MCFirstStage=11.24.eps6
+%%CreationDate: 2018-08-24T17:25:29
 %%Pages: (atend)
 %%BoundingBox:    35    17   511   402
 %%LanguageLevel: 2
@@ -1069,13 +1069,13 @@ GS
 /Helvetica-Bold 11 F
 GS
 [1 0 0 1 0 0] CT
--169.5 -3 moveto 
+-147 -3 moveto 
 1 -1 scale
-(Unemployment Rate1000MC draws, T=57, MC First Stage=11.24\)) t 
+(Log Income1000MC draws, T=57, MC First Stage=11.24\)) t 
 GR
 GR
 GS
-[1 0 0 1 73 106.85001] CT
+[1 0 0 1 73 102.73998] CT
 0 0.447 0.741 RC
 10.0 ML
 N
@@ -1088,7 +1088,7 @@ cp
 S
 GR
 GS
-[1 0 0 1 181.5 99.31499] CT
+[1 0 0 1 181.5 110.96] CT
 0 0.447 0.741 RC
 10.0 ML
 N
@@ -1101,7 +1101,7 @@ cp
 S
 GR
 GS
-[1 0 0 1 290 102.73998] CT
+[1 0 0 1 290 113.01501] CT
 0 0.447 0.741 RC
 10.0 ML
 N
@@ -1114,7 +1114,7 @@ cp
 S
 GR
 GS
-[1 0 0 1 398.5 78.08001] CT
+[1 0 0 1 398.5 97.945] CT
 0 0.447 0.741 RC
 10.0 ML
 N
@@ -1127,7 +1127,7 @@ cp
 S
 GR
 GS
-[1 0 0 1 507 68.49001] CT
+[1 0 0 1 507 80.13499] CT
 0 0.447 0.741 RC
 10.0 ML
 N
@@ -1140,7 +1140,7 @@ cp
 S
 GR
 GS
-[1 0 0 1 73 108.21999] CT
+[1 0 0 1 73 110.27501] CT
 1 0 0 RC
 10.0 ML
 N
@@ -1151,7 +1151,7 @@ N
 S
 GR
 GS
-[1 0 0 1 181.5 109.59001] CT
+[1 0 0 1 181.5 135.62001] CT
 1 0 0 RC
 10.0 ML
 N
@@ -1162,7 +1162,7 @@ N
 S
 GR
 GS
-[1 0 0 1 290 103.42501] CT
+[1 0 0 1 290 145.21001] CT
 1 0 0 RC
 10.0 ML
 N
@@ -1173,7 +1173,7 @@ N
 S
 GR
 GS
-[1 0 0 1 398.5 77.39498] CT
+[1 0 0 1 398.5 132.88] CT
 1 0 0 RC
 10.0 ML
 N
@@ -1184,7 +1184,7 @@ N
 S
 GR
 GS
-[1 0 0 1 507 69.85999] CT
+[1 0 0 1 507 106.85001] CT
 1 0 0 RC
 10.0 ML
 N
