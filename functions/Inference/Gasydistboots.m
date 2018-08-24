@@ -4,7 +4,7 @@ function [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons
 %    [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confidence, vecAL, vechSigma, Gamma, Whatall)
 %  -Inputs:
 %     seed: seed structure  
-%        I: number of samples from the asymptotic distribution
+%       NB: number of samples from the asymptotic distribution
 %        n: number of variables in the VAR
 %        p: number of lags in the VAR
 %     norm: normalizing variable

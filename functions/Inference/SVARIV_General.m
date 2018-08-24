@@ -15,8 +15,7 @@ function [Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV_General(p,con
 %       savdir:       Directory where the figures generated will be saved                                (String)
 %       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 times n)
 %       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 times q)
-%       cumselect:    Indices for the variables that the user wants
-%                     cumulative IRF plots for
+%       cumselect:    Indices for the variables that the user wants cumulative IRF plots for
 %       time:         Time unit for the dataset (e.g. year, month, etc.)                                 (String)
 %       RForm_user:   Structure containing the reduced form estimates (more details below).              (Structure)
 %       dataset_name: The name of the dataset used for generating the figures (used in the output label) (String)
@@ -367,7 +366,7 @@ clear plots output_label labelstrs dtype
 
 %% 7) Select the Impulse Response Functions and plot them in one figure
 
-figureorder = figureorder+1;
+figureorder = figureorder + 1;
 
 figure(figureorder)
  
@@ -441,7 +440,7 @@ for i = 1:length(IRFselect)
 
     iplot = IRFselect(i);
     
-    figureorder = figureorder + i; 
+    figureorder = figureorder + 1; 
     
     figure(figureorder);
     
@@ -513,11 +512,7 @@ for i = 1:length(IRFselect)
     print(gcf,'-depsc2',strcat('IRF_SVAR',output_label,'.eps'));
  
     cd(main_d);
-    
-    if i ~= length(IRFselect)
-        figureorder = figureorder - 1; 
-    end 
-    
+ 
 end
 
 clear plots output_label labelstrs dtype
@@ -598,7 +593,7 @@ for i = 1:length(cumselect)
 
     iplot = cumselect(i);
     
-    figureorder = figureorder + i;
+    figureorder = figureorder + 1;
     
     figure(figureorder);
     
@@ -670,11 +665,7 @@ for i = 1:length(cumselect)
     print(gcf,'-depsc2',strcat('IRF_SVAR_CUM',output_label,'.eps'));
  
     cd(main_d);
-    
-    if i ~= length(cumselect)
-        figureorder = figureorder - 1;
-    end
-    
+  
 end
 
 clear plots output_label main_d labelstrs dtype
