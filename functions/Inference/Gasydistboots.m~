@@ -121,7 +121,7 @@ ndraws     = size(Draws,2);
      
 pdSigma    = zeros(1,ndraws);
 
-IRFs       = zeros(n, horizons+1, ndraws, 2);
+IRFs       = zeros(RForm.n, horizons+1, ndraws, 2);
 
 for idraws = 1:ndraws
     

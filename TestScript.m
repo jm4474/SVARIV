@@ -100,7 +100,7 @@ addpath(strcat(direct,'/functions/MasterFunction'));
 
 addpath(strcat(direct,'/functions/Inference'));
 
-[Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time, dataset_name);
+[Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
  
 % A more in depth description of the function can be found within the
 % function file. For clarity purposes, we briefly describe the function
@@ -158,7 +158,7 @@ addpath('functions/Inference');
 
 [~,InferenceMSW.bootsIRFs] = ...
                   Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T,...
-                  @IRFSVARIV, SVARinp, NWlags, RForm);
+                  @IRFSVARIV, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall);
               
 
 %% 5) Comparison of "standard" bootstrap inference and the delta-method
@@ -167,7 +167,10 @@ disp('-')
 
 disp('Finally, section 5 compares inference based on sampling from the asy-dist with delta-method inference')
 
-figure(3)
+%Non-cumulative graphs 
+figureorder = figureorder + 1; 
+
+figure(figureorder)
 
 plots.order     = [1:n];
 
@@ -202,11 +205,77 @@ for iplot = 1:n
     
     clear dmub lmub
     
-    h3 = plot([0 5],[0 0],'black'); hold off
+    h3 = plot([0 horizons],[0 0],'black'); hold off
     
     xlabel(time)
     
     title(columnnames(iplot));
+    
+    xlim([0 horizons]);
+    
+    if iplot == 1
+        
+        legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
+            'D-Method C.I.')
+        
+        set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        legend boxoff
+        
+        legend('location','southeast')
+     
+    end
+    
+            
+end
+
+%Cumulative graphs 
+figureorder = figureorder + 1; 
+
+figure(figureorder)
+
+plots.order     = [1:n];
+
+caux            = norminv(1-((1-confidence)/2),0,1);
+
+for iplot = 1:n
+    
+    if n > ceil(sqrt(n)) * floor(sqrt(n))
+            
+        subplot(ceil(sqrt(n)),ceil(sqrt(n)),plots.order(1,iplot));
+    
+    else
+        
+        subplot(ceil(sqrt(n)),floor(sqrt(n)),plots.order(1,iplot));
+        
+    end
+    
+    
+    plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+    
+    g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,2),':b'); hold on
+    
+    dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+    
+    lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+    
+    h1    = plot(0:1:horizons,dmub,'--b'); hold on
+    
+    g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,2),':b'); hold on
+    
+    h2    = plot(0:1:horizons,lmub,'--b'); hold on
+    
+    clear dmub lmub
+    
+    h3 = plot([0 horizons],[0 0],'black'); hold off
+    
+    xlabel(time)
+    
+    title(strcat('Cumulative',{' '},columnnames(iplot)));
     
     xlim([0 horizons]);
     
@@ -254,7 +323,8 @@ if exist(figs,'dir')==0
     mkdir(figs)
         
 end
- 
+
+%Saving noncumulative plots
 cd(strcat(direct,'/Output/Mat'));
  
 output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
@@ -262,18 +332,197 @@ output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
  
 save(strcat('IRF_SVAR',output_label,'.mat'));
  
-figure(3)
+figure(figureorder-1)
  
 cd(strcat(direct,'/Output/Figs'));
  
 print(gcf,'-depsc2',strcat('IRF_SVAR',output_label,'.eps'));
  
+%Saving cumulative plots
+
+cd(strcat(direct,'/Output/Mat'));
+ 
+output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
+               'bootstrap_', num2str(100*confidence));
+ 
+save(strcat('IRF_SVAR_CUM',output_label,'.mat'));
+ 
+figure(figureorder)
+ 
+cd(strcat(direct,'/Output/Figs'));
+ 
+print(gcf,'-depsc2',strcat('IRF_SVAR_CUM',output_label,'.eps'));
+ 
 cd(direct);
 
+%% 7)Comparison of "standard" bootstrap inference and the delta-method (Selected IRF) 
 
-%% 7)Comparison of "standard" bootstrap inference and the delta-method (Selected Cumulative) 
+figureorder = figureorder + 1; 
 
-figure(4)
+figure(figureorder)
+ 
+plots.order     = 1:length(IRFselect);
+ 
+caux            = norminv(1-((1-confidence)/2),0,1);
+
+for i = 1:length(IRFselect) 
+
+    iplot = IRFselect(i);
+    
+    if length(IRFselect) > ceil(sqrt(length(IRFselect))) * floor(sqrt(length(IRFselect)))
+            
+        subplot(ceil(sqrt(length(IRFselect))),ceil(sqrt(length(IRFselect))),plots.order(1,i));
+    
+    else
+        
+        subplot(ceil(sqrt(length(IRFselect))),floor(sqrt(length(IRFselect))),plots.order(1,i));
+        
+    end
+    
+    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+    
+    g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,1),':b'); hold on
+    
+    dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+    
+    lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+    
+    h1    = plot(0:1:horizons,dmub,'--b'); hold on
+    
+    g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,1),':b'); hold on
+    
+    h2    = plot(0:1:horizons,lmub,'--b'); hold on
+    
+    clear dmub lmub
+    
+    h3 = plot([0 horizons],[0 0],'black'); hold off
+    
+    xlabel(time)
+    
+    title(columnnames(iplot));
+    
+    xlim([0 horizons]);
+    
+    if i == 1
+        
+        legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
+            'D-Method C.I.')
+        
+        set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        legend boxoff
+        
+        legend('location','southeast')
+     
+    end
+    
+    
+end
+
+%% 8) Generating separate bootstrap inference and delta method comparison for selected IRF and saving them to different folder
+ 
+plots.order     = 1:length(IRFselect);
+ 
+caux            = norminv(1-((1-confidence)/2),0,1);
+
+for i = 1:length(IRFselect) 
+
+    iplot = IRFselect(i);
+    
+    figureorder = figureorder + i; 
+   
+    figure(figureorder);
+    
+    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+    
+    g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,1),':b'); hold on
+    
+    dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+    
+    lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+    
+    h1    = plot(0:1:horizons,dmub,'--b'); hold on
+    
+    g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,1),':b'); hold on
+    
+    h2    = plot(0:1:horizons,lmub,'--b'); hold on
+    
+    clear dmub lmub
+    
+    h3 = plot([0 horizons],[0 0],'black'); hold off
+    
+    xlabel(time)
+    
+    title(columnnames(iplot));
+    
+    xlim([0 horizons]);
+    
+    legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
+            'D-Method C.I.')
+        
+    set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+    set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+    set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+    legend boxoff
+        
+    legend('location','southeast')
+    
+    %Check if the Output File exists, and if not create one.
+
+    MatBootIRFselect = strcat(savdir, '/Mat/MatBootIRFselect');
+
+    if exist(MatBootIRFselect,'dir')==0
+    
+        mkdir(MatBootIRFselect)
+    
+    end
+
+    FigsBootIRFselect = strcat(savdir, '/Figs/FigsBootIRFselect');
+
+    if exist(FigsBootIRFselect,'dir')==0
+    
+        mkdir(FigsBootIRFselect)
+    
+    end
+ 
+    cd(strcat(direct,'/Output/Mat/MatBootIRFselect'));
+ 
+    output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
+               'bootstrap_', num2str(100*confidence), '_', num2str(iplot));
+ 
+    save(strcat('IRF_SVAR',output_label,'.mat'),...
+        'InferenceMSW','Plugin','RForm','SVARinp');
+ 
+    figure(figureorder)
+ 
+    cd(strcat(direct,'/Output/Figs/FigsBootIRFselect'));
+ 
+    print(gcf,'-depsc2',strcat('IRF_SVAR',output_label,'.eps'));
+ 
+    cd(direct);
+    
+    if i ~= length(IRFselect)
+        figureorder = figureorder - 1;
+    end
+    
+    
+end
+
+clear plots output_label labelstrs dtype
+
+
+%% 9) Comparison of "standard" bootstrap inference and the delta-method (Selected Cumulative) 
+
+figureorder = figureorder + 1; 
+
+figure(figureorder)
  
 plots.order     = 1:length(cumselect);
  
@@ -313,11 +562,11 @@ for i = 1:length(cumselect)
     
     xlabel(time)
     
-    title(columnnames(iplot));
+    title(strcat('Cumulative','{ }',columnnames(iplot)))
     
     xlim([0 horizons]);
     
-    if iplot == 1
+    if i == 1
         
         legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
             'D-Method C.I.')
@@ -336,4 +585,99 @@ for i = 1:length(cumselect)
     
     
 end
+
+%% 10) Generating separate bootstrap inference and delta method comparison for selected cumulative IRF and saving them to different folder
+ 
+plots.order     = 1:length(cumselect);
+ 
+caux            = norminv(1-((1-confidence)/2),0,1);
+
+for i = 1:length(cumselect) 
+
+    iplot = cumselect(i);
+    
+    figureorder = figureorder + i; 
+   
+    figure(figureorder);
+    
+    plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+    
+    g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,2),':b'); hold on
+    
+    dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+    
+    lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+    
+    h1    = plot(0:1:horizons,dmub,'--b'); hold on
+    
+    g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,2),':b'); hold on
+    
+    h2    = plot(0:1:horizons,lmub,'--b'); hold on
+    
+    clear dmub lmub
+    
+    h3 = plot([0 horizons],[0 0],'black'); hold off
+    
+    xlabel(time)
+    
+    title(strcat('Cumulative','{ }',columnnames(iplot)))
+    
+    xlim([0 horizons]);
+    
+    legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
+            'D-Method C.I.')
+        
+    set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+    set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+    set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+    legend boxoff
+        
+    legend('location','southeast')
+    
+    %Check if the Output File exists, and if not create one.
+
+    MatBootIRFCUMselect = strcat(savdir, '/Mat/MatBootIRFCUMselect');
+
+    if exist(MatBootIRFCUMselect,'dir')==0
+    
+        mkdir(MatBootIRFCUMselect)
+    
+    end
+
+    FigsBootIRFCUMselect = strcat(savdir, '/Figs/FigsBootIRFCUMselect');
+
+    if exist(FigsBootIRFCUMselect,'dir')==0
+    
+        mkdir(FigsBootIRFCUMselect)
+    
+    end
+ 
+    cd(strcat(direct,'/Output/Mat/MatBootIRFCUMselect'));
+ 
+    output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
+               'bootstrap_', num2str(100*confidence), '_', num2str(iplot));
+ 
+    save(strcat('IRF_SVAR_CUM',output_label,'.mat'),...
+        'InferenceMSW','Plugin','RForm','SVARinp');
+ 
+    figure(figureorder)
+ 
+    cd(strcat(direct,'/Output/Figs/FigsBootIRFCUMselect'));
+ 
+    print(gcf,'-depsc2',strcat('IRF_SVAR_CUM',output_label,'.eps'));
+ 
+    cd(direct);
+    
+    if i ~= length(IRFselect)
+        figureorder = figureorder - 1;
+    end
+    
+    
+end
+
+clear plots output_label labelstrs dtype
+
 toc
