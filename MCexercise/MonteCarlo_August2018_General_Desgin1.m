@@ -6,8 +6,7 @@
 
 % This script implements a Monte-Carlo study to analyze the finite-sample
 % coverage of the confidence interval suggested by Montiel-Olea, Stock,
-% and Watson (2016). The Monte Carlo design is explained in our paper.
-%(see MC design 1)
+% and Watson (2018). 
 
 % The script takes approximately 380 seconds in MacBook Pro @ 2.4
 % 2.4 GHz Intel Core i7 with 8 GB in Memory (OSX High Sierra)
@@ -52,33 +51,32 @@ scale        = -1;  % Scale of the shock
 
 auxparamMC   = 1;   % Controls the size of the first-stage in the MC
      
-NWlags       = 0; % Newey-West lags(if it is neccessary to account for time series autocorrelation)
-                  % (set it to 0 to compute heteroskedasticity robust std errors)
+NWlags       = 0;   % Newey-West lags(if it is neccessary to account for time series autocorrelation)
+                    % (set it to 0 to compute heteroskedasticity robust std errors)
 
-confidence = 0.95; % Confidence Level
+confidence   = 0.95;% Confidence Level
 
-norm = 1; %variable defining the normalization 
+norm         = 1;   %variable defining the normalization 
 
-dataset_name = 'ALL(PS2003)'; %Input name of dataset, this will be used when creating names of data files and plots                                        
+dataset_name = 'ALL(PS2003)'; 
+                    %Input name of dataset, this will be used when creating names of data files and plots                                        
 
-IRFselect = [1,2,3,4];
-% By default, the program generates a single figure with the IRFs for ALL variables
+IRFselect    = [1,2,3,4];
+% By default, the program generates a single figure with the MC coverage for ALL variables
 % in the VAR. However, IRFselect allows the user to generate an indepedent
-% figure displaying only some specific variables of interest. 
-% The program also saves the IRFs in IRFselect as separate .eps files 
+% figure displaying the coverage of some specific variables of interest. 
+% The program also saves the the coverage plots for the variables in IRFselect as separate .eps files 
 
 % Make sure to match the indices above and to the variables in your
-% dataset. E.g. the above vector will select the variables "Log income
-% and "Unemployment Rate"
+% dataset. E.g. the above vector will select the variables 
+% "Log(1/1-AMTR)","Log income", "Log Real GDP", "Unemployment Rate"
 
-cumselect = [3,5];
-% cumselect allows the user to generate cumulative IRF plots displaying  
-% specific variables of interest. 
+cumselect = [];
+% cumselect allows the user to generate the coverge for cumulative IRFs of
+% interest
 
 % Make sure to match the indices above to the variables in your
-% dataset. E.g. the above vector will select the variables " Log Real GDP
-% and Inflation."
-
+% dataset. 
 
 %% 2) Loading the main inputs for the Monte-Carlo design
 %--------------------------------------
@@ -86,6 +84,9 @@ cumselect = [3,5];
 %--------------------------------------  
 
 RForm    = load('Data/Tax_RForm.mat');
+                      %Reduced-form parameters for the MC
+                      %These can be obtained by running TestScript and
+                      %saving the RForm structure. 
 
 MC.mu    = RForm.mu;  %vector of means; n x 1
 
@@ -132,13 +133,9 @@ MC.alpha        = MC.alphaaux;
 
 MC.impliedcorr  = MC.alpha./((MC.varZ^.5).*MC.D(1,1));
 
-%MC.impliedfirststage ...
-%         = MC.T*((MC.alpha*MC.B(1,1))^2)./MC.sigma2Gamma1;
-     
-%MC.impliedfirststagelim...
-%         = MC.T*((MC.alpha*MC.B(1,1))^2)./(MC.Sigma(1,1)*((MC.muZ)^2+MC.varZ));     
-
 MC.sigmav       = (MC.varZ-(((auxparamMC*MC.alpha).^2)/MC.D(1,1)))^.5;     
+                % Note that auxparamMC cannot be too large, otherwise
+                % the sigmav becomes the square root of a negative number
 
 clear Z;
     
@@ -282,7 +279,7 @@ for mcdraw = 1:MCdraws
     %ii)The T times 1 vector ZMC
 
     %These are the inputs required to construct the confidence interval
-    %in Montiel-Olea, Stock, and Watson 2016
+    %in Montiel-Olea, Stock, and Watson 2018
 
     %% 9) Use YMC in MC data to estimate the reduced-form parameters
     %for the MC run.
@@ -437,7 +434,7 @@ for i = 1:2
         
         plot(mean(coverageMCdmethod(iplot,:,:,i),3),'rx'); hold off
         
-        axis([1 MC.hori .5 1]);
+        axis([1 MC.hori 0 1]);
         
         xlabel('Months after the shock');
         
@@ -446,7 +443,8 @@ for i = 1:2
         if i == 1
         
             title(strcat(varNames(iplot),num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')'));
-       
+            %For non-cumulative plots, we do not include this labe in the
+            %title
         else
             
             title(strcat('Cumulative', {' '},varNames(iplot),num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')'));
@@ -456,13 +454,6 @@ for i = 1:2
     end
     
 end
-
-
-%%the command ¡°round(MC.alpha,2)¡± is not available for the MATLAB 2014a but
-%%is viable and also recommended in later version, like MATLAB 2015a.
-%%In older version, the user should use the ¡°roundn(X,-N)¡± syntax of the MATLAB
-%%ROUND function instead. 
-%%Note that the sign of N is reversed: ¡°round(X,N)¡± should be replaced with ¡°roundn(X,-N)¡±.
 
 %% 14) Save Coverage Plot
 
