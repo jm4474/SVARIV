@@ -8,6 +8,11 @@
 % coverage of the confidence interval suggested by Montiel-Olea, Stock,
 % and Watson (2018). 
 
+% The design in this Monte-Carlo exercise in based on the parameters
+% estimated from a Tax SVAR, but I can easily be adapted to another
+% application by renaming the variables in Section 1 and replacing the 
+% reduced-form estimators in Section 2. 
+
 % The script takes approximately 380 seconds in MacBook Pro @ 2.4
 % 2.4 GHz Intel Core i7 with 8 GB in Memory (OSX High Sierra)
 
