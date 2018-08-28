@@ -1,4 +1,4 @@
-function [Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time, dataset_name, RForm)
+function [Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name, RForm)
 % Implements standard and weak-IV robust SVAR-IV inference.
 %-Syntax:
 %       [Plugin, InferenceMSW, Chol] = SVARIV_Luigi(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir)
@@ -15,6 +15,7 @@ function [Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p,confidence, ydat
 %       savdir:       Directory where the figures generated will be saved                                (String)
 %       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 times n)
 %       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 times q)
+%       cumselect:    Indices for the variables that the user wants cumulative IRF plots for
 %       time:         Time unit for the dataset (e.g. year, month, etc.)                                 (String)
 %       RForm_user:   Structure containing the reduced form estimates (more details below).              (Structure)
 %       dataset_name: The name of the dataset used for generating the figures (used in the output label) (String)
@@ -27,11 +28,6 @@ function [Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p,confidence, ydat
 %
 % Note: this function calls the functions MSWFunction, RForm_VAR, CovAhat_Sigmahat_Gamma and jbfill
 %
-% This version: August 14th, 2018
-% Comment: We have tested this function on a Macbook Pro 
-%         @2.4 GHz Intel Core i7 (8 GB 1600 MHz DDR3)
-%         Running Matlab R2016b.
-%         This script runs in about 10 seconds.
 %
 % Note: Note: By default the function estimates the reduced form, but you can
 % provide your estimates with a RForm structure. For that, the user must
@@ -78,7 +74,7 @@ disp('(created by Karel Mertens and Jose Luis Montiel Olea)')
 
 disp('(output saved in the "Inference.MSW" structure)')
 
-disp(strcat('The nominal confidence level is ',num2str(100*confidence),'%'))
+disp(strcat('The nominal confidence level is ', {' '}, num2str(100*confidence),'%'))
  
 disp('-')
  
@@ -103,7 +99,7 @@ RForm.p          = p; %RForm_user.p is the number of lags in the model
 addpath(strcat(main_d,'/functions/RForm'));
 
 %a) Estimation of (AL, Sigma) and the reduced-form innovations
-if (nargin == 13)
+if (nargin == 14)
 
     % This essentially checks whether the user provided or not his RForm. If
     % the user didn't, then we calculate it. If the user did, we skip this section and
@@ -130,7 +126,7 @@ if (nargin == 13)
 
     RForm.n          = SVARinp.n;
 
-elseif (nargin == 14)
+elseif (nargin == 15)
 
     % We will use the user's RForm
 
@@ -172,17 +168,18 @@ dall         = d+ (n*(n+1))/2;    %This is the size of (vec(A)',vec(Sigma), Gamm
  
  %Apply the MSW function
  
-tic;
- 
 addpath(strcat(main_d,'/functions/Inference'));
  
 [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,norm,scale,horizons,RForm,1);
 
-%% 5) Plot Results
+%% 5) Plot Results (for all variables)
 
 addpath(strcat(main_d,'/functions/figuresfun'));
- 
-figure(1)
+
+%Non-cumulative graphs 
+figureorder = 1; 
+
+figure(figureorder)
  
 plots.order     = [1:SVARinp.n];
  
@@ -202,15 +199,80 @@ for iplot = 1:SVARinp.n
         
     end
     
-    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on % filled blue line. IRF estimates
     
     [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
         InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
         [204/255 204/255 204/255],0,0.5); hold on
+        %grey shaded area. MSW CI
     
-    dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+    dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:)); % blue dotter upper line. Delta CI
     
-    lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+    lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:)); % blue dotted lower line. Delta CI
+    
+    h1 = plot(0:1:horizons,dmub,'--b'); hold on % blue dotted upper line. Delta CI
+    
+    h2 = plot(0:1:horizons,lmub,'--b'); hold on % blue dotter lower line. Delta CI
+    
+    clear dmub lmub
+    
+    h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+    
+    xlabel(time)
+    
+    title(columnnames(iplot));
+    
+    xlim([0 horizons]);
+
+    if iplot == 1
+        
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+            'D-Method C.I.')
+        
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        legend boxoff
+        
+        legend('location','southeast')
+     
+    end
+
+end
+
+%Cumulative Plots
+figureorder = figureorder+1; 
+
+figure(figureorder)
+ 
+plots.order     = [1:SVARinp.n];
+ 
+caux            = norminv(1-((1-confidence)/2),0,1);
+
+
+ 
+for iplot = 1:SVARinp.n
+        
+    if SVARinp.n > ceil(sqrt(SVARinp.n)) * floor(sqrt(SVARinp.n))
+            
+        subplot(ceil(sqrt(SVARinp.n)),ceil(sqrt(SVARinp.n)),plots.order(1,iplot));
+    
+    else
+        
+        subplot(ceil(sqrt(SVARinp.n)),floor(sqrt(SVARinp.n)),plots.order(1,iplot));
+        
+    end
+    
+    plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+    
+    [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+        InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+        [204/255 204/255 204/255],0,0.5); hold on
+    
+    dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+    
+    lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
     
     h1 = plot(0:1:horizons,dmub,'--b'); hold on
     
@@ -222,7 +284,7 @@ for iplot = 1:SVARinp.n
     
     xlabel(time)
     
-    title(columnnames(iplot));
+    title(strcat('Cumulative',{' '},columnnames(iplot)));
     
     xlim([0 horizons]);
 
@@ -246,7 +308,6 @@ end
 %% 6) Save the output and plots in ./Output/Mat and ./Output/Figs
  
 %Check if the Output File exists, and if not create one.
- 
 if exist(savdir,'dir')==0
     
     mkdir('savdir')
@@ -268,8 +329,9 @@ if exist(figs,'dir')==0
     mkdir(figs)
         
 end
- 
-cd(strcat(main_d,'/Output/Mat'));
+
+%Saving noncumulative plots
+cd(mat);
  
 output_label = strcat('_p=',num2str(p),'_',dataset_name,'_', ...
                num2str(100*confidence));
@@ -277,169 +339,362 @@ output_label = strcat('_p=',num2str(p),'_',dataset_name,'_', ...
 save(strcat('IRF_SVAR',output_label,'.mat'),...
      'InferenceMSW','Plugin','RForm','SVARinp');
  
-figure(1)
+figure(figureorder-1)
  
-cd(strcat(main_d,'/Output/Figs'));
+cd(figs);
  
 print(gcf,'-depsc2',strcat('IRF_SVAR',output_label,'.eps'));
+
+%Saving cumulative plots 
+cd(mat);
  
+output_label = strcat('_p=',num2str(p),'_',dataset_name,'_', ...
+               num2str(100*confidence));
+ 
+save(strcat('IRF_SVAR_CUM',output_label,'.mat'),...
+     'InferenceMSW','Plugin','RForm','SVARinp');
+ 
+figure(figureorder)
+ 
+cd(figs);
+ 
+print(gcf,'-depsc2',strcat('IRF_SVAR_CUM',output_label,'.eps'));
+
 cd(main_d);
  
-%clear plots output_label main_d labelstrs dtype
+clear plots output_label labelstrs dtype
 
-%cd(olddir);
 
-%% 7) Select the Impulse Response Functions 
+%% 7) Select the Impulse Response Functions and plot them in one figure
 
-figure(2)
- 
-plots.order     = 1:length(IRFselect);
- 
-caux            = norminv(1-((1-confidence)/2),0,1);
-
-for i = 1:length(IRFselect) 
-
-    iplot = IRFselect(i);
+if isempty(IRFselect) == 0
     
-    if length(IRFselect) > ceil(sqrt(length(IRFselect))) * floor(sqrt(length(IRFselect)))
-            
-        subplot(ceil(sqrt(length(IRFselect))),ceil(sqrt(length(IRFselect))),plots.order(1,i));
-    
-    else
-        
-        subplot(ceil(sqrt(length(IRFselect))),floor(sqrt(length(IRFselect))),plots.order(1,i));
-        
+    figureorder = figureorder + 1;
+
+    figure(figureorder)
+
+    plots.order     = 1:length(IRFselect);
+
+    caux            = norminv(1-((1-confidence)/2),0,1);
+
+    for i = 1:length(IRFselect) 
+
+        iplot = IRFselect(i);
+
+        if length(IRFselect) > ceil(sqrt(length(IRFselect))) * floor(sqrt(length(IRFselect)))
+
+            subplot(ceil(sqrt(length(IRFselect))),ceil(sqrt(length(IRFselect))),plots.order(1,i));
+
+        else
+
+            subplot(ceil(sqrt(length(IRFselect))),floor(sqrt(length(IRFselect))),plots.order(1,i));
+
+        end
+
+        plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([0 horizons]);
+
+        if i == 1
+
+            legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'D-Method C.I.')
+
+            set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+            set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+            legend boxoff
+
+            legend('location','southeast')
+
+        end
+
+
     end
-    
-    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
-    
-    [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
-        InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
-        [204/255 204/255 204/255],0,0.5); hold on
-    
-    dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
-    
-    lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
-    
-    h1 = plot(0:1:horizons,dmub,'--b'); hold on
-    
-    h2 = plot(0:1:horizons,lmub,'--b'); hold on
-    
-    clear dmub lmub
-    
-    h3 = plot([0 horizons],[0 0],'black'); hold off
-    
-    xlabel(time)
-    
-    title(columnnames(iplot));
-    
-    xlim([0 horizons]);
-    
-    if iplot == 1
-        
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-            'D-Method C.I.')
-        
-        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
-        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
-        legend boxoff
-        
-        legend('location','southeast')
-     
-    end
-    
+
+else
     
 end
 
 %% 8) Generating separate IRF plots and saving them to different folder
- 
+
+if isempty(IRFselect) == 0
+    
 plots.order     = 1:length(IRFselect);
- 
-caux            = norminv(1-((1-confidence)/2),0,1);
 
-for i = 1:length(IRFselect) 
+    caux            = norminv(1-((1-confidence)/2),0,1);
 
-    iplot = IRFselect(i);
-    
-    figure(3+i);
-    
-    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
-    
-    [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
-        InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
-        [204/255 204/255 204/255],0,0.5); hold on
-    
-    dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
-    
-    lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
-    
-    h1 = plot(0:1:horizons,dmub,'--b'); hold on
-    
-    h2 = plot(0:1:horizons,lmub,'--b'); hold on
-    
-    clear dmub lmub
-    
-    h3 = plot([0 horizons],[0 0],'black'); hold off
-    
-    xlabel(time)
-    
-    title(columnnames(iplot));
-    
-    xlim([0 horizons]);
-    
-    legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-            'D-Method C.I.')
-        
-    set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
-    set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
-    legend boxoff
-        
-    legend('location','southeast')
-    
-    %Check if the Output File exists, and if not create one.
+    for i = 1:length(IRFselect) 
 
-    MatIRFselect = strcat(savdir, '/MatIRFselect');
+        iplot = IRFselect(i);
 
-    if exist(MatIRFselect,'dir')==0
-    
-        mkdir(MatIRFselect)
-    
+        figureorder = figureorder + 1; 
+
+        figure(figureorder);
+
+        plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([0 horizons]);
+
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'D-Method C.I.')
+
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southeast')
+
+        %Check if the Output File exists, and if not create one.
+
+        MatIRFselect = strcat(savdir, '/Mat/MatIRFselect');
+
+        if exist(MatIRFselect,'dir')==0
+
+            mkdir(MatIRFselect)
+
+        end
+
+        FigsIRFselect = strcat(savdir, '/Figs/FigsIRFselect');
+
+        if exist(FigsIRFselect,'dir')==0
+
+            mkdir(FigsIRFselect)
+
+        end
+
+        cd(MatIRFselect);
+
+        output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
+                        num2str(100*confidence), '_', num2str(iplot));
+
+        save(strcat('IRF_SVAR',output_label,'.mat'),...
+            'InferenceMSW','Plugin','RForm','SVARinp');
+
+        figure(figureorder)
+
+        cd(FigsIRFselect);
+
+        print(gcf,'-depsc2',strcat('IRF_SVAR',output_label,'.eps'));
+
+        cd(main_d);
+
     end
 
-    FigsIRFselect = strcat(savdir, '/FigsIRFselect');
-
-    if exist(FigsIRFselect,'dir')==0
-    
-        mkdir(FigsIRFselect)
-    
-    end
- 
-    cd(strcat(main_d,'/Output/MatIRFselect'));
- 
-    output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
-                    num2str(100*confidence), '_', num2str(iplot));
- 
-    save(strcat('IRF_SVAR',output_label,'.mat'),...
-        'InferenceMSW','Plugin','RForm','SVARinp');
- 
-    figure(3+i)
- 
-    cd(strcat(main_d,'/Output/FigsIRFselect'));
- 
-    print(gcf,'-depsc2',strcat('IRF_SVAR',output_label,'.eps'));
- 
-    cd(main_d);
-    
+else
     
 end
 
-clear plots output_label main_d labelstrs dtype
+clear plots output_label labelstrs dtype
 
-cd(olddir);
+%% 9) Generating one figure for selected cumulative plots 
 
+if isempty(cumselect) == 0
+
+    figureorder = figureorder + 1;  
+
+    figure(figureorder)
+
+    plots.order     = 1:length(cumselect);
+
+    caux            = norminv(1-((1-confidence)/2),0,1);
+
+    for i = 1:length(cumselect) 
+
+        iplot = cumselect(i);
+
+        if length(cumselect) > ceil(sqrt(length(cumselect))) * floor(sqrt(length(cumselect)))
+
+            subplot(ceil(sqrt(length(cumselect))),ceil(sqrt(length(cumselect))),plots.order(1,i));
+
+        else
+
+            subplot(ceil(sqrt(length(cumselect))),floor(sqrt(length(cumselect))),plots.order(1,i));
+
+        end
+
+        plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        xlabel(time)
+
+        title(strcat('Cumulative','{ }',columnnames(iplot)));
+
+        xlim([0 horizons]);
+
+        if i == 1
+
+            legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'D-Method C.I.')
+
+            set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+            set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+            legend boxoff
+
+            legend('location','southeast')
+
+        end
+
+
+    end
+    
+else
+    
+end
+
+%% 10) Generating separate cumulative IRF plots and saving them to different folder
+
+if isempty(cumselect) == 0
+
+    plots.order     = 1:length(cumselect);
+
+    caux            = norminv(1-((1-confidence)/2),0,1);
+
+    for i = 1:length(cumselect) 
+
+        iplot = cumselect(i);
+
+        figureorder = figureorder + 1;
+
+        figure(figureorder);
+
+        plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        xlabel(time)
+
+        title(strcat('Cumulative','{ }',columnnames(iplot)))
+
+        xlim([0 horizons]);
+
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'D-Method C.I.')
+
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southeast')
+
+        %Check if the Output File exists, and if not create one.
+
+        MatIRFCUMselect = strcat(savdir, '/Mat/MatIRFCUMselect');
+
+        if exist(MatIRFCUMselect,'dir')==0
+
+            mkdir(MatIRFCUMselect)
+
+        end
+
+        FigsIRFCUMselect = strcat(savdir, '/Figs/FigsIRFCUMselect');
+
+        if exist(FigsIRFCUMselect,'dir')==0
+
+            mkdir(FigsIRFCUMselect)
+
+        end
+
+        cd(MatIRFCUMselect);
+
+        output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
+                       num2str(100*confidence),'_',num2str(iplot));
+
+        save(strcat('IRF_SVAR_CUM',output_label,'.mat'),...
+            'InferenceMSW','Plugin','RForm','SVARinp');
+
+        figure(figureorder)
+
+        cd(FigsIRFCUMselect);
+
+        print(gcf,'-depsc2',strcat('IRF_SVAR_CUM',output_label,'.eps'));
+
+        cd(main_d);
+
+    end
+
+    clear plots output_label main_d labelstrs dtype
+
+    cd(olddir);
+
+else
+    
+end
 
 end

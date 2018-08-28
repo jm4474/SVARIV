@@ -1,22 +1,39 @@
 %% This script file implements standard and weak-IV robust SVAR-IV inference.
-% This is a test version to see whether the SVARIV_Luigi function is working: Auguest 13th, 2018
-% Comment: We have tested this script on a Macbook Pro 
- 
+% This is a template that uses the SVARIV_General and the Bootstrap_Plots functions to generate IRFs and calculate confidence intervals
+% based on Montiel Olea, Stock & Watson (2018).
+% This version: August 28th, 2018
+% Comment: We have tested this function on an iMac 
+%         @3.4 GHz Intel Core i5 (16 GB 2400 MHz DDR4)
+%         Running Matlab R2018a.
+%         This script runs in about 10 seconds. 
+
+clear;
+
+tic
+
 direct = pwd;
 
 %% 1) Set number of VAR Lags, Newey West lags and confidence level.
- 
+
 fprintf('This script is an example on how to use the function SVARIV_General to report confidence intervals for  IRFs \n');
 
-fprintf('estimated using the SVAR-IV approach described in MSW(18) and the function Gasydistboots.\n');
+fprintf('estimated using the SVAR-IV approach described in MSW(18).\n');
 
 disp('-');
 
-disp('Section 1 describes sets values for VAR Lags, Newey West lags and confidence level');
+disp('Section 1 describes sets values for VAR Lags, Newey West lags and confidence level, VAR variable names, time unit,');
 
-p           = 2; %Number of lags in the VAR model
+disp('variable used for normalization, scale of the shock and the number of horizons for the IRFs. It also allows the user');
+
+disp('to select specific variables of interest for the IRF plots and cumulative IRF plots');
+
+application = 'Oil';  % Name of this empirical application, used for creating and accessing folders
+
+p           = 24; %Number of lags in the VAR model
  
-confidence  = .68; %Confidence Level for the standard and weak-IV robust confidence set
+confidence  = .95; %Confidence Level for the standard and weak-IV robust confidence set
+
+
 
 % Define the variables in the SVAR
 columnnames = [{'Percent Change in Global Crude Oil Production'}, ...
@@ -30,20 +47,28 @@ NWlags      = 0;  % Newey-West lags(if it is neccessary to account for time seri
 
 norm        = 1; % Variable used for normalization
 
-scale       = -20; % Scale of the shock
+scale       = 1; % Scale of the shock
 
 horizons    = 20; %Number of horizons for the Impulse Response Functions(IRFs)
                  %(does not include the impact or horizon 0)
                  
-IRFselect   = [1, 2];
+IRFselect   = [2,3];
 % By default, the program generates a single figure with the IRFs for ALL variables
 % in the VAR. However, IRFselect allows the user to generate an indepedent
 % figure displaying only some specific variables of interest. 
-% The program also saves the IRFs in IRFselect as separate .eps files (To Do)
+% The program also saves the IRFs in IRFselect as separate .eps files 
 
 % Make sure to match the indices above and to the variables in your
-% dataset. E.g. the above vector will select the variables "AMTR,
-% Log Real GDP, Inflation and DLOG RDEBT."
+% dataset. E.g. the above vector will select the variables "Percent Change 
+% in Global Crude Oil Production and Index of real economic activity."
+
+cumselect = [1]; 
+%cumselect allows the user to generate cumulative IRF plots displaying only 
+%some specific variables of interest. 
+
+% Make sure to match the indices above to the variables in your
+% dataset. E.g. the above vector will select the variables "Percent Change 
+% in Global Crude Oil Production and Index of real economic activity."
 
 %% 2) Load data (saved in structure "data")
 %  These are the variables that were defined in line 14 above. 
@@ -53,9 +78,10 @@ IRFselect   = [1, 2];
 
 disp('-')
 
-disp('Section 2 in this script loads the data necessary for the SVAR-IV analysis.')
+disp('Section 2 in this script loads the data necessary for the SVAR-IV analysis and specifies the name of the dataset.')
 
-cd(strcat(pwd,'/5MSW_November_2016/2data'));
+
+cd(strcat(pwd,'/Data/',application));
 
     ydata = xlsread('Data'); 
     %The frequency of this data is 1973:2 - 2007:12
@@ -70,139 +96,568 @@ cd(strcat(pwd,'/5MSW_November_2016/2data'));
     
     years = xlsread('time');
     
-dataset_name = "OilData";
+dataset_name = "OilData"; %The name of the dataset used for generating the figures (used in the output label)
+
 cd(direct)
  
 %% 3) Test
 
 disp('-')
 
-disp('Section 3 in this script calls the SVARIV_General function and samples from the asy dist of the reduced-form parameters to conduct "standard" inference.')
+disp('Section 3 in this script calls the SVARIV_General function')
 
-savdir = strcat(direct,'/Output');  %selected directory where the output files will be saved
+savdir = strcat(direct,'/Output/',application);  %selected directory where the output files will be saved
 
-addpath(strcat(direct,'/functions/MasterFunction'));
+addpath(strcat(direct,'/functions/MasterFunction')); 
 
 addpath(strcat(direct,'/functions/Inference'));
 
-[Plugin, InferenceMSW, Chol, RForm] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, time, dataset_name);
+[Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
  
 % A more in depth description of the function can be found within the
 % function file. For clarity purposes, we briefly describe the function
 % below:
 %
 % -Inputs:
-%       p:           Number of lags in the VAR model                                                (1 times 1)                                          
-%       confidence:  Value for the standard and weak-IV robust confidence set                       (1 times 1) 
-%       ydata:       Endogenous variables from the VAR model                                        (T times n) 
-%       z:           External instrumental variable                                                 (T times 1)
-%       NWlags:      Newey-West lags                                                                (1 times 1)
-%       norm:        Variable used for normalization                                                (1 times 1)
-%       scale:       Scale of the shock                                                             (1 times 1)
-%       horizons:    Number of horizons for the Impulse Response Functions(IRFs)                    (1 times 1)
-%       savdir:      Directory where the figures generated will be saved                            (String)
-%       columnnames: Vector with the names for the endogenous variables, in the same order as ydata (1 times n)
-%       time:        Time unit for the dataset (e.g. year, month, etc.)                             (String)
+%       p:            Number of lags in the VAR model                                                    (1 times 1)                                          
+%       confidence:   Value for the standard and weak-IV robust confidence set                           (1 times 1) 
+%       ydata:        Endogenous variables from the VAR model                                            (T times n) 
+%       z:            External instrumental variable                                                     (T times 1)
+%       NWlags:       Newey-West lags                                                                    (1 times 1)
+%       norm:         Variable used for normalization                                                    (1 times 1)
+%       scale:        Scale of the shock                                                                 (1 times 1)
+%       horizons:     Number of horizons for the Impulse Response Functions(IRFs)                        (1 times 1)
+%       savdir:       Directory where the figures generated will be saved                                (String)
+%       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 times n)
+%       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 times q)
+%       time:         Time unit for the dataset (e.g. year, month, etc.)                                 (String)
+%       dataset_name: The name of the dataset used for generating the figures (used in the output label) (String)
 %
 % -Output:
-%       PLugin: Structure containing standard plug-in inference
+%       Plugin: Structure containing standard plug-in inference
 %       InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
 %       Chol: Cholesky IRFs
 
-%% 4) "Standard" bootstrap-type inference based on samples from the asy dist.
+%% 4) Plots in new version of paper (run for 68% confidence sets)
 
-seed            = load(strcat(direct,'/seed/seedMay12.mat')); 
+% Sections 4-7 plot the figures specific to the oil application (as used
+% in the latest version of the paper). The paper plots one cumulative
+% variable and two non-cumulative variables in one figure. The general
+% version of this section (here in section 3) plots all cumulative
+% variables in one figure and all non-cumulative variables in another
+% figure.
+if (confidence == 0.68)
+    caux            = norminv(1-((1-confidence)/2),0,1);
+
+    figureorder = figureorder + 1; 
+
+    figure(figureorder); 
+
+    subplot(3,1,1)
+
+    iplot = 1; 
+
+    f1 = plot(1:1:horizons+1,Plugin.IRFcum(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(1:1:horizons+1,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        h1 = plot(1:1:horizons+1,dmub,'--b'); hold on
+
+        h2 = plot(1:1:horizons+1,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(Chol(iplot,:,2),'r'); hold on
+
+        h3 = plot([1 horizons],[0 0],'black'); hold off
+
+        set(f1,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(strcat('Cumulative',{' '},columnnames(iplot)));
+
+        xlim([1 horizons]);
+
+        axis([1 20 0 1.5]);
+
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'D-Method C.I.')
+
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southeast')
+
+    subplot(3,1,2)
+
+    iplot = 2; 
+
+    f2 = plot(1:1:horizons+1,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(1:1:horizons+1,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(1:1:horizons+1,dmub,'--b'); hold on
+
+        h2 = plot(1:1:horizons+1,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(Chol(iplot,:,1),'r'); hold on
+
+        h3 = plot([1 horizons],[0 0],'black'); hold off
+
+        set(f2,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([1 horizons]);
+
+        axis([1 20 -0.2 0.2]);
+
+    subplot(3,1,3)
+
+    iplot = 3;
+
+    f3 = plot(1:1:horizons+1,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(1:1:horizons+1,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(1:1:horizons+1,dmub,'--b'); hold on
+
+        h2 = plot(1:1:horizons+1,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(Chol(iplot,:,1),'r'); hold on
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        set(f3,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([1 horizons]);
+
+        axis([1 20 -0.5 0.3]);
+else
     
-seed            = seed.seed;
+end
 
-disp('-')
+%% 5) Plots in new version of paper (run for 95% confidence sets)
 
-disp('Section 4 in this script samples from the asy dist of the reduced-form parameters to conduct "standard" inference.')
+if confidence == 0.95
+    caux            = norminv(1-((1-confidence)/2),0,1);
 
-disp('Standard inference based on sampling from the asy. dist. takes only:')  
+    figureorder = figureorder + 1; 
 
-tic;
+    figure(figureorder); 
 
-n            = RForm.n;  %number of variables in the VAR
+    subplot(3,1,1)
 
-T  = size(ydata, 2); % Number of observations/time periods.
+    iplot = 1; 
 
-NB = 1000;           % Number of bootstrap repliactions 
+    f1 = plot(1:1:horizons+1,Plugin.IRFcum(iplot,:),'b'); hold on
 
-addpath('functions/Inference');
+        [~,~] = jbfill(1:1:horizons+1,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
 
-[~,InferenceMSW.bootsIRFs] = ...
-                  Gasydistboots(seed, 1000, n, p, norm, scale, horizons, confidence, T,...
-                  RForm.AL(:),RForm.V*RForm.Sigma(:),RForm.Gamma(:),...
-                  RForm.WHatall,@IRFSVARIV);              
+        dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        h1 = plot(1:1:horizons+1,dmub,'--b'); hold on
+
+        h2 = plot(1:1:horizons+1,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(Chol(iplot,:,2),'r'); hold on
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        set(f1,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(strcat('Cumulative',{' '},columnnames(iplot)));
+
+        xlim([1 horizons]);
+
+        axis([1 20 -1 2]);
+
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'D-Method C.I.')
+
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southeast')
+
+    subplot(3,1,2)
+
+    iplot = 2; 
+
+    f2 = plot(1:1:horizons+1,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(1:1:horizons+1,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(1:1:horizons+1,dmub,'--b'); hold on
+
+        h2 = plot(1:1:horizons+1,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(Chol(iplot,:,1),'r'); hold on
+
+        h3 = plot([1 horizons],[0 0],'black'); hold off
+
+        set(f2,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([1 horizons]);
+
+        axis([1 20 -0.5 1.5]);
+
+    subplot(3,1,3)
+
+    iplot = 3;
+
+    f3 = plot(1:1:horizons+1,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(1:1:horizons+1,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(1:1:horizons+1,dmub,'--b'); hold on
+
+        h2 = plot(1:1:horizons+1,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(Chol(iplot,:,1),'r'); hold on
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        set(f3,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([1 horizons]);
+
+        axis([1 20 -1 2]);
+
+else
+    
+end
+
+%% 6) Plots as Hamza and Luigi think should be run (run for 68% confidence sets)
+
+if confidence == 0.68
+
+    caux            = norminv(1-((1-confidence)/2),0,1);
+
+    figureorder = figureorder + 1; 
+
+    figure(figureorder); 
+
+    subplot(3,1,1)
+
+    iplot = 1; 
+
+    f1 = plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(0:1:horizons,Chol(iplot,:,2),'r'); hold on
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        set(f1,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(strcat('Cumulative',{' '},columnnames(iplot)));
+
+        xlim([0 horizons]);
+
+        axis([0 20 0 1.5]);
+
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'D-Method C.I.')
+
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southeast')
+
+    subplot(3,1,2)
+
+    iplot = 2; 
+
+    f2 = plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(0:1:horizons,Chol(iplot,:,1),'r'); hold on
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        set(f2,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([0 horizons]);
+
+        axis([0 20 -0.2 0.2]);
+
+    subplot(3,1,3)
+
+    iplot = 3;
+
+    f3 = plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(0:1:horizons,Chol(iplot,:,1),'r'); hold on
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        set(f3,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([0 horizons]);
+
+        axis([0 20 -0.5 0.3]);
+        
+else
+    
+end
+    
+%% 7) Plots as Hamza and Luigi think should be run (run for 95% confidence sets)
+
+if confidence == 0.95
+
+    caux            = norminv(1-((1-confidence)/2),0,1);
+
+    figureorder = figureorder + 1; 
+
+    figure(figureorder); 
+
+    subplot(3,1,1)
+
+    iplot = 1; 
+
+    f1 = plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(0:1:horizons,Chol(iplot,:,2),'r'); hold on
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        set(f1,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(strcat('Cumulative',{' '},columnnames(iplot)));
+
+        xlim([0 horizons]);
+
+        axis([0 20 -1 2]);
+
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'D-Method C.I.')
+
+        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southeast')
+
+    subplot(3,1,2)
+
+    iplot = 2; 
+
+    f2 = plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(0:1:horizons,Chol(iplot,:,1),'r'); hold on
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        set(f2,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([0 horizons]);
+
+        axis([0 20 -0.5 1.5]);
+
+    subplot(3,1,3)
+
+    iplot = 3;
+
+    f3 = plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+        h1 = plot(0:1:horizons,dmub,'--b'); hold on
+
+        h2 = plot(0:1:horizons,lmub,'--b'); hold on
+
+        clear dmub lmub
+
+        plot(0:1:horizons,Chol(iplot,:,1),'r'); hold on
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off
+
+        set(f3,'LineWidth',3); hold off
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([0 horizons]);
+
+        axis([0 20 -1 2]);
+        
+else
+    
+end
+%% 8) Bootstrap Plots
+
+disp('Section 4 in this script calls the Bootstrap_Plots function.')
+
+addpath(strcat(direct,'/functions/figuresfun'));
+
+[caux,InferenceMSW,NB,seed,SVARinp,T] = Bootstrap_Plots(ydata, z, p, norm, scale, horizons, confidence, NWlags, RForm, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect);
 
 toc;
 
-%% 5) Comparison of "standard" bootstrap inference and the delta-method
 
-disp('-')
 
-disp('Finally, section 5 compares inference based on sampling from the asy-dist with delta-method inference')
 
-figure(3)
-
-plots.order     = [1:n];
-
-caux            = norminv(1-((1-confidence)/2),0,1);
-
-for iplot = 1:n
-    
-    if n > ceil(sqrt(n)) * floor(sqrt(n))
-            
-        subplot(ceil(sqrt(n)),ceil(sqrt(n)),plots.order(1,iplot));
-    
-    else
-        
-        subplot(ceil(sqrt(n)),floor(sqrt(n)),plots.order(1,iplot));
-        
-    end
-    
-    
-    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
-    
-    g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2),':b'); hold on
-    
-    dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
-    
-    lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
-    
-    h1    = plot(0:1:horizons,dmub,'--b'); hold on
-    
-    g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1),':b'); hold on
-    
-    h2    = plot(0:1:horizons,lmub,'--b'); hold on
-    
-    clear dmub lmub
-    
-    h3 = plot([0 5],[0 0],'black'); hold off
-    
-    xlabel(time)
-    
-    title(columnnames(iplot));
-    
-    xlim([0 horizons]);
-    
-    if iplot == 1
-        
-        legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
-            'D-Method C.I.')
-        
-        set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
-        set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
-        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
-        legend boxoff
-        
-        legend('location','southeast')
-     
-    end
-    
-            
-end
