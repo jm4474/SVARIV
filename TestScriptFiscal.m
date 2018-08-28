@@ -1,6 +1,4 @@
 %% This script file implements standard and weak-IV robust SVAR-IV inference.
-% This is a template that uses the SVARIV_General and the Bootstrap_Plots functions to generate IRFs and calculate confidence intervals
-% based on Montiel Olea, Stock & Watson (2018).
 % This version: August 28th, 2018
 % Comment: We have tested this function on an iMac 
 %         @3.4 GHz Intel Core i5 (16 GB 2400 MHz DDR4)
