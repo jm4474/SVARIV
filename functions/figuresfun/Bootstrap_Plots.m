@@ -255,71 +255,77 @@ cd(direct);
 
 %% 4)Comparison of "standard" bootstrap inference and the delta-method (Selected IRF) 
 
-if isempty(IRFselect) == 0
+if length(IRFselect) ~= 1
+    
+    if isempty(IRFselect) == 0
 
-    figureorder = figureorder + 1; 
+        figureorder = figureorder + 1; 
 
-    figure(figureorder)
+        figure(figureorder)
 
-    plots.order     = 1:length(IRFselect);
+        plots.order     = 1:length(IRFselect);
 
-    caux            = norminv(1-((1-confidence)/2),0,1);
+        caux            = norminv(1-((1-confidence)/2),0,1);
 
-    for i = 1:length(IRFselect) 
+        for i = 1:length(IRFselect) 
 
-        iplot = IRFselect(i);
+            iplot = IRFselect(i);
 
-        if length(IRFselect) > ceil(sqrt(length(IRFselect))) * floor(sqrt(length(IRFselect)))
+            if length(IRFselect) > ceil(sqrt(length(IRFselect))) * floor(sqrt(length(IRFselect)))
 
-            subplot(ceil(sqrt(length(IRFselect))),ceil(sqrt(length(IRFselect))),plots.order(1,i));
+                subplot(ceil(sqrt(length(IRFselect))),ceil(sqrt(length(IRFselect))),plots.order(1,i));
 
-        else
+            else
 
-            subplot(ceil(sqrt(length(IRFselect))),floor(sqrt(length(IRFselect))),plots.order(1,i));
+                subplot(ceil(sqrt(length(IRFselect))),floor(sqrt(length(IRFselect))),plots.order(1,i));
+
+            end
+
+            plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+            g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,1),':b'); hold on
+
+            dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
+
+            lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
+
+            h1    = plot(0:1:horizons,dmub,'--b'); hold on
+
+            g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,1),':b'); hold on
+
+            h2    = plot(0:1:horizons,lmub,'--b'); hold on
+
+            clear dmub lmub
+
+            h3 = plot([0 horizons],[0 0],'black'); hold off
+
+            xlabel(time)
+
+            title(columnnames(iplot));
+
+            xlim([0 horizons]);
+
+            if i == 1
+
+                legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
+                    'D-Method C.I.')
+
+                set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                legend boxoff
+
+                legend('location','southeast')
+
+            end
+
 
         end
 
-        plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
-
-        g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,1),':b'); hold on
-
-        dmub  =  Plugin.IRF(iplot,:) + (caux*Plugin.IRFstderror(iplot,:));
-
-        lmub  =  Plugin.IRF(iplot,:) - (caux*Plugin.IRFstderror(iplot,:));
-
-        h1    = plot(0:1:horizons,dmub,'--b'); hold on
-
-        g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,1),':b'); hold on
-
-        h2    = plot(0:1:horizons,lmub,'--b'); hold on
-
-        clear dmub lmub
-
-        h3 = plot([0 horizons],[0 0],'black'); hold off
-
-        xlabel(time)
-
-        title(columnnames(iplot));
-
-        xlim([0 horizons]);
-
-        if i == 1
-
-            legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
-                'D-Method C.I.')
-
-            set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-            set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-            set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-            legend boxoff
-
-            legend('location','southeast')
-
-        end
-
+    else
 
     end
     
@@ -328,8 +334,8 @@ else
 end
 
 %% 5) Generating separate bootstrap inference and delta method comparison for selected IRF and saving them to different folder
- 
-if isempty(IRFselect)
+
+if isempty(IRFselect) == 0
 
     plots.order     = 1:length(IRFselect);
 
@@ -424,71 +430,77 @@ end
 
 %% 6) Comparison of "standard" bootstrap inference and the delta-method (Selected Cumulative) 
 
-if isempty(cumselect) == 0
+if length(cumselect) ~= 1
 
-    figureorder = figureorder + 1; 
+    if isempty(cumselect) == 0
 
-    figure(figureorder)
+        figureorder = figureorder + 1; 
 
-    plots.order     = 1:length(cumselect);
+        figure(figureorder)
 
-    caux            = norminv(1-((1-confidence)/2),0,1);
+        plots.order     = 1:length(cumselect);
 
-    for i = 1:length(cumselect) 
+        caux            = norminv(1-((1-confidence)/2),0,1);
 
-        iplot = cumselect(i);
+        for i = 1:length(cumselect) 
 
-        if length(cumselect) > ceil(sqrt(length(cumselect))) * floor(sqrt(length(cumselect)))
+            iplot = cumselect(i);
 
-            subplot(ceil(sqrt(length(cumselect))),ceil(sqrt(length(cumselect))),plots.order(1,i));
+            if length(cumselect) > ceil(sqrt(length(cumselect))) * floor(sqrt(length(cumselect)))
 
-        else
+                subplot(ceil(sqrt(length(cumselect))),ceil(sqrt(length(cumselect))),plots.order(1,i));
 
-            subplot(ceil(sqrt(length(cumselect))),floor(sqrt(length(cumselect))),plots.order(1,i));
+            else
+
+                subplot(ceil(sqrt(length(cumselect))),floor(sqrt(length(cumselect))),plots.order(1,i));
+
+            end
+
+            plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+
+            g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,2),':b'); hold on
+
+            dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
+
+            lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
+
+            h1    = plot(0:1:horizons,dmub,'--b'); hold on
+
+            g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,2),':b'); hold on
+
+            h2    = plot(0:1:horizons,lmub,'--b'); hold on
+
+            clear dmub lmub
+
+            h3 = plot([0 5],[0 0],'black'); hold off
+
+            xlabel(time)
+
+            title(strcat('Cumulative','{ }',columnnames(iplot)))
+
+            xlim([0 horizons]);
+
+            if i == 1
+
+                legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
+                    'D-Method C.I.')
+
+                set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                legend boxoff
+
+                legend('location','southeast')
+
+            end
+
 
         end
 
-        plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
-
-        g1    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,2,2),':b'); hold on
-
-        dmub  =  Plugin.IRFcum(iplot,:) + (caux*Plugin.IRFstderrorcum(iplot,:));
-
-        lmub  =  Plugin.IRFcum(iplot,:) - (caux*Plugin.IRFstderrorcum(iplot,:));
-
-        h1    = plot(0:1:horizons,dmub,'--b'); hold on
-
-        g2    =  plot(0:1:horizons,InferenceMSW.bootsIRFs(iplot,:,1,2),':b'); hold on
-
-        h2    = plot(0:1:horizons,lmub,'--b'); hold on
-
-        clear dmub lmub
-
-        h3 = plot([0 5],[0 0],'black'); hold off
-
-        xlabel(time)
-
-        title(strcat('Cumulative','{ }',columnnames(iplot)))
-
-        xlim([0 horizons]);
-
-        if i == 1
-
-            legend('SVAR-IV Estimator',strcat('AsyDist Std C.I (',num2str(100*confidence),'%)'),...
-                'D-Method C.I.')
-
-            set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-            set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-            set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-            legend boxoff
-
-            legend('location','southeast')
-
-        end
-
+    else
 
     end
     

@@ -2,10 +2,12 @@
 
 %Last update: August 15th, 2018. 
 
-% This script implements a Monte-Carlo study to analyze the finite-sample
+% This script replicates figures 2 from Montiel Olea, Stock and Watson (2018). It implements a Monte-Carlo study to analyze the finite-sample
 % coverage of the confidence interval suggested by Montiel-Olea, Stock,
 % and Watson (2016). The Monte Carlo design is explained in our paper.
 %(see MC design 1)
+% Please change the auxparamMC value in Section 1 to generate the
+% appropriate figure.
 
 % The script takes approximately 380 seconds in MacBook Pro @ 2.4
 % 2.4 GHz Intel Core i7 with 8 GB in Memory (OSX High Sierra)
@@ -52,6 +54,8 @@ auxparamMC...
 
 % Set auxparaMC = 18.95^.5 to get an implied first-stage of 10.17 
 % Set auxparaMC = 5^.5     to get an implied first-stage of 3.87
+
+
 %% 2) Loading the main inputs for the Monte-Carlo design
 %--------------------------------------
 %(All the inputs are saved in the MCparameters folder)
@@ -450,7 +454,7 @@ title(strcat('Response of the Real Price of Oil (',num2str(MCdraws),'MC draws, T
 
 %% 14) Save Coverage Plot
 
-cd('Output/Oil/MC');
+cd('PaperReplication/Oil/Figures/MC');
 namdir=strcat(date,'_','K','_','p=',num2str(MC.p),'confidence0.95','_Design2');
 if exist(namdir,'dir')
     cd(namdir);
@@ -459,12 +463,18 @@ if exist(namdir,'dir')
     save(strcat('MC_Coverage_KilianDGP','_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)),'.mat'));
     cd ..
     cd ..
+    cd ..
+    cd ..
+    cd ..
 else    
     mkdir(namdir);
     cd(namdir);
     print(figure(1),'-depsc2',strcat('MC_Coverage_KilianDGP','_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)),'.eps'));
     print(figure(2),'-depsc2',strcat('MC_IRFDist','_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)),'.eps'));
     save(strcat('MC_Coverage_KilianDGP','_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)),'.mat'));
+    cd ..
+    cd ..
+    cd ..
     cd ..
     cd ..
 end
