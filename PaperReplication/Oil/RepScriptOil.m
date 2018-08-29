@@ -1,10 +1,16 @@
-%% This Script generates the figures for the Montiel Olea, Stock & Watson (2018) paper
+%% 0) Introduction
+
+% This Script generates the figures for the empirical 
+% illustration discussed in the paper 
+% "Inference in Structural Vector Autoregressions with an external instrument",
+% by José L. Montiel Olea, James H. Stock, and Mark W. Watson
+% Working Paper, Columbia University (2018).
 
 % This version: August 28th, 2018
-% Comment: We have tested this function on an iMac 
-%         @3.4 GHz Intel Core i5 (16 GB 2400 MHz DDR4)
-%         Running Matlab R2018a.
-%         This script runs in about 1 second. 
+% Comment:      We have tested this function on an iMac 
+%               @3.4 GHz Intel Core i5 (16 GB 2400 MHz DDR4)
+%               Running Matlab R2018a.
+%               This script runs in about 1 second. 
 
 tic 
 
