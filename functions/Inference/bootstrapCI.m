@@ -230,7 +230,8 @@ for var = 1:n
         
         IRFBootsVH = reshape(IRFBootsVH, 1, 1001);
           
-        difference(:,:,var,horizon) = IRFBootsVH - grid * AlphaBoots(1,:);
+        difference(:,:,var,horizon) = (IRFBootsVH - (grid * AlphaBoots(1,:)))*(T^.5);
+        %Eventually this has to be the AR statistic
         
         clear IRFBootsVH;
         
@@ -238,20 +239,10 @@ for var = 1:n
     
 end
 
-%Fix a lambda j and square the matrix
-
-% Question: should I fix the var and horizon too? Not needed right?
-
-
-new_difference = zeros(grid_size,ndraws,n,horizons+1);
-
-for lambda = 1:grid_size
-   
-    %square matrix and multiply by root T
-    new_difference(lambda,:,:,:) = (difference(lambda,:,:,:).^2) * (T^(1/2));
-    
-    
-end
+%THIS IS A HORRIBLE NAME. WE WILL CHANGE IT. 
+new_difference = (difference - difference(:,1001,:,:)).^2;
+%Adjust so that the number of draws can vary. the element I pick should be
+%ndraws
 
 %% 8) Implement "Standard" Bootstrap Inference
 
@@ -261,7 +252,7 @@ aux        = reshape(pdSigma,[1,ndraws]);
 bootsIRFs  = quantile(new_difference(:,aux==1,:,:),...
                           [((1-confidence)/2),1-((1-confidence)/2)],2);      
                       
-difference_T = new_difference(:,1001,:,:);
+difference_T = difference(:,1001,:,:);
 
 % check whether each one would be rejected or not
 
@@ -292,5 +283,5 @@ difference_T = new_difference(:,1001,:,:);
 
 reject = (difference_T(:,1,:,:) < bootsIRFs(:,1,:,:)) | (difference_T(:,1,:,:) > bootsIRFs(:,2,:,:));
 
-reject = reshape(reject,[lambda, n, horizons+1]);
+reject = reshape(reject,[size(grid,1), n, horizons+1]);
 
