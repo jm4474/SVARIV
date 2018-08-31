@@ -2,7 +2,7 @@
 
 p           = 24;     %Number of lags in the VAR model
  
-confidence  = .68;    %Confidence Level for the standard and weak-IV robust confidence set
+confidence  = 1;    %Confidence Level for the standard and weak-IV robust confidence set
 
 % Define the variables in the SVAR
 columnnames = [{'Percent Change in Global Crude Oil Production'}, ...
@@ -23,14 +23,17 @@ horizons    = 20; %Number of horizons for the Impulse Response Functions(IRFs)
                  
 NB          = 1000; % number of samples from the asymptotic distribution
 
-%% 1) Load data (saved in structure "data")
+%% 2) Load data (saved in structure "data")
 %  These are the variables that were defined in line 14 above. 
 %  The time units should be on a single.xls file called Time.xls
 %  All the VAR variables should be on a single .xls file called Data.xls
 %  The external instrument should be in a single .xls file called ExtIV.xls
 
+cd ..
 
-direct = '/Users/luigicaloi/Documents/Pepe/SVARIV';
+cd ..
+
+direct = pwd;
 
 application = 'Oil';
 
@@ -54,7 +57,7 @@ dataset_name = 'OilData'; %The name of the dataset used for generating the figur
 cd(direct)
 
 
-%% 2) Create an RForm (if necessary)
+%% 3) Create an RForm (if necessary)
 
 SVARinp.ydata = ydata;
 
@@ -118,7 +121,7 @@ AL = RForm.AL(:);
 
 Gamma = RForm.Gamma;
 
-%% 3) Estimation of the asymptotic variance of A,Gamma
+%% 4) Estimation of the asymptotic variance of A,Gamma
 
 % Definitions
 
@@ -132,25 +135,162 @@ d            = ((n^2)*p)+(n);     %This is the size of (vec(A)',Gamma')'
 
 
 
-%% 4) Make sure that Whatall is symmetric and positive semidefinite
+%% 5) Make sure that Whatall is symmetric and positive semidefinite
 
-%dall        = size(RForm.WHatall,1);  % this is the size 
+%dall        = size(RForm.WHatall,1);  
 
-WHat     = (RForm.WHat + RForm.WHat')/2;
+
+dall        = size(RForm.WHatall,1);
+
+WHatall     = (RForm.WHatall + RForm.WHatall')/2;
     
-[aux1,aux2] = eig(RForm.WHat);
+[aux1,aux2] = eig(WHatall);
     
-WHat     = aux1*max(aux2,0)*aux1'; 
+WHatall     = aux1*max(aux2,0)*aux1'; 
 
-%% 5) Generate draws
+%% 6) Generate draws
 % Centered at (vec(AL)', Gamma')'
 
-gvar    = [mvnrnd(zeros(NB,d),(WHat)/T)',...
-                     zeros(d,1)];
+
+gvar    = [mvnrnd(zeros(NB,dall),(WHatall)/T)',...
+                     zeros(dall,1)];
           %Added an extra column of zeros to access point estimators       
-
+    
 Draws   = bsxfun(@plus,gvar,...
-          [AL;Gamma(:)]);
+          [AL;vechSigma;Gamma(:)]);
 
-k       = size(Gamma,1)/n;      
+k       = size(Gamma,1)/n;        
+
+%% 7 Evaluate the parameter of interest  
+
+f = @ARteststatistic;
+
+ndraws     = size(Draws,2);
+     
+pdSigma    = zeros(1,ndraws);
+
+IRFs       = zeros(n, horizons+1, ndraws);
+
+Gamma11s   = zeros(1,ndraws);
+
+addpath('functions/StructuralIRF');
+
+RFormIRFBoots = zeros(n, horizons + 1,ndraws);
+
+AlphaBoots = zeros(1, ndraws);
+
+for idraws = 1:ndraws
+        
+        %i) Generate the draws for AL 
+        
+        AL   = reshape(Draws(1:(n^2)*p,idraws),[n,n*p]);
+        
+        %ii) Draws from Sigma
+      
+        vechSigma = Draws((n^2)*p+1:(n^2)*p+(n*(n+1)/2),idraws);
+      
+        Sigma = tril(ones(n),0); Sigma(Sigma==1) = vechSigma';
+      
+        Sigma = Sigma + tril(Sigma,-1)';
+      
+        %Check if the draws are positive definite
+      
+          if min(eig(Sigma))>0
+          
+          pdSigma(1,idraws) = 1;
+          
+          else
+          
+          pdSigma(1,idraws) = 0;
+          
+          end
+          
+          %iii) Draws from Gamma
+      
+          Gamma = reshape(Draws(((n^2)*p)+(n*(n+1)/2)+1:end,idraws),...
+              [n,k]);  
+          
+          [RFormIRFBoots(:,:,idraws), AlphaBoots(idraws)] = f(AL,Gamma,horizons,scale,norm);
+            
+      clear AL vechSigma Gamma 
+    
+end
+
+grid = rand(100,1);
+
+grid_size = size(grid,1);
+
+difference       = zeros(grid_size, ndraws, n, horizons+1);
+
+for var = 1:n
+
+    for horizon = 1:horizons+1
+        
+        IRFBootsVH = RFormIRFBoots(var,horizon,:);
+        
+        IRFBootsVH = reshape(IRFBootsVH, 1, 1001);
+          
+        difference(:,:,var,horizon) = IRFBootsVH - grid * AlphaBoots(1,:);
+        
+        clear IRFBootsVH;
+        
+    end
+    
+end
+
+%Fix a lambda j and square the matrix
+
+% Question: should I fix the var and horizon too? Not needed right?
+
+
+new_difference = zeros(grid_size,ndraws,n,horizons+1);
+
+for lambda = 1:grid_size
+   
+    %square matrix and multiply by root T
+    new_difference(lambda,:,:,:) = (difference(lambda,:,:,:).^2) * (T^(1/2));
+    
+    
+end
+
+%% 8) Implement "Standard" Bootstrap Inference
+
+aux        = reshape(pdSigma,[1,ndraws]);
+
+
+bootsIRFs  = quantile(new_difference(:,aux==1,:,:),...
+                          [((1-confidence)/2),1-((1-confidence)/2)],2);      
+                      
+difference_T = new_difference(:,1001,:,:);
+
+% check whether each one would be rejected or not
+
+% We are using a loop here, but the most efficient way would be to use
+% logical indexing
+
+%for var = 1:n
+    
+%    for horizon = 1:horizons+1
+        
+%        for lbd = 1:lambda
+           
+%            if(newest(lbd,1,var,horizon) >= bootsIRFs(lbd,1,var,horizon) && newest(lbd,1,var,horizon) <= bootsIRFs(lbd,2,var,horizon))
+               
+%                reject(n,horizon,lbd) = 0;
+                
+%            else
+                
+%                reject(n,horizon,lbd) = 1;
+           
+%            end
+            
+%        end
+        
+%    end
+    
+%end
+
+reject = (difference_T(:,1,:,:) < bootsIRFs(:,1,:,:)) | (difference_T(:,1,:,:) > bootsIRFs(:,2,:,:));
+
+reject = reshape(reject,[lambda, n, horizons+1]);
 
