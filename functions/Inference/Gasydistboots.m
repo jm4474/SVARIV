@@ -154,7 +154,7 @@ for idraws = 1:ndraws
     Gamma = reshape(Draws(((n^2)*p)+(n*(n+1)/2)+1:end,idraws),...
               [n,k]);             
           
-    IRFs(:,:,idraws,:) = f(AL,Sigma,Gamma,horizons,scale,norm);
+    [IRFs(:,:,idraws,:),~] = f(AL,Sigma,Gamma,horizons,scale,norm);
             
     clear AL vechSigma Gamma 
       

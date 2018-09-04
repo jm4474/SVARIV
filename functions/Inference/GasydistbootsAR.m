@@ -163,56 +163,55 @@ k       = size(Gamma,1)/n;
 
 %% 7 Evaluate the parameter of interest  
 
-f = @ARteststatistic;
+f = @IRFSVARIV;
 
 ndraws     = size(Draws,2);
      
 pdSigma    = zeros(1,ndraws);
 
-IRFs       = zeros(n, horizons+1, ndraws);
-
-Gamma11s   = zeros(1,ndraws);
-
 addpath('functions/StructuralIRF');
 
-RFormIRFBoots = zeros(n, horizons + 1,ndraws);
+RFormIRFBoots = zeros(n, horizons + 1,ndraws,2); %4th dimension corresponds to non-cumulative and cumulative values.
 
 AlphaBoots = zeros(1, ndraws);
 
 for idraws = 1:ndraws
+    
+    %i) Generate the draws for AL 
         
-        %i) Generate the draws for AL 
-        
-        AL   = reshape(Draws(1:(n^2)*p,idraws),[n,n*p]);
-        
-        %ii) Draws from Sigma
-      
-        vechSigma = Draws((n^2)*p+1:(n^2)*p+(n*(n+1)/2),idraws);
-      
-        Sigma = tril(ones(n),0); Sigma(Sigma==1) = vechSigma';
-      
-        Sigma = Sigma + tril(Sigma,-1)';
-      
-        %Check if the draws are positive definite
-      
-          if min(eig(Sigma))>0
-          
-          pdSigma(1,idraws) = 1;
-          
-          else
-          
-          pdSigma(1,idraws) = 0;
-          
-          end
-          
-          %iii) Draws from Gamma
-      
-          Gamma = reshape(Draws(((n^2)*p)+(n*(n+1)/2)+1:end,idraws),...
-              [n,k]);  
-          
-          [RFormIRFBoots(:,:,idraws), AlphaBoots(idraws)] = f(AL,Gamma,horizons,scale,norm);
-            
-      clear AL vechSigma Gamma 
+    AL   = reshape(Draws(1:(n^2)*p,idraws),[n,n*p]);
+
+    %ii) Draws from Sigma
+
+    vechSigma = Draws((n^2)*p+1:(n^2)*p+(n*(n+1)/2),idraws);
+
+    Sigma = tril(ones(n),0); Sigma(Sigma==1) = vechSigma';
+
+    Sigma = Sigma + tril(Sigma,-1)';
+
+    %Check if the draws are positive definite
+
+    if min(eig(Sigma))>0
+
+        pdSigma(1,idraws) = 1;
+
+    else
+
+        pdSigma(1,idraws) = 0;
+
+    end
+
+    %iii) Draws from Gamma
+
+    Gamma = reshape(Draws(((n^2)*p)+(n*(n+1)/2)+1:end,idraws),...
+      [n,k]);  
+
+    [RFormIRFBoots(:,:,idraws,:), AlphaBoots(idraws)] = f(AL,Sigma,Gamma,horizons,scale,norm);
+    
+    RFormIRFBoots(:,:,idraws,:) = RFormIRFBoots(:,:,idraws,:).*AlphaBoots(idraws);
+    % RFormIRFBoots(n,horizons+1,idraws,2)
+    
+    clear AL vechSigma Gamma 
     
 end
 
@@ -220,18 +219,20 @@ grid = rand(100,1);
 
 grid_size = size(grid,1);
 
-difference       = zeros(grid_size, ndraws, n, horizons+1);
+difference       = zeros(grid_size, ndraws, n, horizons+1,2); % 4th dimension is for cumulative and non-cumulative
 
 for var = 1:n
 
     for horizon = 1:horizons+1
         
-        IRFBootsVH = RFormIRFBoots(var,horizon,:);
+        IRFBootsVH = RFormIRFBoots(var,horizon,:,:);
         
-        IRFBootsVH = reshape(IRFBootsVH, 1, 1001);
+        IRFBootsVH = reshape(IRFBootsVH, 1, 1001,2);
           
-        difference(:,:,var,horizon) = (IRFBootsVH - (grid * AlphaBoots(1,:)))*(T^.5);
+        difference(:,:,var,horizon,1) = (IRFBootsVH(:,:,1) - (grid * AlphaBoots(1,:)))*(T^.5);
         %Eventually this has to be the AR statistic
+        
+        difference(:,:,var,horizon,2) = (IRFBootsVH(:,:,2) - (grid * AlphaBoots(1,:)))*(T^.5);
         
         clear IRFBootsVH;
         
@@ -240,48 +241,35 @@ for var = 1:n
 end
 
 %THIS IS A HORRIBLE NAME. WE WILL CHANGE IT. 
-new_difference = (difference - difference(:,1001,:,:)).^2;
+new_difference = (difference - difference(:,1001,:,:,:)).^2;
 %Adjust so that the number of draws can vary. the element I pick should be
 %ndraws
+%new_difference(grid_size, ndraws, n, horizons+1,cumulative)
 
 %% 8) Implement "Standard" Bootstrap Inference
 
 aux        = reshape(pdSigma,[1,ndraws]);
 
 
-bootsIRFs  = quantile(new_difference(:,aux==1,:,:),...
+bootsIRFs  = quantile(new_difference(:,aux==1,:,:,:),...
                           [((1-confidence)/2),1-((1-confidence)/2)],2);      
+% bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
+
                       
-difference_T = difference(:,1001,:,:);
+difference_T = difference(:,1001,:,:,:);
+% differnece_T(grid_size, ndraws, n, horizons+1,cumulative)
 
 % check whether each one would be rejected or not
 
-% We are using a loop here, but the most efficient way would be to use
-% logical indexing
+reject = (difference_T(:,1,:,:,:) < bootsIRFs(:,1,:,:,:)) | (difference_T(:,1,:,:,:) > bootsIRFs(:,2,:,:,:));
 
-%for var = 1:n
-    
-%    for horizon = 1:horizons+1
-        
-%        for lbd = 1:lambda
-           
-%            if(newest(lbd,1,var,horizon) >= bootsIRFs(lbd,1,var,horizon) && newest(lbd,1,var,horizon) <= bootsIRFs(lbd,2,var,horizon))
-               
-%                reject(n,horizon,lbd) = 0;
-                
-%            else
-                
-%                reject(n,horizon,lbd) = 1;
-           
-%            end
-            
-%        end
-        
-%    end
-    
-%end
+reject = reshape(reject,[grid_size, n, horizons+1,2]);
+% reject(grid_size, variables, horizons+1, cumulative)
 
-reject = (difference_T(:,1,:,:) < bootsIRFs(:,1,:,:)) | (difference_T(:,1,:,:) > bootsIRFs(:,2,:,:));
 
-reject = reshape(reject,[size(grid,1), n, horizons+1]);
+
+
+
+
+
 

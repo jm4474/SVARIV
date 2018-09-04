@@ -1,4 +1,4 @@
-function [ IRFSVARIV ] = IRFSVARIV(AL,Sigma,Gamma,horizons,scale,norm)
+function [ IRFSVARIV, Gamma11 ] = IRFSVARIV(AL,Sigma,Gamma,horizons,scale,norm)
 %  -Computes IRFs identified using an external instrument
 %  -Syntax:
 %    [ IRFSVARIV ] = IRFSVARIV(AL,Gamma,hori,x,nvar)
@@ -33,6 +33,11 @@ B1        = scale*Gamma./Gamma(norm,1);
       
 IRFSVARIV(:,:,1) = reshape(sum(bsxfun(@times,Csim,B1'),2),[n,horizons+1]);
 IRFSVARIV(:,:,2) = reshape(sum(bsxfun(@times,Ccumsim,B1'),2),[n,horizons+1]);
+%Ck(a)*x*Gamma/Gamma11. Third dimension for cumulative and non-cumulative
+
+
+Gamma11 = Gamma(norm,1);
 
 end
+
 
