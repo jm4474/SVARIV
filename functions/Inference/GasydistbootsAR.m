@@ -1,33 +1,38 @@
-%% 1) Set number of VAR Lags, Newey West lags and confidence level.
+function [reject, bootsIRFs] = GasydistbootsAR(ydata, T, seed, n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, AL, Sigma, Gamma, V, WHatall, grid)
+%  -Provides inference for SVAR-IV based on samples from the asy. dist.
+%  -Syntax:
+%    [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confidence, vecAL, vechSigma, Gamma, Whatall)
+%
+%  -Inputs:
+%     ydata: Endogenous variables from the VAR model
+%         T: time periods
+%      seed: seed structure  
+%         n: number of variables in the VAR
+%        NB: number of samples from the asymptotic distribution
+%         p: number of lags in the VAR
+%      norm: normalizing variable
+%     scale: scale of the shock
+%  horizons: number of horizons (IRFs) (does not include the impact or horizon 0)
+%confidence: confidence level
+%    NWlags: Newey-West lags
+%        AL: point estimator of AL
+%     Sigma: point estimator of Sigma
+%     Gamma: point estimator of vec(Gamma)
+%         V: Matrix such that vech(Sigma)=Vvec(Sigma)
+%   Whatall: Covariance mat of (vec(AL)', vech(Sigma)', vec(Gamma)')
+%      grid: Grid of values for the lambda to be used in the Anderson-Rubin Confidence Set
+%
+%  -Output:
+%   reject: 4d logical array for whether an IRF is rejected or not, for
+%   each lambda, variable, horizon, cumulative and non-cumulative
+% bootsIRF: alpha/2 and 1-alpha/2 quantiles of IRFs
+% 
+% This version: July 17th, 2017
+% Last edited by José Luis Montiel-Olea
 
-p           = 24;      %Number of lags in the VAR model
- 
-confidence  = 1;       %Confidence Level for the standard and weak-IV robust confidence set
+%% 2) Set the seed and the main directory
 
-                       % Define the variables in the SVAR
-columnnames = [{'Percent Change in Global Crude Oil Production'}, ...
-               {'Index of real economic activity'}, ...
-               {'Real Price of Oil'}];
-
-time        = 'Month';  % Time unit for the dataset (e.g. year, month, etc).
-
-NWlags      = 0;        % Newey-West lags(if it is neccessary to account for time series autocorrelation)
-                        % (set it to 0 to compute heteroskedasticity robust std errors)
-
-norm        = 1;        % Variable used for normalization
-
-scale       = 1;        % Scale of the shock
-
-horizons    = 20;       % Number of horizons for the Impulse Response Functions(IRFs)
-                        % (does not include the impact or horizon 0)
-                 
-NB          = 1000;     % Number of samples from the asymptotic distribution
-
-%% 2) Load data (saved in structure "data")
-%  These are the variables that were defined in line 14 above. 
-%  The time units should be on a single.xls file called Time.xls
-%  All the VAR variables should be on a single .xls file called Data.xls
-%  The external instrument should be in a single .xls file called ExtIV.xls
+rng(seed); clear seed
 
 cd ..
 
@@ -35,100 +40,102 @@ cd ..
 
 direct = pwd;
 
-application = 'Oil';
-
-cd(strcat(direct,'/Data/',application));
-
-    ydata = xlsread('Data'); 
-    %The frequency of this data is 1973:2 - 2007:12
-    %The file data.txt was obtained directly from the AER website
-
-
-    z    = xlsread('ExtIV');
-    %The frequency of this data is 1973:2 - 2004:09
-    %The .xls file was created by Jim Stock and Mark Watson and it 
-    %contains a monthly measure of Kilian's [2008] instrument for the
-    %oil supply shock. 
-    
-    years = xlsread('time');
-    
-dataset_name = 'OilData'; %The name of the dataset used for generating the figures (used in the output label)
-
 cd(direct)
-
 
 %% 3) Create an RForm (if necessary)
 
-SVARinp.ydata = ydata;
+if (nargin == 10)
 
-SVARinp.Z = z;
+        % This essentially checks whether the user provided or not his RForm. If
+        % the user didn't, then we calculate it. If the user did, we skip this section and
+        % use his/her RForm.
 
-SVARinp.n        = size(ydata,2); %number of columns(variables)
+    SVARinp.ydata = ydata;
 
-RForm.p          = p; %RForm_user.p is the number of lags in the model
+    SVARinp.Z = z;
+
+    SVARinp.n        = size(ydata,2); %number of columns(variables)
+
+    RForm.p          = p; %RForm_user.p is the number of lags in the model
 
 
-%a) Estimation of (AL, Sigma) and the reduced-form innovations
+    %a) Estimation of (AL, Sigma) and the reduced-form innovations
 
 
-% This essentially checks whether the user provided or not his RForm. If
-% the user didn't, then we calculate it. If the user did, we skip this section and
-% use his/her RForm.
+    % This essentially checks whether the user provided or not his RForm. If
+    % the user didn't, then we calculate it. If the user did, we skip this section and
+    % use his/her RForm.
 
-addpath('functions/RForm');
+    addpath('functions/RForm');
 
-[RForm.mu, ...
- RForm.AL, ...
- RForm.Sigma,...
- RForm.eta,...
- RForm.X,...
- RForm.Y]        = RForm_VAR(SVARinp.ydata, p);
+    [RForm.mu, ...
+     RForm.AL, ...
+     RForm.Sigma,...
+     RForm.eta,...
+     RForm.X,...
+     RForm.Y]        = RForm_VAR(SVARinp.ydata, p);
 
-%RForm.AL(:),RForm.V*RForm.Sigma(:),RForm.Gamma(:), RForm.WHatall
+    %RForm.AL(:),RForm.V*RForm.Sigma(:),RForm.Gamma(:), RForm.WHatall
 
-%b) Estimation of Gammahat (n times 1)
+    %b) Estimation of Gammahat (n times 1)
 
-RForm.Gamma      = RForm.eta*SVARinp.Z(p+1:end,1)/(size(RForm.eta,2));   %sum(u*z)/T. Used for the computation of impulse response.
-%(We need to take the instrument starting at period (p+1), because
-%we there are no reduced-form errors for the first p entries of Y.)
+    RForm.Gamma      = RForm.eta*SVARinp.Z(p+1:end,1)/(size(RForm.eta,2));   %sum(u*z)/T. Used for the computation of impulse response.
+    %(We need to take the instrument starting at period (p+1), because
+    %we there are no reduced-form errors for the first p entries of Y.)
 
-%c) Add initial conditions and the external IV to the RForm structure
+    %c) Add initial conditions and the external IV to the RForm structure
 
-RForm.Y0         = SVARinp.ydata(1:p,:);
+    RForm.Y0         = SVARinp.ydata(1:p,:);
 
-RForm.externalIV = SVARinp.Z(p+1:end,1);
+    RForm.externalIV = SVARinp.Z(p+1:end,1);
 
-RForm.n          = SVARinp.n;
+    RForm.n          = SVARinp.n;
 
-%a) Covariance matrix for vec(A,Gammahat). Used
-%to conduct frequentist inference about the IRFs. 
-[RForm.WHatall,RForm.WHat,RForm.V] = ...
-CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,NWlags);     
+    %a) Covariance matrix for vec(A,Gammahat). Used
+    %to conduct frequentist inference about the IRFs. 
+    [RForm.WHatall,RForm.WHat,RForm.V] = ...
+    CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,NWlags);     
 
-%NOTES:
-%The matrix RForm.WHatall is the covariance matrix of 
-% vec(Ahat)',vech(Sigmahat)',Gamma')'
- 
-%The matrix RForm.WHat is the covariance matrix of only
-% vec(Ahat)',Gamma')' 
- 
-% The latter is all we need to conduct inference about the IRFs,
-% but the former is needed to conduct inference about FEVDs.
+    %NOTES:
+    %The matrix RForm.WHatall is the covariance matrix of 
+    % vec(Ahat)',vech(Sigmahat)',Gamma')'
 
-vechSigma = RForm.V * RForm.Sigma(:);
+    %The matrix RForm.WHat is the covariance matrix of only
+    % vec(Ahat)',Gamma')' 
 
-AL = RForm.AL(:);
+    % The latter is all we need to conduct inference about the IRFs,
+    % but the former is needed to conduct inference about FEVDs.
+    
+    AL = RForm.AL;
+    
+    Sigma = RForm.Sigma;
+    
+    Gamma = RForm.Gamma;
+    
+    V = RForm.V;
+    
+    WHatall = RForm.WHatall;
+    
+    n            = RForm.n;
 
-Gamma = RForm.Gamma;
+elseif (nargin == 15)
 
+    % We will use the user's RForm
+
+else 
+
+    % Error, not enough inputs.
+
+end
+
+vechSigma = V * Sigma(:);
+
+AL = AL(:);
 
 %% 4) Estimation of the asymptotic variance of A,Gamma
 
 % Definitions
 
-n            = RForm.n; % Number of endogenous variables
-
-T            = (size(RForm.eta,2)); % Number of time periods
 
 d            = ((n^2)*p)+(n);     %This is the size of (vec(A)',Gamma')'
 
@@ -138,12 +145,12 @@ d            = ((n^2)*p)+(n);     %This is the size of (vec(A)',Gamma')'
 
 %% 5) Make sure that Whatall is symmetric and positive semidefinite
 
-%dall        = size(RForm.WHatall,1);  
+%dall        = size(WHatall,1);  
 
 
-dall        = size(RForm.WHatall,1);
+dall        = size(WHatall,1);
 
-WHatall     = (RForm.WHatall + RForm.WHatall')/2;
+WHatall     = (WHatall + WHatall')/2;
     
 [aux1,aux2] = eig(WHatall);
     
@@ -163,8 +170,6 @@ Draws   = bsxfun(@plus,gvar,...
 k       = size(Gamma,1)/n;        
 
 %% 7 Evaluate the parameter of interest  
-
-f             = @IRFSVARIV;
 
 ndraws        = size(Draws,2);
      
@@ -207,7 +212,7 @@ for idraws    = 1:ndraws
     Gamma = reshape(Draws(((n^2)*p)+(n*(n+1)/2)+1:end,idraws),...
       [n,k]);  
 
-    [RFormIRFBoots(:,:,idraws,:), AlphaBoots(idraws)] = f(AL,Sigma,Gamma,horizons,scale,norm);
+    [RFormIRFBoots(:,:,idraws,:), AlphaBoots(idraws)] = IRFSVARIV(AL,Sigma,Gamma,horizons,scale,norm);
     
     RFormIRFBoots(:,:,idraws,:) = RFormIRFBoots(:,:,idraws,:).*AlphaBoots(idraws);
     % RFormIRFBoots(n,horizons+1,idraws,2)
@@ -216,24 +221,22 @@ for idraws    = 1:ndraws
     
 end
 
-grid            = rand(100,1);
-
 grid_size       = size(grid,1);
 
-difference      = zeros(grid_size, ndraws, n, horizons+1,2); % 5th dimension is for cumulative and non-cumulative
+test      = zeros(grid_size, ndraws, n, horizons+1,2); % 5th dimension is for cumulative and non-cumulative
 
 for var         = 1:n
 
     for horizon = 1:horizons+1
         
-        difference(:,:,var,horizon,:) = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, grid, T);
+        test(:,:,var,horizon,:) = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, grid, T);
         
     end
     
 end
 
-AR_test         = (difference - difference(:,ndraws,:,:,:)).^2;
-%new_difference(grid_size, ndraws, n, horizons+1,cumulative)
+AR_test         = (test - test(:,ndraws,:,:,:)).^2;
+% AR_test(grid_size, ndraws, n, horizons+1,cumulative)
 
 %% 8) Implement "Standard" Bootstrap Inference
 
@@ -245,12 +248,12 @@ bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
 % bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
 
                       
-difference_T = difference(:,1001,:,:,:);
+test_T = test(:,1001,:,:,:);
 % differnece_T(grid_size, ndraws, n, horizons+1,cumulative)
 
 % check whether each one would be rejected or not
 
-reject       = (difference_T(:,1,:,:,:) < bootsIRFs(:,1,:,:,:)) | (difference_T(:,1,:,:,:) > bootsIRFs(:,2,:,:,:));
+reject       = (test_T(:,1,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,1,:,:,:) > bootsIRFs(:,2,:,:,:));
 
 reject       = reshape(reject,[grid_size, n, horizons+1,2]);
 % reject(grid_size, variables, horizons+1, cumulative)

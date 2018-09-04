@@ -144,3 +144,16 @@ addpath(strcat(direct,'/functions/figuresfun'));
 [caux,InferenceMSW,NB,seed,SVARinp,T] = Bootstrap_Plots(ydata, z, p, norm, scale, horizons, confidence, NWlags, RForm, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect);
 
 toc;
+
+%% 5) AR confidence set using bootstrap implementation
+
+disp('Section 5 in this script calls the GasydistbootsAR function to do the bootstrap implementation of the Anderson-Rubin confidence set')
+
+cd(strcat(direct,'/functions/Inference'));
+
+grid            = rand(100,1);
+
+[reject, bootsIRFs] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, grid);
+
+
+

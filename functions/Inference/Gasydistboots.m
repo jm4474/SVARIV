@@ -13,10 +13,12 @@ function [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons
 %confidence: confidence level
 %        T: time periods
 %        f: function handle (depends on AL, Sigma, Gamma, hori, x, nvar)
-%    vecAL: point estimator of vec(AL)
+%   NWlags: Newey-West lags
+%       AL: point estimator of AL
 %vechSigma: point estimator of vech(Sigma)
 %    Gamma: point estimator of vec(Gamma)
 %  Whatall: Covariance mat of (vec(AL)', vech(Sigma)', vec(Gamma)')              
+%
 %  -Output:
 %       AL: Least-squares estimator of the VAR coefficients
 %    Sigma: Least-squares estimator of the VAR residuals
@@ -115,7 +117,6 @@ k       = size(Gamma,1)/n;
 
 %% 4) Evaluate the parameter of interest 
 % (which is allowed to depend on the full vector vecA, vechSigma, Gamma)
-f = @IRFSVARIV;
 
 ndraws     = size(Draws,2);
      
