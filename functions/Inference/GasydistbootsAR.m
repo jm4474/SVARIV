@@ -1,27 +1,27 @@
 %% 1) Set number of VAR Lags, Newey West lags and confidence level.
 
-p           = 24;     %Number of lags in the VAR model
+p           = 24;      %Number of lags in the VAR model
  
-confidence  = 1;    %Confidence Level for the standard and weak-IV robust confidence set
+confidence  = 1;       %Confidence Level for the standard and weak-IV robust confidence set
 
-% Define the variables in the SVAR
+                       % Define the variables in the SVAR
 columnnames = [{'Percent Change in Global Crude Oil Production'}, ...
                {'Index of real economic activity'}, ...
                {'Real Price of Oil'}];
 
 time        = 'Month';  % Time unit for the dataset (e.g. year, month, etc).
 
-NWlags      = 0;  % Newey-West lags(if it is neccessary to account for time series autocorrelation)
-                  % (set it to 0 to compute heteroskedasticity robust std errors)
+NWlags      = 0;        % Newey-West lags(if it is neccessary to account for time series autocorrelation)
+                        % (set it to 0 to compute heteroskedasticity robust std errors)
 
-norm        = 1; % Variable used for normalization
+norm        = 1;        % Variable used for normalization
 
-scale       = 1; % Scale of the shock
+scale       = 1;        % Scale of the shock
 
-horizons    = 20; %Number of horizons for the Impulse Response Functions(IRFs)
-                 %(does not include the impact or horizon 0)
+horizons    = 20;       % Number of horizons for the Impulse Response Functions(IRFs)
+                        % (does not include the impact or horizon 0)
                  
-NB          = 1000; % number of samples from the asymptotic distribution
+NB          = 1000;     % Number of samples from the asymptotic distribution
 
 %% 2) Load data (saved in structure "data")
 %  These are the variables that were defined in line 14 above. 
@@ -121,13 +121,14 @@ AL = RForm.AL(:);
 
 Gamma = RForm.Gamma;
 
+
 %% 4) Estimation of the asymptotic variance of A,Gamma
 
 % Definitions
 
 n            = RForm.n; % Number of endogenous variables
 
-T            = (size(RForm.eta,2)); % Number of observations (time periods)
+T            = (size(RForm.eta,2)); % Number of time periods
 
 d            = ((n^2)*p)+(n);     %This is the size of (vec(A)',Gamma')'
 
@@ -163,31 +164,31 @@ k       = size(Gamma,1)/n;
 
 %% 7 Evaluate the parameter of interest  
 
-f = @IRFSVARIV;
+f             = @IRFSVARIV;
 
-ndraws     = size(Draws,2);
+ndraws        = size(Draws,2);
      
-pdSigma    = zeros(1,ndraws);
+pdSigma       = zeros(1,ndraws);
 
 addpath('functions/StructuralIRF');
 
 RFormIRFBoots = zeros(n, horizons + 1,ndraws,2); %4th dimension corresponds to non-cumulative and cumulative values.
 
-AlphaBoots = zeros(1, ndraws);
+AlphaBoots    = zeros(1, ndraws);
 
-for idraws = 1:ndraws
+for idraws    = 1:ndraws
     
     %i) Generate the draws for AL 
         
-    AL   = reshape(Draws(1:(n^2)*p,idraws),[n,n*p]);
+    AL        = reshape(Draws(1:(n^2)*p,idraws),[n,n*p]);
 
     %ii) Draws from Sigma
 
     vechSigma = Draws((n^2)*p+1:(n^2)*p+(n*(n+1)/2),idraws);
 
-    Sigma = tril(ones(n),0); Sigma(Sigma==1) = vechSigma';
+    Sigma     = tril(ones(n),0); Sigma(Sigma==1) = vechSigma';
 
-    Sigma = Sigma + tril(Sigma,-1)';
+    Sigma     = Sigma + tril(Sigma,-1)';
 
     %Check if the draws are positive definite
 
@@ -215,43 +216,31 @@ for idraws = 1:ndraws
     
 end
 
-grid = rand(100,1);
+grid            = rand(100,1);
 
-grid_size = size(grid,1);
+grid_size       = size(grid,1);
 
-difference       = zeros(grid_size, ndraws, n, horizons+1,2); % 4th dimension is for cumulative and non-cumulative
+difference      = zeros(grid_size, ndraws, n, horizons+1,2); % 5th dimension is for cumulative and non-cumulative
 
-for var = 1:n
+for var         = 1:n
 
     for horizon = 1:horizons+1
         
-        IRFBootsVH = RFormIRFBoots(var,horizon,:,:);
-        
-        IRFBootsVH = reshape(IRFBootsVH, 1, 1001,2);
-          
-        difference(:,:,var,horizon,1) = (IRFBootsVH(:,:,1) - (grid * AlphaBoots(1,:)))*(T^.5);
-        %Eventually this has to be the AR statistic
-        
-        difference(:,:,var,horizon,2) = (IRFBootsVH(:,:,2) - (grid * AlphaBoots(1,:)))*(T^.5);
-        
-        clear IRFBootsVH;
+        difference(:,:,var,horizon,:) = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, grid, T);
         
     end
     
 end
 
-%THIS IS A HORRIBLE NAME. WE WILL CHANGE IT. 
-new_difference = (difference - difference(:,1001,:,:,:)).^2;
-%Adjust so that the number of draws can vary. the element I pick should be
-%ndraws
+AR_test         = (difference - difference(:,ndraws,:,:,:)).^2;
 %new_difference(grid_size, ndraws, n, horizons+1,cumulative)
 
 %% 8) Implement "Standard" Bootstrap Inference
 
-aux        = reshape(pdSigma,[1,ndraws]);
+aux          = reshape(pdSigma,[1,ndraws]);
 
 
-bootsIRFs  = quantile(new_difference(:,aux==1,:,:,:),...
+bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
                           [((1-confidence)/2),1-((1-confidence)/2)],2);      
 % bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
 
@@ -261,9 +250,9 @@ difference_T = difference(:,1001,:,:,:);
 
 % check whether each one would be rejected or not
 
-reject = (difference_T(:,1,:,:,:) < bootsIRFs(:,1,:,:,:)) | (difference_T(:,1,:,:,:) > bootsIRFs(:,2,:,:,:));
+reject       = (difference_T(:,1,:,:,:) < bootsIRFs(:,1,:,:,:)) | (difference_T(:,1,:,:,:) > bootsIRFs(:,2,:,:,:));
 
-reject = reshape(reject,[grid_size, n, horizons+1,2]);
+reject       = reshape(reject,[grid_size, n, horizons+1,2]);
 % reject(grid_size, variables, horizons+1, cumulative)
 
 
