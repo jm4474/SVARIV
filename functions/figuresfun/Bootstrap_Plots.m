@@ -1,18 +1,15 @@
-function [caux,InferenceMSW,NB,seed,SVARinp,T] = Bootstrap_Plots(ydata,z,p,norm,scale,horizons,confidence,NWlags,RForm,figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
+function [caux,InferenceMSW] = Bootstrap_Plots(n,p,horizons,confidence,RForm, SVARinp, figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
 %Implements bootstrap-type inference and produces plots comparing bootstrap inference and the delta-method. 
 %   -Syntax:
-%       [caux,InferenceMSW,NB,seed,SVARinp,T] = Bootstrap_Plots(ydata,z,p,norm,scale,horizons,confidence,NWlags,RForm,figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
+%       [caux,InferenceMSW] = Bootstrap_Plots(n,p,horizons,confidence,RForm,SVARinp,figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
 %   -Inputs:
-%      ydata:           Endogenous variables from the VAR model                                            (T times n)
-%      z:               External instrumental variable                                                     (T times 1)
+%      n:               Number of variables in the VAR model 
 %      p:               Number of lags in the VAR model                                                    (1 times 1)
-%      norm:            Variable used for normalization                                                    (1 times 1)
-%      scale:           Scale of the shock                                                                 (1 times 1)
 %      horizons:        Number of horizons for the Impulse Response Functions (IRFs)                       (1 times 1)  
 %                       (does not include the impact horizon 0)    
 %      confidence:      Value for the standard and weak-IV robust confidence set                           (1 times 1)
-%      NWlags:          Newey-West lags                                                                    (1 times 1)
 %      RForm:           Structure containing the reduced form parameters
+%      SVARinp:         Structure containing ydata, z, & n
 %      figureorder:     Figure number                                                                      (1 times 1)
 %      Plugin:          Structure containing standard plug-in inference
 %      InferenceMSW:    InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
@@ -27,43 +24,9 @@ function [caux,InferenceMSW,NB,seed,SVARinp,T] = Bootstrap_Plots(ydata,z,p,norm,
 %   -Output:
 %       caux:
 %       InferenceMSW:  Structure containing the MSW weak-iv robust confidence interval
-%       NB:            Number of bootstrap replications
-%       seed:          Seed structure
-%       SVARinp:       Structure containing ydata, z, & n
-%       T:             Number of observations/time periods 
 
-%% 1) "Standard" bootstrap-type inference based on samples from the asy dist.
 
-% The user can run this section independently of section 3. Once again, by
-% default the function generates an RForm, but the user can provide their own
-% RForm as an input.
-
-disp('The Bootstrap_Plots function implements bootstrap-type inference and produces plots comparing bootstrap inference and the delta-method.');
-
-seed            = load(strcat(direct,'/seed/seedMay12.mat')); 
-    
-seed            = seed.seed;
-
-n            = size(ydata, 2);  %number of variables in the VAR
-
-T  = size(ydata, 1);            % Number of observations/time periods.
-
-NB = 1000;                      % Number of bootstrap replications 
-
-SVARinp.Z = z;
-
-SVARinp.ydata = ydata;
-
-SVARinp.n = n;
-
-addpath('functions/Inference');
-
-[~,InferenceMSW.bootsIRFs] = ...
-                  Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T,...
-                  @IRFSVARIV, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall);
-              
-
-%% 2) Comparison of "standard" bootstrap inference and the delta-method
+%% 1) Comparison of "standard" bootstrap inference and the delta-method
 
 %Non-cumulative graphs 
 figureorder = figureorder + 1; 
@@ -196,7 +159,7 @@ for iplot = 1:n
     
             
 end
-%% 3) Save the output and plots in ./Output/Mat and ./Output/Figs
+%% 2) Save the output and plots in ./Output/Mat and ./Output/Figs
  
 %Check if the Output File exists, and if not create one.
  
@@ -253,7 +216,7 @@ print(gcf,'-depsc2',strcat('IRF_SVAR_CUM',output_label,'.eps'));
  
 cd(direct);
 
-%% 4)Comparison of "standard" bootstrap inference and the delta-method (Selected IRF) 
+%% 3)Comparison of "standard" bootstrap inference and the delta-method (Selected IRF) 
 
 if length(IRFselect) ~= 1
     
@@ -333,7 +296,7 @@ else
     
 end
 
-%% 5) Generating separate bootstrap inference and delta method comparison for selected IRF and saving them to different folder
+%% 4) Generating separate bootstrap inference and delta method comparison for selected IRF and saving them to different folder
 
 if isempty(IRFselect) == 0
 
@@ -428,7 +391,7 @@ else
     
 end
 
-%% 6) Comparison of "standard" bootstrap inference and the delta-method (Selected Cumulative) 
+%% 5) Comparison of "standard" bootstrap inference and the delta-method (Selected Cumulative) 
 
 if length(cumselect) ~= 1
 
@@ -508,7 +471,7 @@ else
     
 end
 
-%% 7) Generating separate bootstrap inference and delta method comparison for selected cumulative IRF and saving them to different folder
+%% 6) Generating separate bootstrap inference and delta method comparison for selected cumulative IRF and saving them to different folder
  
 if isempty(cumselect) == 0
     plots.order     = 1:length(cumselect);

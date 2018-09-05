@@ -134,20 +134,45 @@ addpath(strcat(direct,'/functions/Inference'));
 %       InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
 %       Chol: Cholesky IRFs
 
+%% 4) "Standard" bootstrap-type inference based on samples from the asy dist.
 
-%% 4) Bootstrap Plots
+disp('Section 4 in this script calls the Gasydistboots function to provide inference for SVAR-IV based on samples from the asy. dist.')
 
-disp('Section 4 in this script calls the Bootstrap_Plots function.')
+seed            = load(strcat(direct,'/seed/seedMay12.mat')); 
+    
+seed            = seed.seed;
+
+n = RForm.n; 
+
+T  = size(ydata, 1);            % Number of observations/time periods.
+
+NB = 1000;                      % Number of bootstrap replications 
+
+SVARinp.Z = z;
+
+SVARinp.ydata = ydata;
+
+SVARinp.n = n;
+
+
+addpath('functions/Inference');
+
+[~,InferenceMSW.bootsIRFs] = ...
+                  Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T,...
+                  @IRFSVARIV, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall);
+
+%% 5) Bootstrap Plots
+
+disp('Section 5 in this script calls the Bootstrap_Plots function.')
 
 addpath(strcat(direct,'/functions/figuresfun'));
 
-[caux,InferenceMSW,NB,seed,SVARinp,T] = Bootstrap_Plots(ydata, z, p, norm, scale, horizons, confidence, NWlags, RForm, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect);
+[caux,InferenceMSW] = Bootstrap_Plots(n, p, horizons, confidence, RForm, SVARinp, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect);
 
-toc;
 
-%% 5) AR confidence set using bootstrap implementation
+%% 6) AR confidence set using bootstrap implementation
 
-disp('Section 5 in this script calls the GasydistbootsAR function to do the bootstrap implementation of the Anderson-Rubin confidence set')
+disp('Section 6 in this script calls the GasydistbootsAR function to do the bootstrap implementation of the Anderson-Rubin confidence set')
 
 cd(strcat(direct,'/functions/Inference'));
 
@@ -156,4 +181,4 @@ grid            = rand(100,1);
 [reject, bootsIRFs] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, grid);
 
 
-
+toc; 
