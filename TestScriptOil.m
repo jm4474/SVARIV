@@ -178,5 +178,4 @@ cd(strcat(direct,'/functions/Inference'));
 
 [reject, bootsIRFs] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, grid);
 
-
 toc; 
