@@ -108,7 +108,7 @@ addpath(strcat(direct,'/functions/MasterFunction'));
 
 addpath(strcat(direct,'/functions/Inference'));
 
-[Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
+[Plugin, InferenceMSW, Chol, RForm, figureorder, grid] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
  
 % A more in depth description of the function can be found within the
 % function file. For clarity purposes, we briefly describe the function
@@ -175,8 +175,6 @@ addpath(strcat(direct,'/functions/figuresfun'));
 disp('Section 6 in this script calls the GasydistbootsAR function to do the bootstrap implementation of the Anderson-Rubin confidence set')
 
 cd(strcat(direct,'/functions/Inference'));
-
-grid            = rand(100,1);
 
 [reject, bootsIRFs] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, grid);
 

@@ -221,21 +221,23 @@ for idraws    = 1:ndraws
     
 end
 
-grid_size       = size(grid,1);
+grid_size       = size(grid,3);
 
-test      = zeros(grid_size, ndraws, n, horizons+1,2); % 5th dimension is for cumulative and non-cumulative
+test_aux      = zeros(grid_size, ndraws, n, horizons+1,2); % 5th dimension is for cumulative and non-cumulative
 
 for var         = 1:n
 
     for horizon = 1:horizons+1
         
-        test(:,:,var,horizon,:) = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, grid, T);
+        aux_grid = reshape(grid(var,horizon,:),[grid_size,1]);
+        
+        test_aux(:,:,var,horizon,:) = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, aux_grid, T);
         
     end
     
 end
 
-AR_test         = (test - test(:,ndraws,:,:,:)).^2;
+AR_test         = (test_aux - test_aux(:,ndraws,:,:,:)).^2;
 % AR_test(grid_size, ndraws, n, horizons+1,cumulative)
 
 %% 8) Implement "Standard" Bootstrap Inference
@@ -248,7 +250,7 @@ bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
 % bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
 
                       
-test_T = test(:,1001,:,:,:);
+test_T = test_aux(:,1001,:,:,:);
 % differnece_T(grid_size, ndraws, n, horizons+1,cumulative)
 
 % check whether each one would be rejected or not

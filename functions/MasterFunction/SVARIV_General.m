@@ -1,4 +1,4 @@
-function [Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name, RForm)
+function [Plugin, InferenceMSW, Chol, RForm, figureorder, grid] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name, RForm)
 % Implements standard and weak-IV robust SVAR-IV inference.
 %-Syntax:
 %       [Plugin, InferenceMSW, Chol] = SVARIV_Luigi(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir)
@@ -170,7 +170,7 @@ dall         = d+ (n*(n+1))/2;    %This is the size of (vec(A)',vec(Sigma), Gamm
  
 addpath(strcat(main_d,'/functions/Inference'));
  
-[InferenceMSW,Plugin,Chol] = MSWfunction(confidence,norm,scale,horizons,RForm,1);
+[InferenceMSW,Plugin,Chol, grid] = MSWfunction(confidence,norm,scale,horizons,RForm,1);
 
 %% 5) Plot Results (for all variables)
 

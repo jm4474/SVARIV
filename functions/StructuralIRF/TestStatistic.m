@@ -1,4 +1,4 @@
-function [test] = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, grid, T)
+function [test] = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, aux_grid, T)
 %  -Provides inference for SVAR-IV based on samples from the asy. dist.
 %  -Syntax:
 %    [test] = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, grid, T)
@@ -23,10 +23,10 @@ IRFBootsVH = RFormIRFBoots(var,horizon,:,:);
         
 IRFBootsVH = reshape(IRFBootsVH, 1, 1001,2);
 
-test(:,:,1) = (IRFBootsVH(:,:,1) - (grid * AlphaBoots(1,:)))*(T^.5); 
+test(:,:,1) = (IRFBootsVH(:,:,1) - (aux_grid * AlphaBoots(1,:)))*(T^.5); 
 % (scale*Ck(A) - lambda)*Gamma*T^(1/2)
 % The third dimension allows for cumulative and non-cumulative computation.
         
-test(:,:,2) = (IRFBootsVH(:,:,2) - (grid * AlphaBoots(1,:)))*(T^.5);
+test(:,:,2) = (IRFBootsVH(:,:,2) - (aux_grid * AlphaBoots(1,:)))*(T^.5);
         
 end
