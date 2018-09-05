@@ -21,10 +21,10 @@ function [test] = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, aux_gri
 
 IRFBootsVH = RFormIRFBoots(var,horizon,:,:);
         
-IRFBootsVH = reshape(IRFBootsVH, 1, 1001,2);
+IRFBootsVH = reshape(IRFBootsVH, [1, 1001,2]);
 
 test(:,:,1) = (IRFBootsVH(:,:,1) - (aux_grid * AlphaBoots(1,:)))*(T^.5); 
-% (scale*Ck(A) - lambda)*Gamma*T^(1/2)
+% (scale*Ck(A)*Gamma - lambda*Gamma(1,1))*T^(1/2)
 % The third dimension allows for cumulative and non-cumulative computation.
         
 test(:,:,2) = (IRFBootsVH(:,:,2) - (aux_grid * AlphaBoots(1,:)))*(T^.5);
