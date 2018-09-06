@@ -167,7 +167,7 @@ disp('Section 5 in this script calls the Bootstrap_Plots function.')
 
 addpath(strcat(direct,'/functions/figuresfun'));
 
-[caux,InferenceMSW] = Bootstrap_Plots(n, p, horizons, confidence, RForm, SVARinp, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect);
+[caux,InferenceMSW, figureorder] = Bootstrap_Plots(n, p, horizons, confidence, RForm, SVARinp, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect);
 
 
 %% 6) AR confidence set using bootstrap implementation
@@ -177,5 +177,13 @@ disp('Section 6 in this script calls the GasydistbootsAR function to do the boot
 cd(strcat(direct,'/functions/Inference'));
 
 [reject, bootsIRFs] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, grid);
+
+%% 7) AR Bootstrap plots
+
+disp('Section 7 in this script calls the BootstrapAR_Plots function.')
+
+addpath(strcat(direct,'/functions/figuresfun'));
+
+BootstrapAR_Plots(n, p, horizons, confidence, RForm, SVARinp, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect, reject, grid);
 
 toc; 

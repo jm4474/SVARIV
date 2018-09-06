@@ -1,4 +1,4 @@
-function [caux,InferenceMSW] = Bootstrap_Plots(n,p,horizons,confidence,RForm, SVARinp, figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
+function [caux,InferenceMSW,figureorder] = Bootstrap_Plots(n,p,horizons,confidence,RForm, SVARinp, figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
 %Implements bootstrap-type inference and produces plots comparing bootstrap inference and the delta-method. 
 %   -Syntax:
 %       [caux,InferenceMSW] = Bootstrap_Plots(n,p,horizons,confidence,RForm,SVARinp,figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
@@ -48,7 +48,6 @@ for iplot = 1:n
         subplot(ceil(sqrt(n)),floor(sqrt(n)),plots.order(1,iplot));
         
     end
-    
     
     plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
     

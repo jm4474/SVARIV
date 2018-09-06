@@ -245,17 +245,22 @@ AR_test         = (test_aux - test_aux(:,ndraws,:,:,:)).^2;
 aux          = reshape(pdSigma,[1,ndraws]);
 
 
-bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
-                          [((1-confidence)/2),1-((1-confidence)/2)],2);      
+%bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
+%                          [((1-confidence)/2),1-((1-confidence)/2)],2);      
 % bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
 
+bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
+                          (confidence),2);     
+
                       
-test_T = test_aux(:,1001,:,:,:);
+test_T = test_aux(:,NB+1,:,:,:).^2;
 % differnece_T(grid_size, ndraws, n, horizons+1,cumulative)
 
 % check whether each one would be rejected or not
 
-reject       = (test_T(:,1,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,1,:,:,:) > bootsIRFs(:,2,:,:,:));
+%reject       = (test_T(:,1,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,1,:,:,:) > bootsIRFs(:,2,:,:,:));
+
+reject       = test_T(:,1,:,:,:) > bootsIRFs(:,1,:,:,:);
 
 reject       = reshape(reject,[grid_size, n, horizons+1,2]);
 % reject(grid_size, variables, horizons+1, cumulative)
