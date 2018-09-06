@@ -416,7 +416,7 @@ IRF = Plugin.IRF;
  
 %critval = norminv(1-((1-confidence)/2),0,1)^2;
  
-multiplier = 80;
+multiplier = 500;
  
 IRFstderror = Plugin.IRFstderror;
  

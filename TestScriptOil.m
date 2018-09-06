@@ -48,7 +48,7 @@ scale       = 1; % Scale of the shock
 horizons    = 20; %Number of horizons for the Impulse Response Functions(IRFs)
                  %(does not include the impact or horizon 0)
                  
-IRFselect   = [1];
+IRFselect   = [1,2];
 % By default, the program generates a single figure with the IRFs for ALL variables
 % in the VAR. However, IRFselect allows the user to generate an indepedent
 % figure displaying only some specific variables of interest. 
@@ -58,7 +58,7 @@ IRFselect   = [1];
 % dataset. E.g. the above vector will select the variables 
 % "Index of real economic activity" and the "Real Price of Oil".
 
-cumselect = [2]; 
+cumselect = [2,3]; 
 %cumselect allows the user to generate cumulative IRF plots displaying only 
 %some specific variables of interest. 
 

@@ -71,7 +71,7 @@ for iplot = 1:n
         %plot rejected ones
         plot(hor,rejected_grid,'r--x'); hold on
         
-        %plot %not rejected ones
+        %plot not rejected ones
         plot(hor,unrejected_grid,'b--o'); hold on
         
         end
@@ -125,10 +125,10 @@ for iplot = 1:n
         
     end
     
-    plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+    plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
     
-    [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
-        InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+    [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+        InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
         [204/255 204/255 204/255],0,0.5); hold on
         
     
@@ -461,10 +461,10 @@ if length(cumselect) ~= 1
 
             end
 
-            plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+            plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
     
-            [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
-            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
             [204/255 204/255 204/255],0,0.5); hold on
         
             for hor = 0:horizons
@@ -523,10 +523,10 @@ if isempty(cumselect) == 0
 
         figure(figureorder);
 
-        plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+        plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
     
-        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
-        InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+        InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
         [204/255 204/255 204/255],0,0.5); hold on
         
         for hor = 0:horizons
