@@ -1,4 +1,4 @@
-function [] = BootstrapAR_Plots(n,p,horizons,confidence,RForm, SVARinp, figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect, reject, grid)
+function [] = BootstrapAR_Plots(n,p,horizons,confidence,RForm, SVARinp, figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect, reject, null_grid, norm)
 %Implements bootstrap-type inference and produces plots comparing bootstrap inference and the delta-method. 
 %   -Syntax:
 %       [caux,InferenceMSW] = Bootstrap_Plots(n,p,horizons,confidence,RForm,SVARinp,figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
@@ -58,22 +58,32 @@ for iplot = 1:n
   
     for hor = 0:horizons
         
-        rejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+        rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
         
-        unrejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+        unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
         
-        if isempty(rejected_grid) == 1
-            
+        normalize = (iplot == norm && hor == 0);
+        
+        if (normalize == 1)
+                
             plot(hor,1,'b--o')
             
-        else
+        end
+            
+        if (isempty(rejected_grid) == 1 && normalize == 0)
+            
+            disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
         
-        %plot rejected ones
-        plot(hor,rejected_grid,'r--x'); hold on
+        end
         
-        %plot not rejected ones
-        plot(hor,unrejected_grid,'b--o'); hold on
+        if (isempty(unrejected_grid) == 0 && normalize == 0)
+            
+            %plot rejected ones
+            %plot(hor,rejected_grid,'r--x'); hold on
         
+            %plot %not rejected ones
+            plot(hor,unrejected_grid,'b--o'); hold on
+            
         end
         
         clear rejected_grid unrejected_grid
@@ -88,6 +98,8 @@ for iplot = 1:n
     xlabel(time)
     
     title(columnnames(iplot));
+    
+   
     
     xlim([0 horizons]);
 
@@ -107,6 +119,8 @@ for iplot = 1:n
     end
 
 end
+            
+singletitle('Non-Cumulative Bootstrap AR vs. MSW CI','fontsize',16,'xoff',0,'yoff',0.04);
 
 %Cumulative graphs 
 figureorder = figureorder + 1; 
@@ -136,18 +150,28 @@ for iplot = 1:n
   
     for hor = 0:horizons
         
-        rejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 1)));
+        rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 1)));
         
-        unrejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 0)));
+        unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 0)));
         
-        if isempty(rejected_grid) == 1  
+        normalize = (iplot == norm && hor == 0);
         
+        if (normalize == 1)
+                
             plot(hor,1,'b--o')
             
-        else
+        end
+            
+        if (isempty(rejected_grid) == 1 && normalize == 0)
+            
+            disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+        
+        end
+        
+        if (isempty(unrejected_grid) == 0 && normalize == 0)
             
             %plot rejected ones
-            plot(hor,rejected_grid,'r--x'); hold on
+            %plot(hor,rejected_grid,'r--x'); hold on
         
             %plot %not rejected ones
             plot(hor,unrejected_grid,'b--o'); hold on
@@ -165,7 +189,7 @@ for iplot = 1:n
     
     xlabel(time)
     
-    title(strcat('Cumulative',{' '},columnnames(iplot)));
+    title(strcat(columnnames(iplot)));
     
     xlim([0 horizons]);
 
@@ -180,12 +204,14 @@ for iplot = 1:n
         
         legend boxoff
         
-        legend('location','southeast')
+        legend('location','southwest')
      
     end
 
 end
-
+            
+singletitle('Cumulative Bootstrap AR vs. MSW CI','fontsize',16,'xoff',0,'yoff',0.04);
+    
 %% 2) Save the output and plots in ./Output/Mat and ./Output/Figs
 
 if exist(savdir,'dir')==0
@@ -275,22 +301,33 @@ if length(IRFselect) ~= 1
         
         
             for hor = 0:horizons
-                rejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+                rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
                 
-                unrejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+                unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
                 
-                if isempty(rejected_grid) == 1
-                    
+                
+                normalize = (iplot == norm && hor == 0);
+        
+                if (normalize == 1)
+                
                     plot(hor,1,'b--o')
-                
-                else
-                    
+            
+                end
+
+                if (isempty(rejected_grid) == 1 && normalize == 0)
+
+                    disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+
+                end
+
+                if (isempty(unrejected_grid) == 0 && normalize == 0)
+
                     %plot rejected ones
-                    plot(hor,rejected_grid,'r--x'); hold on
-                    
+                    %plot(hor,rejected_grid,'r--x'); hold on
+
                     %plot %not rejected ones
                     plot(hor,unrejected_grid,'b--o'); hold on
-                
+
                 end
                 
                 clear rejected_grid unrejected_grid
@@ -321,6 +358,8 @@ if length(IRFselect) ~= 1
             end
             
         end
+            
+        singletitle('Selected Non-Cumulative Bootstrap AR vs. MSW CI','fontsize',16,'xoff',0,'yoff',0.04);
 
     else
         
@@ -348,54 +387,61 @@ if isempty(IRFselect) == 0
         [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
             InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
             [204/255 204/255 204/255],0,0.5); hold on
-        
-        
-            for hor = 0:horizons
-                rejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
-                
-                unrejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
-                
-                if isempty(rejected_grid) == 1
-                    
-                    plot(hor,1,'b--o')
-                
-                else
-                    
-                    %plot rejected ones
-                    plot(hor,rejected_grid,'r--x'); hold on
-                    
-                    %plot %not rejected ones
-                    plot(hor,unrejected_grid,'b--o'); hold on
-                
-                end
-                
-                clear rejected_grid unrejected_grid
-                
+
+
+        for hor = 0:horizons
+            rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+
+            unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+
+
+            normalize = (iplot == norm && hor == 0);
+
+            if (normalize == 1)
+
+                plot(hor,1,'b--o')
+
             end
-            
-            h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
-    
-            xlabel(time)
 
-            title(columnnames(iplot));
+            if (isempty(rejected_grid) == 1 && normalize == 0)
 
-            xlim([0 horizons]);
+                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
 
-            if i == 1
-
-                legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-                    'AR Bootstrap')
-
-                %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-                set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-                legend boxoff
-
-                legend('location','southeast')
-                
             end
-            
+
+            if (isempty(unrejected_grid) == 0 && normalize == 0)
+
+                %plot rejected ones
+                %plot(hor,rejected_grid,'r--x'); hold on
+
+                %plot %not rejected ones
+                plot(hor,unrejected_grid,'b--o'); hold on
+
+            end
+
+            clear rejected_grid unrejected_grid
+
+        end
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([0 horizons]);
+
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+            'AR Bootstrap')
+
+        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southeast')
+
         %Check if the Output File exists, and if not create one.
         MatBootARIRFselect = strcat(savdir, '/Mat/MatARbootIRFselect');
 
@@ -469,37 +515,65 @@ if length(cumselect) ~= 1
         
             for hor = 0:horizons
         
-                rejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 1)));
+                rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 1)));
         
-                unrejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 0)));
+                unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 0)));
         
-            if isempty(rejected_grid) == 1  
+                normalize = (iplot == norm && hor == 0);
         
-                plot(hor,1,'b--o')
-            
-            else
-            
-                %plot rejected ones
-                plot(hor,rejected_grid,'r--x'); hold on
+                if (normalize == 1)
+
+                    plot(hor,1,'b--o')
+
+                end
+
+                if (isempty(rejected_grid) == 1 && normalize == 0)
+
+                    disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+
+                end
+
+                if (isempty(unrejected_grid) == 0 && normalize == 0)
+
+                    %plot rejected ones
+                    %plot(hor,rejected_grid,'r--x'); hold on
+
+                    %plot %not rejected ones
+                    plot(hor,unrejected_grid,'b--o'); hold on
+
+                end
         
-                %plot %not rejected ones
-                plot(hor,unrejected_grid,'b--o'); hold on
-            
-            end
-        
-            clear rejected_grid unrejected_grid
+                clear rejected_grid unrejected_grid
 
             end
     
             h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
-    
+
             xlabel(time)
-    
-            title(strcat('Cumulative',{' '},columnnames(iplot)));
-    
+
+            title(strcat(columnnames(iplot)));
+
             xlim([0 horizons]);
             
+
+            if i == 1
+
+                legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                    'AR Bootstrap')
+
+                %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                legend boxoff
+
+                legend('location','southwest')
+
+            end
+            
         end
+            
+        singletitle('Selected Cumulative Bootstrap AR vs. MSW CI','fontsize',16,'xoff',0,'yoff',0.04);
 
     else
 
@@ -531,25 +605,35 @@ if isempty(cumselect) == 0
         
         for hor = 0:horizons
         
-            rejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 1)));
+            rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 1)));
         
-            unrejected_grid = squeeze(grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 0)));
+            unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 0)));
         
-        if isempty(rejected_grid) == 1  
+            normalize = (iplot == norm && hor == 0);
         
+            if (normalize == 1)
+
                 plot(hor,1,'b--o')
-            
-        else
-            
-            %plot rejected ones
-            plot(hor,rejected_grid,'r--x'); hold on
+
+            end
+
+            if (isempty(rejected_grid) == 1 && normalize == 0)
+
+                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+
+            end
+
+            if (isempty(unrejected_grid) == 0 && normalize == 0)
+
+                %plot rejected ones
+                %plot(hor,rejected_grid,'r--x'); hold on
+
+                %plot %not rejected ones
+                plot(hor,unrejected_grid,'b--o'); hold on
+
+            end
         
-            %plot %not rejected ones
-            plot(hor,unrejected_grid,'b--o'); hold on
-            
-        end
-        
-        clear rejected_grid unrejected_grid
+            clear rejected_grid unrejected_grid
 
         end
     
@@ -561,6 +645,16 @@ if isempty(cumselect) == 0
     
         xlim([0 horizons]);
         
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+            'AR Bootstrap')
+        
+        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        legend boxoff
+        
+        legend('location','southwest')
         
         %Check if the Output File exists, and if not create one.
 
@@ -595,6 +689,8 @@ if isempty(cumselect) == 0
         print(gcf,'-depsc2',strcat('IRF_SVAR_CUM',output_label,'.eps'));
 
         cd(direct);
+        
+        
 
     end
 

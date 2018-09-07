@@ -1,4 +1,4 @@
-function [reject, bootsIRFs] = GasydistbootsAR(ydata, T, seed, n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, AL, Sigma, Gamma, V, WHatall, grid)
+function [reject, bootsIRFs, null_grid] = GasydistbootsAR(ydata, T, seed, n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, AL, Sigma, Gamma, V, WHatall, Plugin, multiplier, grid_size)
 %  -Provides inference for SVAR-IV based on samples from the asy. dist.
 %  -Syntax:
 %    [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confidence, vecAL, vechSigma, Gamma, Whatall)
@@ -30,7 +30,7 @@ function [reject, bootsIRFs] = GasydistbootsAR(ydata, T, seed, n, NB, p, norm, s
 % This version: July 17th, 2017
 % Last edited by José Luis Montiel-Olea
 
-%% 2) Set the seed and the main directory
+%% 1) Set the seed and the main directory
 
 rng(seed); clear seed
 
@@ -42,7 +42,8 @@ direct = pwd;
 
 cd(direct)
 
-%% 3) Create an RForm (if necessary)
+
+%% 2) Create an RForm (if necessary)
 
 if (nargin == 10)
 
@@ -132,6 +133,36 @@ vechSigma = V * Sigma(:);
 
 AL = AL(:);
 
+%% 3) Create a grid of lambdas
+ 
+null_grid = zeros(n,horizons+1,grid_size);
+ 
+IRF = Plugin.IRF;
+ 
+%critval = norminv(1-((1-confidence)/2),0,1)^2;
+ 
+IRFstderror = Plugin.IRFstderror;
+ 
+for var = 1:n
+    
+    for hor = 1:horizons+1
+    
+        % get the grid point. Subtract the inference. You are left with the
+        % standard error * critical value. Divide by that number
+        % to get the standard error. Then multiply that by lets say 4 and
+        % add the inference point
+        
+        gridpointupper = IRF(var,hor) + IRFstderror(var,hor)*multiplier;
+        
+        gridpointlower = IRF(var,hor) - IRFstderror(var,hor)*multiplier;
+        
+        null_grid(var,hor,:) = linspace(gridpointlower, gridpointupper, grid_size);
+        
+        
+    end
+    
+end
+
 %% 4) Estimation of the asymptotic variance of A,Gamma
 
 % Definitions
@@ -169,7 +200,7 @@ Draws   = bsxfun(@plus,gvar,...
 
 k       = size(Gamma,1)/n;        
 
-%% 7 Evaluate the parameter of interest  
+%% 7) Evaluate the parameter of interest  
 
 ndraws        = size(Draws,2);
      
@@ -221,23 +252,23 @@ for idraws    = 1:ndraws
     
 end
 
-grid_size       = size(grid,3);
+grid_size       = size(null_grid,3);
 
-test_aux      = zeros(grid_size, ndraws, n, horizons+1,2); % 5th dimension is for cumulative and non-cumulative
+AR_test      = zeros(grid_size, ndraws, n, horizons+1,2); % 5th dimension is for cumulative and non-cumulative
 
 for var         = 1:n
 
     for horizon = 1:horizons+1
         
-        aux_grid = reshape(grid(var,horizon,:),[grid_size,1]);
+        null_vec = reshape(null_grid(var,horizon,:),[grid_size,1]);
         
-        test_aux(:,:,var,horizon,:) = TestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, aux_grid, T);
+        AR_test(:,:,var,horizon,:) = ARTestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, null_vec, T, ndraws);
         
     end
     
 end
 
-AR_test         = (test_aux - test_aux(:,ndraws,:,:,:));
+%AR_test         = (test_aux - test_aux(:,ndraws,:,:,:));
 % AR_test(grid_size, ndraws, n, horizons+1,cumulative)
 
 %% 8) Implement "Standard" Bootstrap Inference
@@ -253,7 +284,7 @@ bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
 %                          (confidence),2);     
 
                       
-test_T = test_aux(:,NB+1,:,:,:);
+test_T = AR_test(:,ndraws,:,:,:);
 % differnece_T(grid_size, ndraws, n, horizons+1,cumulative)
 
 % check whether each one would be rejected or not
@@ -264,7 +295,6 @@ reject       = (test_T(:,1,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,1,:,:,:) >
 
 reject       = reshape(reject,[grid_size, n, horizons+1,2]);
 % reject(grid_size, variables, horizons+1, cumulative)
-
 
 
 

@@ -1,4 +1,4 @@
-function [InferenceMSW,Plugin,Chol, grid] = MSWfunction(confidence,nvar,x,horizons,RForm,display_on)
+function [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,horizons,RForm,display_on)
 % -Reports the confidence interval for IRF coefficients described in Montiel-Olea, Stock, and Watson (2017). This version: July 11th, 2017. 
 % -Syntax:
 %       [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,display_on)
@@ -404,41 +404,6 @@ end
     Plugin.epsilonhat    = x*RForm.Gamma'*(RForm.Sigma^(-1))*RForm.eta./RForm.Gamma(nvar,1);
     
     Plugin.epsilonhatstd = (Plugin.epsilonhat-mean(Plugin.epsilonhat))./std(Plugin.epsilonhat);
-
-    
-%% 14) Create a grid of lambdas
-
-grid_size = 50;
- 
-grid = zeros(RForm.n,horizons+1,grid_size);
- 
-IRF = Plugin.IRF;
- 
-%critval = norminv(1-((1-confidence)/2),0,1)^2;
- 
-multiplier = 500;
- 
-IRFstderror = Plugin.IRFstderror;
- 
-for var = 1:RForm.n
-    
-    for hor = 1:horizons+1
-    
-        % get the grid point. Subtract the inference. You are left with the
-        % standard error * critical value. Divide by that number
-        % to get the standard error. Then multiply that by lets say 4 and
-        % add the inference point
-        
-        gridpointupper = IRF(var,hor) + IRFstderror(var,hor)*multiplier;
-        
-        gridpointlower = IRF(var,hor) - IRFstderror(var,hor)*multiplier;
-        
-        grid(var,hor,:) = linspace(gridpointlower, gridpointupper, grid_size);
-        
-        
-    end
-    
-end
     
 end
 

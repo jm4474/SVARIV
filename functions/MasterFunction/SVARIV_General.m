@@ -170,7 +170,7 @@ dall         = d+ (n*(n+1))/2;    %This is the size of (vec(A)',vec(Sigma), Gamm
  
 addpath(strcat(main_d,'/functions/Inference'));
  
-[InferenceMSW,Plugin,Chol, grid] = MSWfunction(confidence,norm,scale,horizons,RForm,1);
+[InferenceMSW,Plugin,Chol] = MSWfunction(confidence,norm,scale,horizons,RForm,1);
 
 %% 5) Plot Results (for all variables)
 
@@ -240,6 +240,8 @@ for iplot = 1:SVARinp.n
     end
 
 end
+            
+singletitle('Non-Cumulative D-Method vs. MSW','fontsize',16,'xoff',0,'yoff',0.04);
 
 %Cumulative Plots
 figureorder = figureorder+1; 
@@ -284,7 +286,7 @@ for iplot = 1:SVARinp.n
     
     xlabel(time)
     
-    title(strcat('Cumulative',{' '},columnnames(iplot)));
+    title(columnnames(iplot));
     
     xlim([0 horizons]);
 
@@ -304,6 +306,8 @@ for iplot = 1:SVARinp.n
     end
         
 end
+            
+singletitle('Cumulative D-Method vs. MSW','fontsize',16,'xoff',0,'yoff',0.04);
 
 %% 6) Save the output and plots in ./Output/Mat and ./Output/Figs
  
@@ -434,6 +438,8 @@ if length(IRFselect) ~= 1
 
 
         end
+            
+        singletitle('Selected Non-Cumulative D-Method vs. MSW','fontsize',16,'xoff',0,'yoff',0.04);
 
     else
 
@@ -584,7 +590,7 @@ if length(cumselect) ~= 1
 
             xlabel(time)
 
-            title(strcat('Cumulative','{ }',columnnames(iplot)));
+            title(columnnames(iplot));
 
             xlim([0 horizons]);
 
@@ -605,6 +611,8 @@ if length(cumselect) ~= 1
 
 
         end
+            
+        singletitle('Selected Cumulative D-Method vs. MSW','fontsize',16,'xoff',0,'yoff',0.04);
 
     else
 

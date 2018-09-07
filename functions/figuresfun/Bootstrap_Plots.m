@@ -92,6 +92,9 @@ for iplot = 1:n
     
             
 end
+            
+singletitle('Non-Cumulative D-Method vs. Bootstrap','fontsize',16,'xoff',0,'yoff',0.04);
+    
 
 %Cumulative graphs 
 figureorder = figureorder + 1; 
@@ -135,7 +138,7 @@ for iplot = 1:n
     
     xlabel(time)
     
-    title(strcat('Cumulative',{' '},columnnames(iplot)));
+    title(columnnames(iplot));
     
     xlim([0 horizons]);
     
@@ -158,6 +161,9 @@ for iplot = 1:n
     
             
 end
+
+singletitle('Cumulative D-Method vs. Bootstrap','fontsize',16,'xoff',0,'yoff',0.04);
+
 %% 2) Save the output and plots in ./Output/Mat and ./Output/Figs
  
 %Check if the Output File exists, and if not create one.
@@ -286,12 +292,10 @@ if length(IRFselect) ~= 1
 
 
         end
-
-    else
+            
+        singletitle('Selected Non-Cumulative D-Method vs. Bootstrap','fontsize',16,'xoff',0,'yoff',0.04);
 
     end
-    
-else
     
 end
 
@@ -382,7 +386,7 @@ if isempty(IRFselect) == 0
 
         cd(direct);
 
-    end
+    end    
 
     clear plots output_label labelstrs dtype
 
@@ -438,7 +442,7 @@ if length(cumselect) ~= 1
 
             xlabel(time)
 
-            title(strcat('Cumulative','{ }',columnnames(iplot)))
+            title(columnnames(iplot))
 
             xlim([0 horizons]);
 
@@ -461,6 +465,8 @@ if length(cumselect) ~= 1
 
 
         end
+            
+        singletitle('Selected Cumulative D-Method vs. Bootstrap','fontsize',16,'xoff',0,'yoff',0.04);
 
     else
 

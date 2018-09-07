@@ -29,7 +29,7 @@ application = 'Oil';  % Name of this empirical application. This name will be us
 
 p           = 24;     %Number of lags in the VAR model
  
-confidence  = .95;    %Confidence Level for the standard and weak-IV robust confidence set
+confidence  = .68;    %Confidence Level for the standard and weak-IV robust confidence set
 
 % Define the variables in the SVAR
 columnnames = [{'Percent Change in Global Crude Oil Production'}, ...
@@ -108,7 +108,7 @@ addpath(strcat(direct,'/functions/MasterFunction'));
 
 addpath(strcat(direct,'/functions/Inference'));
 
-[Plugin, InferenceMSW, Chol, RForm, figureorder, grid] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
+[Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
  
 % A more in depth description of the function can be found within the
 % function file. For clarity purposes, we briefly describe the function
@@ -176,7 +176,11 @@ disp('Section 6 in this script calls the GasydistbootsAR function to do the boot
 
 cd(strcat(direct,'/functions/Inference'));
 
-[reject, bootsIRFs] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, grid);
+multiplier = 50;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+
+grid_size = 100;      % Number of lambdas in the grid, for each variable and for each horizon.
+
+[reject, bootsIRFs, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size);
 
 %% 7) AR Bootstrap plots
 
@@ -184,6 +188,6 @@ disp('Section 7 in this script calls the BootstrapAR_Plots function.')
 
 addpath(strcat(direct,'/functions/figuresfun'));
 
-BootstrapAR_Plots(n, p, horizons, confidence, RForm, SVARinp, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect, reject, grid);
+BootstrapAR_Plots(n, p, horizons, confidence, RForm, SVARinp, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect, reject, null_grid, norm);
 
 toc; 
