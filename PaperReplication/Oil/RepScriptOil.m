@@ -173,13 +173,15 @@ disp('in Figures 1A & 1B')
 
 addpath('functions/figuresfun'); 
 
+figureorder = 1;
+
 if confidence == 0.68
 
         caux            = norminv(1-((1-confidence)/2),0,1);
 
-        figureorder = 1; 
-
         figure(figureorder); 
+        
+        figureorder = figureorder + 1;
 
         subplot(3,1,1)
 
@@ -303,24 +305,21 @@ if confidence == 0.68
             output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
                        num2str(100*confidence));
                    
-            figure(figureorder)
+            figure(figureorder-1)
 
             cd('PaperReplication/Oil/Figures');
 
             print(gcf,'-depsc2',strcat('Figure1A',output_label,'.eps'));
 
             cd .. ;
-else
 
-    end
-
-    if confidence == 0.95
+elseif confidence == 0.95
         
         caux            = norminv(1-((1-confidence)/2),0,1);
 
-        figureorder = 1; 
-
         figure(figureorder); 
+        
+        figureorder = figureorder+1;
 
         subplot(3,1,1)
 
@@ -444,7 +443,7 @@ else
             output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
                        num2str(100*confidence));
                    
-            figure(figureorder)
+            figure(figureorder-1)
 
             cd('PaperReplication/Oil/Figures');
 
@@ -452,9 +451,535 @@ else
 
             cd .. ;
             
-    else
+else
         
 end
 
 toc
+
+
+%% 8) AR confidence set using bootstrap implementation
+
+seed            = load(strcat(direct,'/seed/seedMay12.mat')); 
+    
+seed            = seed.seed;
+
+NB = 1000;                      % Number of bootstrap replications 
+
+cd(strcat(direct,'/functions/Inference'));
+
+if confidence == 0.68
+
+    multiplier = 100;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+
+    grid_size = 700;      % Number of lambdas in the grid, for each variable and for each horizon.
+
+end
+
+if confidence == 0.90
+
+    multiplier = 100;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+
+    grid_size = 600;      % Number of lambdas in the grid, for each variable and for each horizon.
+
+end
+
+if confidence == 0.95
+
+    multiplier = 50;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+
+    grid_size = 30;      % Number of lambdas in the grid, for each variable and for each horizon.
+
+end
+
+[reject, bootsIRFs, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size);
+
+cd(strcat(direct,'/functions/Inference'));
+
+if confidence == 0.68
+    
+    multiplier = 100;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+
+    grid_size = 250;      % Number of lambdas in the grid, for each variable and for each horizon.
+
+end
+
+if confidence == 0.90
+    
+    multiplier = 50;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+
+    grid_size = 100;      % Number of lambdas in the grid, for each variable and for each horizon.
+
+end
+
+if confidence == 0.95
+    
+    multiplier = 50;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+
+    grid_size = 20;      % Number of lambdas in the grid, for each variable and for each horizon.
+
+end
+[reject_cum, bootsIRFs_cum, null_grid_cum] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size);
+
         
+%% 9) AR Bootstrap plots
+
+
+
+disp('-')
+
+disp('Section 7 in this script plots the IRFs with different confidence intervals ')
+disp('in Figures 1A & 1B') 
+
+addpath('functions/figuresfun'); 
+
+if confidence == 0.68
+
+        caux            = norminv(1-((1-confidence)/2),0,1);
+
+        figure(figureorder); 
+        
+        figureorder = figureorder + 1;
+
+        subplot(3,1,1)
+
+        iplot = 1; 
+        
+        plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+    
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+
+
+
+        for hor = 0:horizons
+
+            rejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 1)));
+
+            unrejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 0)));
+
+            normalize = (iplot == norm && hor == 0);
+
+            if (normalize == 1)
+
+                plot(hor,1,'b--o')
+
+            end
+
+            if (isempty(rejected_grid) == 1 && normalize == 0)
+
+                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+
+            end
+
+            if (isempty(unrejected_grid) == 0 && normalize == 0)
+
+                %plot rejected ones
+                %plot(hor,rejected_grid,'r--x'); hold on
+
+                %plot %not rejected ones
+                plot(hor,unrejected_grid,'b--o'); hold on
+
+            end
+
+            clear rejected_grid unrejected_grid
+
+        end
+
+
+
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+
+        xlabel(time)
+
+        title(strcat('Cumulative', {' '}, columnnames(iplot)));
+
+        xlim([0 horizons]);
+        
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'AR Bootstrap')
+
+        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southwest')
+        
+    for iplot = 2:3    
+        
+        subplot(3,1,iplot)
+        
+        plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+
+
+
+        for hor = 0:horizons
+
+            rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+
+            unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+
+            normalize = (iplot == norm && hor == 0);
+
+            if (normalize == 1)
+
+                plot(hor,1,'b--o')
+
+            end
+
+            if (isempty(rejected_grid) == 1 && normalize == 0)
+
+                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+
+            end
+
+            if (isempty(unrejected_grid) == 0 && normalize == 0)
+
+                %plot rejected ones
+                %plot(hor,rejected_grid,'r--x'); hold on
+
+                %plot %not rejected ones
+                plot(hor,unrejected_grid,'b--o'); hold on
+
+            end
+
+            clear rejected_grid unrejected_grid
+
+        end
+
+
+
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+
+
+        xlim([0 horizons]);
+ 
+    end
+    singletitle('Bootstrap AR vs. MSW C.I.','fontsize',16,'xoff',0,'yoff',0.04);
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    addpath('functions/figuresfun'); 
+
+elseif confidence == 0.90
+
+        caux            = norminv(1-((1-confidence)/2),0,1);
+
+        figure(figureorder); 
+        
+        figureorder = figureorder + 1;
+
+        subplot(3,1,1)
+
+        iplot = 1; 
+        
+        plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+    
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+
+
+
+        for hor = 0:horizons
+
+            rejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 1)));
+
+            unrejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 0)));
+
+            normalize = (iplot == norm && hor == 0);
+
+            if (normalize == 1)
+
+                plot(hor,1,'b--o')
+
+            end
+
+            if (isempty(rejected_grid) == 1 && normalize == 0)
+
+                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+
+            end
+
+            if (isempty(unrejected_grid) == 0 && normalize == 0)
+
+                %plot rejected ones
+                %plot(hor,rejected_grid,'r--x'); hold on
+
+                %plot %not rejected ones
+                plot(hor,unrejected_grid,'b--o'); hold on
+
+            end
+
+            clear rejected_grid unrejected_grid
+
+        end
+
+
+
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+
+        xlabel(time)
+
+        title(strcat('Cumulative', {' '}, columnnames(iplot)));
+
+        xlim([0 horizons]);
+        
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'AR Bootstrap')
+
+        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southwest')
+        
+    for iplot = 2:3    
+        
+        subplot(3,1,iplot)
+        
+        plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+            InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+
+
+
+        for hor = 0:horizons
+
+            rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+
+            unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+
+            normalize = (iplot == norm && hor == 0);
+
+            if (normalize == 1)
+
+                plot(hor,1,'b--o')
+
+            end
+
+            if (isempty(rejected_grid) == 1 && normalize == 0)
+
+                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+
+            end
+
+            if (isempty(unrejected_grid) == 0 && normalize == 0)
+
+                %plot rejected ones
+                %plot(hor,rejected_grid,'r--x'); hold on
+
+                %plot %not rejected ones
+                plot(hor,unrejected_grid,'b--o'); hold on
+
+            end
+
+            clear rejected_grid unrejected_grid
+
+        end
+
+
+
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+
+
+        xlim([0 horizons]);
+ 
+    end
+    singletitle('Bootstrap AR vs. MSW C.I.','fontsize',16,'xoff',0,'yoff',0.04);
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+elseif confidence == 0.95
+
+        caux            = norminv(1-((1-confidence)/2),0,1);
+
+        figure(figureorder); 
+        
+        figureorder = figureorder + 1;
+
+        subplot(3,1,1)
+
+        iplot = 1; 
+        
+        plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
+    
+        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+            [204/255 204/255 204/255],0,0.5); hold on
+
+
+
+
+        for hor = 0:horizons
+
+            rejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 1)));
+
+            unrejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 0)));
+
+            normalize = (iplot == norm && hor == 0);
+
+            if (normalize == 1)
+
+                plot(hor,1,'b--o')
+
+            end
+
+            if (isempty(rejected_grid) == 1 && normalize == 0)
+
+                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+
+            end
+
+            if (isempty(unrejected_grid) == 0 && normalize == 0)
+
+                %plot rejected ones
+                %plot(hor,rejected_grid,'r--x'); hold on
+
+                %plot %not rejected ones
+                plot(hor,unrejected_grid,'b--o'); hold on
+
+            end
+
+            clear rejected_grid unrejected_grid
+
+        end
+
+
+
+
+        h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+
+        xlabel(time)
+
+        title(strcat('Cumulative', {' '}, columnnames(iplot)));
+
+        xlim([0 horizons]);
+
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                'AR Bootstrap')
+
+        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        legend boxoff
+
+        legend('location','southwest')
+           
+    
+        
+        for iplot = 2:3    
+        
+            subplot(3,1,iplot)
+
+            plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
+
+            [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+                InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
+                [204/255 204/255 204/255],0,0.5); hold on
+
+
+
+
+            for hor = 0:horizons
+
+                rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+
+                unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+
+                normalize = (iplot == norm && hor == 0);
+
+                if (normalize == 1)
+
+                    plot(hor,1,'b--o')
+
+                end
+
+                if (isempty(rejected_grid) == 1 && normalize == 0)
+
+                    disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+
+                end
+
+                if (isempty(unrejected_grid) == 0 && normalize == 0)
+
+                    %plot rejected ones
+                    %plot(hor,rejected_grid,'r--x'); hold on
+
+                    %plot %not rejected ones
+                    plot(hor,unrejected_grid,'b--o'); hold on
+
+                end
+
+                clear rejected_grid unrejected_grid
+
+            end
+            
+        h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+
+        xlabel(time)
+
+        title(columnnames(iplot));
+
+        xlim([0 horizons]);
+
+        end
+
+
+
+        singletitle('Bootstrap AR vs. MSW C.I.','fontsize',16,'xoff',0,'yoff',0.04);
+
+else
+    
+end
+   
+
+
