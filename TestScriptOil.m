@@ -176,9 +176,10 @@ disp('Section 6 in this script calls the GasydistbootsAR function to do the boot
 
 cd(strcat(direct,'/functions/Inference'));
 
-multiplier = 50;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+multiplier = 50;     %Scalar that GasydistbootsAR will use to create the "grid" of null hypothesis for IRFs
+                     %IRFhat +- multiplier*standard errors
 
-grid_size = 100;      % Number of lambdas in the grid, for each variable and for each horizon.
+grid_size = 100;      % Number of mull hypotheses (lambdas) in the grid, for each variable and for each horizon.
 
 [reject, bootsIRFs, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size);
 
