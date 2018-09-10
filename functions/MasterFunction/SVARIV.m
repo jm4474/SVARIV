@@ -1,7 +1,7 @@
-function [Plugin, InferenceMSW, Chol, RForm, figureorder, grid] = SVARIV_General(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name, RForm)
+function [Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name, RForm)
 % Implements standard and weak-IV robust SVAR-IV inference.
 %-Syntax:
-%       [Plugin, InferenceMSW, Chol] = SVARIV_Luigi(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir)
+%       [Plugin, InferenceMSW, Chol] = SVARIV(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir)
 % -Inputs:
 %       p:            Number of lags in the VAR model                                                    (1 times 1)                                          
 %       confidence:   Value for the standard and weak-IV robust confidence set                           (1 times 1) 
@@ -50,17 +50,19 @@ function [Plugin, InferenceMSW, Chol, RForm, figureorder, grid] = SVARIV_General
 
 olddir = pwd; % Save user's dir in order to return to the user with the same dir
 
-currentcd = mfilename('fullpath');
+%currentcd = mfilename('fullpath');
 
-currentcd = extractBetween(currentcd, '' , '/SVARIV_General');
+%disp(currentcd);
 
-currentcd = currentcd{1};
+%currentcd = extractBetween(currentcd, '' , '/SVARIV_General');
 
-cd(currentcd);
+%currentcd = currentcd{1};
 
-cd .. % Now we are back to the functions folder
+%cd(currentcd);
 
-cd .. % Now we are back to the SVARIV folder
+%cd .. % Now we are back to the functions folder
+
+%cd .. % Now we are back to the SVARIV folder
 
 main_d = pwd;
 
@@ -68,7 +70,7 @@ cd(main_d);   %the main dir is the SVARIV folder
 
 disp('-');
 
-disp('The SVARIV_General function reports standard and weak-IV robust confidence sets for IRFs estimated using the SVAR-IV approach described in MSW(18)');
+disp('The SVARIV function reports standard and weak-IV robust confidence sets for IRFs estimated using the SVAR-IV approach described in MSW(18)');
 
 disp('(created by Karel Mertens and Jose Luis Montiel Olea)')
 
@@ -81,8 +83,6 @@ disp('-')
 disp('This version: August 2018')
  
 disp('-')
- 
-disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research assistance)')
 
 % Definitions for the next sections
 

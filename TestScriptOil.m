@@ -3,7 +3,7 @@
 % Comment: We have tested this function on an iMac 
 %         @3.4 GHz Intel Core i5 (16 GB 2400 MHz DDR4)
 %         Running Matlab R2018a.
-%         This script runs in about 10 seconds. 
+%         This script runs in about 12 seconds. 
 
 clear;
 
@@ -11,9 +11,11 @@ tic
 
 direct = pwd;
 
+disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research assistance)')
+
 %% 1) Set number of VAR Lags, Newey West lags and confidence level.
 
-fprintf('This script uses the function SVARIV_General to report confidence intervals for  IRFs \n');
+fprintf('\nThis script uses the function SVARIV to report confidence intervals for  IRFs \n');
 
 fprintf('as described in Montiel Olea, Stock, and Watson(18).\n');
 
@@ -102,11 +104,11 @@ dataset_name = 'OilData'; %The name of the dataset used for generating the figur
 
 cd(direct)
  
-%% 3) Run the SVARIV_General function
+%% 3) Run the SVARIV function
 
 disp('--')
 
-disp('Section 3 in this script calls the SVARIV_General function')
+disp('Section 3 in this script calls the SVARIV function')
 
 savdir = strcat(direct,'/Output/',application);  %selected directory where the output files will be saved
 
@@ -114,7 +116,7 @@ addpath(strcat(direct,'/functions/MasterFunction'));
 
 addpath(strcat(direct,'/functions/Inference'));
 
-[Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV_General(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
+[Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
  
 % A more in depth description of the function can be found within the
 % function file. For clarity purposes, we briefly describe the function
