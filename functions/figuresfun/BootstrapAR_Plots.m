@@ -49,7 +49,7 @@ for iplot = 1:n
     
     plot(0:1:horizons,Plugin.IRF(iplot,:),'b'); hold on
     
-    [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
+    jbfill(0:1:horizons,InferenceMSW.MSWubound(iplot,:),...
         InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
         [204/255 204/255 204/255],0,0.5); hold on
         
@@ -66,7 +66,7 @@ for iplot = 1:n
         
         if (normalize == 1)
                 
-            plot(hor,1,'b--o')
+            l1 = plot(hor,1,'b--o');
             
         end
             
@@ -77,12 +77,12 @@ for iplot = 1:n
         end
         
         if (isempty(unrejected_grid) == 0 && normalize == 0)
-            
-            %plot rejected ones
-            %plot(hor,rejected_grid,'r--x'); hold on
-        
-            %plot %not rejected ones
-            plot(hor,unrejected_grid,'b--o'); hold on
+
+            %plot unrejected ones (also grouping points so that legend is
+            %clean)
+            l2 = plot(hor,unrejected_grid,'b--o'); hold on
+            l2_group = hggroup; 
+            set(l2,'Parent',l2_group)
             
         end
         
@@ -90,28 +90,25 @@ for iplot = 1:n
 
     end
 
-    
-
-    
     h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
     
     xlabel(time)
     
     title(columnnames(iplot));
-    
-   
-    
+
     xlim([0 horizons]);
 
     if iplot == 1
         
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-            'AR Bootstrap C.I.')
-        
-        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
         set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
+        set(get(get(l1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
+        
+        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+            'AR Bootstrap C.I.')
+
         legend boxoff
         
         legend('location','southeast')
@@ -158,7 +155,7 @@ for iplot = 1:n
         
         if (normalize == 1)
                 
-            plot(hor,1,'b--o')
+            l1 = plot(hor,1,'b--o');
             
         end
             
@@ -169,22 +166,19 @@ for iplot = 1:n
         end
         
         if (isempty(unrejected_grid) == 0 && normalize == 0)
-            
-            %plot rejected ones
-            %plot(hor,rejected_grid,'r--x'); hold on
         
-            %plot %not rejected ones
-            plot(hor,unrejected_grid,'b--o'); hold on
-            
+            %plot unrejected ones (also grouping points so that legend is
+            %clean)
+            l2 = plot(hor,unrejected_grid,'b--o'); hold on
+            l2_group = hggroup; 
+            set(l2,'Parent',l2_group)
+ 
         end
         
         clear rejected_grid unrejected_grid
 
     end
 
-    
-
-    
     h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
     
     xlabel(time)
@@ -195,12 +189,14 @@ for iplot = 1:n
 
     if iplot == 1
         
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(l1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
+        
         legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
             'AR Bootstrap C.I.')
-        
-        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
-        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
         legend boxoff
         
@@ -310,7 +306,7 @@ if length(IRFselect) ~= 1
         
                 if (normalize == 1)
                 
-                    plot(hor,1,'b--o')
+                    l1 = plot(hor,1,'b--o');
             
                 end
 
@@ -321,12 +317,12 @@ if length(IRFselect) ~= 1
                 end
 
                 if (isempty(unrejected_grid) == 0 && normalize == 0)
-
-                    %plot rejected ones
-                    %plot(hor,rejected_grid,'r--x'); hold on
-
-                    %plot %not rejected ones
-                    plot(hor,unrejected_grid,'b--o'); hold on
+                    
+                    %plot unrejected ones (also grouping points so that legend is
+                    %clean)
+                    l2 = plot(hor,unrejected_grid,'b--o'); hold on
+                    l2_group = hggroup; 
+                    set(l2,'Parent',l2_group)
 
                 end
                 
@@ -344,12 +340,14 @@ if length(IRFselect) ~= 1
 
             if i == 1
 
+                set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+                
+                set(get(get(l1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+                
+                set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
+                
                 legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
                     'AR Bootstrap C.I.')
-
-                %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-                set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
                 legend boxoff
 
@@ -399,7 +397,7 @@ if isempty(IRFselect) == 0
 
             if (normalize == 1)
 
-                plot(hor,1,'b--o')
+                l1 = plot(hor,1,'b--o');
 
             end
 
@@ -411,11 +409,11 @@ if isempty(IRFselect) == 0
 
             if (isempty(unrejected_grid) == 0 && normalize == 0)
 
-                %plot rejected ones
-                %plot(hor,rejected_grid,'r--x'); hold on
-
-                %plot %not rejected ones
-                plot(hor,unrejected_grid,'b--o'); hold on
+                %plot unrejected ones (also grouping points so that legend is
+                %clean)
+                 l2 = plot(hor,unrejected_grid,'b--o'); hold on
+                 l2_group = hggroup; 
+                 set(l2,'Parent',l2_group);
 
             end
 
@@ -431,17 +429,19 @@ if isempty(IRFselect) == 0
 
         xlim([0 horizons]);
 
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+                
+        set(get(get(l1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
+
         legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
             'AR Bootstrap C.I.')
-
-        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
         legend boxoff
 
         legend('location','southeast')
-
+        
         %Check if the Output File exists, and if not create one.
         MatBootARIRFselect = strcat(savdir, '/Mat/MatARbootIRFselect');
 
@@ -523,7 +523,7 @@ if length(cumselect) ~= 1
         
                 if (normalize == 1)
 
-                    plot(hor,1,'b--o')
+                    l1 = plot(hor,1,'b--o');
 
                 end
 
@@ -534,12 +534,12 @@ if length(cumselect) ~= 1
                 end
 
                 if (isempty(unrejected_grid) == 0 && normalize == 0)
-
-                    %plot rejected ones
-                    %plot(hor,rejected_grid,'r--x'); hold on
-
-                    %plot %not rejected ones
-                    plot(hor,unrejected_grid,'b--o'); hold on
+                    
+                    %plot unrejected ones (also grouping points so that legend is
+                    %clean)
+                    l2 = plot(hor,unrejected_grid,'b--o'); hold on
+                    l2_group = hggroup; 
+                    set(l2,'Parent',l2_group);
 
                 end
         
@@ -558,16 +558,18 @@ if length(cumselect) ~= 1
 
             if i == 1
 
+                set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                set(get(get(l1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+                set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
+
                 legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
                     'AR Bootstrap C.I.')
 
-                %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-                set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
                 legend boxoff
 
-                legend('location','southwest')
+                legend('location','southeast')
 
             end
             
@@ -613,7 +615,7 @@ if isempty(cumselect) == 0
         
             if (normalize == 1)
 
-                plot(hor,1,'b--o')
+                l1 = plot(hor,1,'b--o');
 
             end
 
@@ -625,11 +627,11 @@ if isempty(cumselect) == 0
 
             if (isempty(unrejected_grid) == 0 && normalize == 0)
 
-                %plot rejected ones
-                %plot(hor,rejected_grid,'r--x'); hold on
-
-                %plot %not rejected ones
-                plot(hor,unrejected_grid,'b--o'); hold on
+                %plot unrejected ones (also grouping points so that legend is
+                %clean)
+                l2 = plot(hor,unrejected_grid,'b--o'); hold on
+                l2_group = hggroup; 
+                set(l2,'Parent',l2_group);
 
             end
         
@@ -645,16 +647,18 @@ if isempty(cumselect) == 0
     
         xlim([0 horizons]);
         
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+                
+        set(get(get(l1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
+
         legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
             'AR Bootstrap C.I.')
-        
-        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
-        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        
+
         legend boxoff
-        
-        legend('location','southwest')
+
+        legend('location','southeast')
         
         %Check if the Output File exists, and if not create one.
 
@@ -689,8 +693,6 @@ if isempty(cumselect) == 0
         print(gcf,'-depsc2',strcat('IRF_SVAR_CUM',output_label,'.eps'));
 
         cd(direct);
-        
-        
 
     end
 
