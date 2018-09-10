@@ -13,17 +13,24 @@ direct = pwd;
 
 %% 1) Set number of VAR Lags, Newey West lags and confidence level.
 
-fprintf('This script is an example on how to use the function SVARIV_General to report confidence intervals for  IRFs \n');
+fprintf('This script uses the function SVARIV_General to report confidence intervals for  IRFs \n');
 
-fprintf('estimated using the SVAR-IV approach described in MSW(18).\n');
+fprintf('as described in Montiel Olea, Stock, and Watson(18).\n');
 
-disp('-');
+disp('--');
 
-disp('Section 1 describes sets values for VAR Lags, Newey West lags (if desired), confidence level, VAR variable names, time unit,');
+fprintf('Section 1 sets values for: \n')
 
-disp('variable used for normalization, scale of the shock and the number of horizons for the IRFs. It also allows the user');
+fprintf('-VAR Lags \n')
+fprintf('-Newey West lags (if desired) \n')
+fprintf('-Confidence level \n')
+fprintf('-VAR variable names \n')
+fprintf('-Time unit \n')
+fprintf('-Variable used for normalization \n')
+fprintf('-Scale of the shock \n')
+fprintf('-Number of horizons for the IRFs. \n')
 
-disp('to select specific variables of interest for the IRF plots and cumulative IRF plots');
+disp('This section also allows the user to select specific variables of interest for the IRF plots');
 
 application = 'Oil';  % Name of this empirical application. This name will be used for creating and accessing folders
 
@@ -48,23 +55,23 @@ scale       = 1; % Scale of the shock
 horizons    = 20; %Number of horizons for the Impulse Response Functions(IRFs)
                  %(does not include the impact or horizon 0)
                  
-IRFselect   = [1,2];
+IRFselect   = [];
 % By default, the program generates a single figure with the IRFs for ALL variables
 % in the VAR. However, IRFselect allows the user to generate an indepedent
 % figure displaying only some specific variables of interest. 
-% The program also saves the IRFs in IRFselect as separate .eps files 
+% For example, IRFselect   = [1,2] generates individual IRF figures for
+% variables 1 and 2 and saves them as separate .eps files 
 
 % Make sure to match the indices above and to the variables in your
-% dataset. E.g. the above vector will select the variables 
+% dataset. E.g. the IRFselect   = [1,2] will select the variables 
 % "Index of real economic activity" and the "Real Price of Oil".
 
-cumselect = [2,3]; 
+cumselect = []; 
 %cumselect allows the user to generate cumulative IRF plots displaying only 
 %some specific variables of interest. 
 
 % Make sure to match the indices above to the variables in your
-% dataset. E.g. the above vector will select the variable "Percent Change 
-% in Global Crude Oil Production."
+% dataset.
 
 %% 2) Load data (saved in structure "data")
 %  These are the variables that were defined in line 14 above. 
@@ -74,7 +81,7 @@ cumselect = [2,3];
 
 disp('-')
 
-disp('Section 2 in this script loads the data necessary for the SVAR-IV analysis and specifies the name of the dataset.')
+disp('Section 2 loads the data and specifies the name of the dataset.')
 
 
 cd(strcat(pwd,'/Data/',application));
@@ -82,7 +89,6 @@ cd(strcat(pwd,'/Data/',application));
     ydata = xlsread('Data'); 
     %The frequency of this data is 1973:2 - 2007:12
     %The file data.txt was obtained directly from the AER website
-
 
     z    = xlsread('ExtIV');
     %The frequency of this data is 1973:2 - 2004:09
@@ -96,9 +102,9 @@ dataset_name = 'OilData'; %The name of the dataset used for generating the figur
 
 cd(direct)
  
-%% 3) Test
+%% 3) Run the SVARIV_General function
 
-disp('-')
+disp('--')
 
 disp('Section 3 in this script calls the SVARIV_General function')
 
@@ -136,7 +142,7 @@ addpath(strcat(direct,'/functions/Inference'));
 
 %% 4) "Standard" bootstrap-type inference based on samples from the asy dist.
 
-disp('Section 4 in this script calls the Gasydistboots function to provide inference for SVAR-IV based on samples from the asy. dist.')
+disp('Section 4 calls the Gasydistboots function to provide inference for SVAR-IV based on samples from the asy. dist.')
 
 seed            = load(strcat(direct,'/seed/seedMay12.mat')); 
     
@@ -163,7 +169,7 @@ addpath('functions/Inference');
 
 %% 5) Bootstrap Plots
 
-disp('Section 5 in this script calls the Bootstrap_Plots function.')
+disp('Section 5 calls the Bootstrap_Plots function.')
 
 addpath(strcat(direct,'/functions/figuresfun'));
 
@@ -185,7 +191,7 @@ grid_size = 100;      % Number of mull hypotheses (lambdas) in the grid, for eac
 
 %% 7) AR Bootstrap plots
 
-disp('Section 7 in this script calls the BootstrapAR_Plots function.')
+disp('Section 7 calls the BootstrapAR_Plots function.')
 
 addpath(strcat(direct,'/functions/figuresfun'));
 
