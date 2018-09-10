@@ -106,7 +106,7 @@ for iplot = 1:n
     if iplot == 1
         
         legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-            'AR Bootstrap')
+            'AR Bootstrap C.I.')
         
         %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
@@ -120,7 +120,7 @@ for iplot = 1:n
 
 end
             
-singletitle('Non-Cumulative Bootstrap AR vs. MSW CI','fontsize',16,'xoff',0,'yoff',0.04);
+singletitle('Non-Cumulative IRFs (Weak IV Robust Bootstrap)','fontsize',16,'xoff',0,'yoff',0.04);
 
 %Cumulative graphs 
 figureorder = figureorder + 1; 
@@ -195,8 +195,8 @@ for iplot = 1:n
 
     if iplot == 1
         
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-            'AR Bootstrap')
+        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
+            'AR Bootstrap C.I.')
         
         %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
@@ -210,7 +210,7 @@ for iplot = 1:n
 
 end
             
-singletitle('Cumulative Bootstrap AR vs. MSW CI','fontsize',16,'xoff',0,'yoff',0.04);
+singletitle('Cumulative IRFs (Weak IV Robust Bootstrap)','fontsize',16,'xoff',0,'yoff',0.04);
     
 %% 2) Save the output and plots in ./Output/Mat and ./Output/Figs
 
@@ -344,8 +344,8 @@ if length(IRFselect) ~= 1
 
             if i == 1
 
-                legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-                    'AR Bootstrap')
+                legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
+                    'AR Bootstrap C.I.')
 
                 %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -359,7 +359,7 @@ if length(IRFselect) ~= 1
             
         end
             
-        singletitle('Selected Non-Cumulative Bootstrap AR vs. MSW CI','fontsize',16,'xoff',0,'yoff',0.04);
+        singletitle('Selected Non-Cumulative IRFs (Weak IV Robust Bootstrap)','fontsize',16,'xoff',0,'yoff',0.04);
 
     else
         
@@ -431,8 +431,8 @@ if isempty(IRFselect) == 0
 
         xlim([0 horizons]);
 
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-            'AR Bootstrap')
+        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
+            'AR Bootstrap C.I.')
 
         %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -558,8 +558,8 @@ if length(cumselect) ~= 1
 
             if i == 1
 
-                legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-                    'AR Bootstrap')
+                legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
+                    'AR Bootstrap C.I.')
 
                 %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -573,7 +573,7 @@ if length(cumselect) ~= 1
             
         end
             
-        singletitle('Selected Cumulative Bootstrap AR vs. MSW CI','fontsize',16,'xoff',0,'yoff',0.04);
+        singletitle('Selected Cumulative IRFs (Weak IV Robust Bootstrap)','fontsize',16,'xoff',0,'yoff',0.04);
 
     else
 
@@ -645,8 +645,8 @@ if isempty(cumselect) == 0
     
         xlim([0 horizons]);
         
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-            'AR Bootstrap')
+        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
+            'AR Bootstrap C.I.')
         
         %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         

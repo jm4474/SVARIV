@@ -226,7 +226,7 @@ for iplot = 1:SVARinp.n
 
     if iplot == 1
         
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
             'D-Method C.I.')
         
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
@@ -241,7 +241,7 @@ for iplot = 1:SVARinp.n
 
 end
             
-singletitle('Non-Cumulative D-Method vs. MSW','fontsize',16,'xoff',0,'yoff',0.04);
+singletitle('Non-Cumulative IRFs','fontsize',16,'xoff',0,'yoff',0.04);
 
 %Cumulative Plots
 figureorder = figureorder+1; 
@@ -292,7 +292,7 @@ for iplot = 1:SVARinp.n
 
     if iplot == 1
         
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
             'D-Method C.I.')
         
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
@@ -307,7 +307,7 @@ for iplot = 1:SVARinp.n
         
 end
             
-singletitle('Cumulative D-Method vs. MSW','fontsize',16,'xoff',0,'yoff',0.04);
+singletitle('Cumulative IRFs','fontsize',16,'xoff',0,'yoff',0.04);
 
 %% 6) Save the output and plots in ./Output/Mat and ./Output/Figs
  
@@ -423,7 +423,7 @@ if length(IRFselect) ~= 1
 
             if i == 1
 
-                legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
                     'D-Method C.I.')
 
                 set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
@@ -439,7 +439,7 @@ if length(IRFselect) ~= 1
 
         end
             
-        singletitle('Selected Non-Cumulative D-Method vs. MSW','fontsize',16,'xoff',0,'yoff',0.04);
+        singletitle('Selected Non-Cumulative IRFs','fontsize',16,'xoff',0,'yoff',0.04);
 
     else
 
@@ -489,7 +489,7 @@ plots.order     = 1:length(IRFselect);
 
         xlim([0 horizons]);
 
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
                 'D-Method C.I.')
 
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
@@ -596,7 +596,7 @@ if length(cumselect) ~= 1
 
             if i == 1
 
-                legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+                legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
                     'D-Method C.I.')
 
                 set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
@@ -612,7 +612,7 @@ if length(cumselect) ~= 1
 
         end
             
-        singletitle('Selected Cumulative D-Method vs. MSW','fontsize',16,'xoff',0,'yoff',0.04);
+        singletitle('Selected Cumulative IRFs','fontsize',16,'xoff',0,'yoff',0.04);
 
     else
 
@@ -662,7 +662,7 @@ if isempty(cumselect) == 0
 
         xlim([0 horizons]);
 
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
+        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
                 'D-Method C.I.')
 
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
