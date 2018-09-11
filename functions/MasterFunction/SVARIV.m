@@ -1,4 +1,4 @@
-function [Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name, RForm)
+function [Plugin, InferenceMSW, Chol, RForm, figureorder, ARxlim, ARylim] = SVARIV(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name, RForm)
 % Implements standard and weak-IV robust SVAR-IV inference.
 %-Syntax:
 %       [Plugin, InferenceMSW, Chol] = SVARIV(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir)
@@ -185,8 +185,14 @@ plots.order     = [1:SVARinp.n];
  
 caux            = norminv(1-((1-confidence)/2),0,1);
 
+%ARxlim = zeros((2*(n+length(IRFselect)+length(cumselect))),2);
+%ARylim = zeros((2*(n+length(IRFselect)+length(cumselect))),2);
 
- 
+ARxlim = zeros(RForm.n,2,2); 
+ARylim = zeros(RForm.n,2,2); 
+
+%AR_order = 1; 
+
 for iplot = 1:SVARinp.n
         
     if SVARinp.n > ceil(sqrt(SVARinp.n)) * floor(sqrt(SVARinp.n))
@@ -239,6 +245,18 @@ for iplot = 1:SVARinp.n
      
     end
 
+    ax = gca;
+     
+    %ARxlim(AR_order,1:2) = ax.XLim;
+
+    %ARylim(AR_order,1:2) = ax.YLim;  
+    
+    %AR_order = AR_order + 1;
+    
+    ARxlim(iplot,1:2,1) = ax.XLim; 
+    
+    ARylim(iplot,1:2,1) = ax.YLim;
+    
 end
             
 singletitle('Non-Cumulative IRFs','fontsize',16,'xoff',0,'yoff',0.04);
@@ -304,6 +322,18 @@ for iplot = 1:SVARinp.n
         legend('location','southeast')
      
     end
+    
+    ax = gca;
+     
+    %ARxlim(AR_order,1:2) = ax.XLim;
+
+    %ARylim(AR_order,1:2) = ax.YLim; 
+    
+    %AR_order = AR_order + 1;
+    
+    ARxlim(iplot,1:2,2) = ax.XLim; 
+    
+    ARylim(iplot,1:2,2) = ax.YLim;
         
 end
             
@@ -435,7 +465,14 @@ if length(IRFselect) ~= 1
                 legend('location','southeast')
 
             end
-
+            
+%             ax = gca;
+%      
+%             ARxlim(AR_order,1:2) = ax.XLim;
+% 
+%             ARylim(AR_order,1:2) = ax.YLim; 
+% 
+%             AR_order = AR_order + 1;
 
         end
             
@@ -499,6 +536,14 @@ plots.order     = 1:length(IRFselect);
         legend boxoff
 
         legend('location','southeast')
+        
+%         ax = gca;
+%      
+%         ARxlim(AR_order,1:2) = ax.XLim;
+% 
+%         ARylim(AR_order,1:2) = ax.YLim; 
+% 
+%         AR_order = AR_order + 1;
 
         %Check if the Output File exists, and if not create one.
 
@@ -608,7 +653,14 @@ if length(cumselect) ~= 1
                 legend('location','southeast')
 
             end
-
+            
+%             ax = gca;
+%      
+%             ARxlim(AR_order,1:2) = ax.XLim;
+% 
+%             ARylim(AR_order,1:2) = ax.YLim; 
+% 
+%             AR_order = AR_order + 1;
 
         end
             
@@ -672,6 +724,14 @@ if isempty(cumselect) == 0
         legend boxoff
 
         legend('location','southeast')
+        
+%         ax = gca;
+%      
+%         ARxlim(AR_order,1:2) = ax.XLim;
+% 
+%         ARylim(AR_order,1:2) = ax.YLim; 
+% 
+%         AR_order = AR_order + 1;
 
         %Check if the Output File exists, and if not create one.
 

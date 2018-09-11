@@ -38,7 +38,7 @@ application = 'Oil';  % Name of this empirical application. This name will be us
 
 p           = 24;     %Number of lags in the VAR model
  
-confidence  = .68;    %Confidence Level for the standard and weak-IV robust confidence set
+confidence  = .95;    %Confidence Level for the standard and weak-IV robust confidence set
 
 % Define the variables in the SVAR
 columnnames = [{'Percent Change in Global Crude Oil Production'}, ...
@@ -116,7 +116,7 @@ addpath(strcat(direct,'/functions/MasterFunction'));
 
 addpath(strcat(direct,'/functions/Inference'));
 
-[Plugin, InferenceMSW, Chol, RForm, figureorder] = SVARIV(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
+[Plugin, InferenceMSW, Chol, RForm, figureorder, ARxlim, ARylim] = SVARIV(p, confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
  
 % A more in depth description of the function can be found within the
 % function file. For clarity purposes, we briefly describe the function
@@ -184,12 +184,12 @@ disp('Section 6 in this script calls the GasydistbootsAR function to do the boot
 
 cd(strcat(direct,'/functions/Inference'));
 
-multiplier = 50;     %Scalar that GasydistbootsAR will use to create the "grid" of null hypothesis for IRFs
+multiplier = 1.5;     %Scalar that GasydistbootsAR will use to create the "grid" of null hypothesis for IRFs
                      %IRFhat +- multiplier*standard errors
 
-grid_size = 100;      % Number of mull hypotheses (lambdas) in the grid, for each variable and for each horizon.
+grid_size = 50;      % Number of mull hypotheses (lambdas) in the grid, for each variable and for each horizon.
 
-[reject, bootsIRFs, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size);
+[reject, bootsIRFs, gridpointupperMSW, gridpointlowerMSW, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size, ARylim);
 
 %% 7) AR Bootstrap plots
 

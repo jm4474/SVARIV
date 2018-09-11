@@ -1,4 +1,4 @@
-function [reject, bootsIRFs, null_grid] = GasydistbootsAR(ydata, T, seed, n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, AL, Sigma, Gamma, V, WHatall, Plugin, multiplier, grid_size)
+function [reject, bootsIRFs, gridpointupperMSW, gridpointlowerMSW, null_grid] = GasydistbootsAR(ydata, T, seed, n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, AL, Sigma, Gamma, V, WHatall, Plugin, multiplier, grid_size, ARylim)
 %  -Provides inference for SVAR-IV based on samples from the asy. dist.
 %  -Syntax:
 %    [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confidence, vecAL, vechSigma, Gamma, Whatall)
@@ -135,34 +135,69 @@ AL = AL(:);
 
 %% 3) Create a grid of lambdas
  
-null_grid = zeros(n,horizons+1,grid_size);
- 
-IRF = Plugin.IRF;
- 
-%critval = norminv(1-((1-confidence)/2),0,1)^2;
- 
-IRFstderror = Plugin.IRFstderror;
- 
-for var = 1:n
-    
-    for hor = 1:horizons+1
-    
-        % get the grid point. Subtract the inference. You are left with the
-        % standard error * critical value. Divide by that number
-        % to get the standard error. Then multiply that by lets say 4 and
-        % add the inference point
-        
-        gridpointupper = IRF(var,hor) + IRFstderror(var,hor)*multiplier;
-        
-        gridpointlower = IRF(var,hor) - IRFstderror(var,hor)*multiplier;
-        
-        null_grid(var,hor,:) = linspace(gridpointlower, gridpointupper, grid_size);
-        
-        
-    end
-    
-end
+% null_grid = zeros(n,horizons+1,grid_size);
+%  
+% IRF = Plugin.IRF;
+%  
+% %critval = norminv(1-((1-confidence)/2),0,1)^2;
+%  
+% IRFstderror = Plugin.IRFstderror;
+%  
+% for var = 1:n
+%     
+%     for hor = 1:horizons+1
+%     
+%         % get the grid point. Subtract the inference. You are left with the
+%         % standard error * critical value. Divide by that number
+%         % to get the standard error. Then multiply that by lets say 4 and
+%         % add the inference point
+%         
+%         gridpointupper = IRF(var,hor) + IRFstderror(var,hor)*multiplier;
+%         
+%         gridpointlower = IRF(var,hor) - IRFstderror(var,hor)*multiplier;
+%         
+%         null_grid(var,hor,:) = linspace(gridpointlower, gridpointupper, grid_size);
+%         
+%         
+%     end
+%     
+% end
 
+%% 3.5) Create a grid of lambdas using MSW axes
+
+% gridpointupperMSW = zeros(AR_order-1,1);
+% gridpointlowerMSW = zeros(AR_order-1,1);
+% 
+% null_grid = zeros(grid_size,AR_order-1); 
+% 
+% for plot_match = 1:AR_order-1 
+%     
+%     gridpointupperMSW(plot_match,1) = ARylim(plot_match,2); 
+% 
+%     gridpointlowerMSW(plot_match,1) = ARylim(plot_match,1);
+%     
+%     null_grid(:,plot_match) = linspace(gridpointlowerMSW(plot_match,1), gridpointupperMSW(plot_match,1), grid_size); 
+% 
+% end
+
+%% 3.75) Create a grid of lambdas using MSW axes 2nd attempt
+
+gridpointupperMSW = zeros(n,1,2);
+gridpointlowerMSW = zeros(n,1,2); 
+
+null_grid = zeros(grid_size,n,2);
+
+for var = 1:n 
+    
+    gridpointlowerMSW(var,1,:) = ARylim(var,1,:) * multiplier;
+    
+    gridpointupperMSW(var,1,:) = ARylim(var,2,:) * multiplier; 
+    
+    null_grid(:,var,1) = linspace(gridpointlowerMSW(var,1,1), gridpointupperMSW(var,1,1), grid_size); 
+    
+    null_grid(:,var,2) = linspace(gridpointlowerMSW(var,1,2), gridpointupperMSW(var,1,2), grid_size);
+    
+end 
 %% 4) Estimation of the asymptotic variance of A,Gamma
 
 % Definitions
@@ -252,23 +287,27 @@ for idraws    = 1:ndraws
     
 end
 
-grid_size       = size(null_grid,3);
+%grid_size       = size(null_grid,3);
+grid_size        = size(null_grid,1); 
 
-AR_test      = zeros(grid_size, ndraws, n, horizons+1,2); % 5th dimension is for cumulative and non-cumulative
+test_aux      = zeros(grid_size, ndraws, n, horizons+1,2); % 5th dimension is for cumulative and non-cumulative
 
 for var         = 1:n
 
     for horizon = 1:horizons+1
+
+        null_vec = reshape(null_grid(:,var,:),[grid_size,2]);
         
-        null_vec = reshape(null_grid(var,horizon,:),[grid_size,1]);
-        
-        AR_test(:,:,var,horizon,:) = ARTestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, null_vec, T, ndraws);
-        
+        test_aux(:,:,var,horizon,:) = ARTestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, null_vec, T, ndraws);
+        %AR_test(grid_size x ndraws x n x horizons+1 x 2)
+
     end
     
 end
 
-%AR_test         = (test_aux - test_aux(:,ndraws,:,:,:));
+%recentering
+
+AR_test         = (test_aux - test_aux(:,ndraws,:,:,:));
 % AR_test(grid_size, ndraws, n, horizons+1,cumulative)
 
 %% 8) Implement "Standard" Bootstrap Inference
@@ -284,7 +323,7 @@ bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
 %                          (confidence),2);     
 
                       
-test_T = AR_test(:,ndraws,:,:,:);
+test_T = test_aux(:,ndraws,:,:,:);
 % differnece_T(grid_size, ndraws, n, horizons+1,cumulative)
 
 % check whether each one would be rejected or not
@@ -295,8 +334,6 @@ reject       = (test_T(:,1,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,1,:,:,:) >
 
 reject       = reshape(reject,[grid_size, n, horizons+1,2]);
 % reject(grid_size, variables, horizons+1, cumulative)
-
-
 
 
 

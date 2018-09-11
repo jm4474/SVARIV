@@ -36,7 +36,7 @@ figure(figureorder)
 plots.order     = 1:n;
 
 for iplot = 1:n
-    
+
     if n > ceil(sqrt(n)) * floor(sqrt(n))
             
         subplot(ceil(sqrt(n)),ceil(sqrt(n)),plots.order(1,iplot));
@@ -53,14 +53,12 @@ for iplot = 1:n
         InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
         [204/255 204/255 204/255],0,0.5); hold on
         
-    
-
   
     for hor = 0:horizons
         
-        rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+        rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 1),iplot,1));
         
-        unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+        unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 0),iplot,1));
         
         normalize = (iplot == norm && hor == 0);
         
@@ -147,9 +145,9 @@ for iplot = 1:n
   
     for hor = 0:horizons
         
-        rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 1)));
+        rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 1),iplot,2));
         
-        unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 0)));
+        unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 0),iplot,2));
         
         normalize = (iplot == norm && hor == 0);
         
@@ -297,10 +295,10 @@ if length(IRFselect) ~= 1
         
         
             for hor = 0:horizons
-                rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
                 
-                unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
-                
+                rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 1),iplot,1));
+        
+                unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 0),iplot,1));
                 
                 normalize = (iplot == norm && hor == 0);
         
@@ -388,9 +386,10 @@ if isempty(IRFselect) == 0
 
 
         for hor = 0:horizons
-            rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
-
-            unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+            
+            rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 1),iplot,1));
+        
+            unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 0),iplot,1));
 
 
             normalize = (iplot == norm && hor == 0);
@@ -515,9 +514,9 @@ if length(cumselect) ~= 1
         
             for hor = 0:horizons
         
-                rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 1)));
+                rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 1),iplot,2));
         
-                unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 0)));
+                unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 0),iplot,2));
         
                 normalize = (iplot == norm && hor == 0);
         
@@ -607,9 +606,9 @@ if isempty(cumselect) == 0
         
         for hor = 0:horizons
         
-            rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 1)));
+            rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 1),iplot,2));
         
-            unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,2) == 0)));
+            unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 0),iplot,2));
         
             normalize = (iplot == norm && hor == 0);
         

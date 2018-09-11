@@ -19,20 +19,34 @@ function [test] = ARTestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, null_
 
 %% 1) Main definitions and function
 
+
 IRFBootsVH = RFormIRFBoots(var,horizon,:,:);
         
 IRFBootsVH = reshape(IRFBootsVH, [1, ndraws,2]);
 
-test(:,:,1) = (IRFBootsVH(:,:,1) - (null_vec * AlphaBoots(1,:)))*(T^.5); 
+null_vec_noncum = null_vec(:,1);
+
+test(:,:,1) = (IRFBootsVH(:,:,1) - (null_vec_noncum * AlphaBoots(1,:)))*(T^.5); 
 % (scale*Ck(A)*Gamma - lambda*Gamma(1,1))*T^(1/2)
 % The third dimension allows for cumulative and non-cumulative computation.
-        
-test(:,:,2) = (IRFBootsVH(:,:,2) - (null_vec * AlphaBoots(1,:)))*(T^.5);
 
-aux = test(:,ndraws,:);
 
-test = test(:,1:(ndraws-1),:) - test(:,ndraws,:);
+null_vec_cum = null_vec(:,2);
 
-test(:,ndraws,:) = aux;
+test(:,:,2) = (IRFBootsVH(:,:,2) - (null_vec_cum * AlphaBoots(1,:)))*(T^.5);
+
+%test(grid_size,ndraws,horizons+1)
+
+
+
+
+
+%recentering
+
+%aux = test(:,ndraws,:);
+
+%test = test(:,1:(ndraws-1),:) - aux;
+
+%test(:,ndraws,:) = aux;
         
 end
