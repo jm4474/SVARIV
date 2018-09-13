@@ -48,6 +48,11 @@ function [Plugin, InferenceMSW, Chol, RForm, figureorder, ARxlim, ARylim] = SVAR
 
 %% 1)
 
+%check inputs
+addpath('functions/AuxFunctions');
+
+SVARIV_Check(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name);
+
 olddir = pwd; % Save user's dir in order to return to the user with the same dir
 
 %currentcd = mfilename('fullpath');
