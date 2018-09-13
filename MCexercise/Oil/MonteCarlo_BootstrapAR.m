@@ -51,7 +51,7 @@ application = 'Oil';       %Name of this empirical application. This name will b
 
 horizons   = 20;         %Number of horizons for IRF analysis
 
-x          = -20;        %Scale
+scale          = -20;        %Scale
 
 NWlags     = 0;          %Newey-West lags
 
@@ -121,25 +121,24 @@ MC.D        = diag([sigmae1^2,ones(1, MC.n-1)],0); clear sigmae1
 
 %% 4) Set-up the parameters of the measurement error model for the external IV
 
-MC.n     = size(MC.AL,1);
-
-Z        = RForm.externalIV;
+Z         = RForm.externalIV;
 
 MC.WHat   = RForm.WHat;
 
 MC.sigma2Gamma1...
           = MC.WHat(((MC.n^2)*(RForm.p))+1,((MC.n^2)*(RForm.p))+1);
 
-MC.T      = 356; %(change, if you want a larger sample size)
+MC.T      = size(RForm.eta,2); %(change, if you want a larger sample size)
                                %(default is: size(RForm.eta,2))
-MC.muZ  = mean(Z);
 
-MC.varZ = var(Z);
+MC.muZ    = mean(Z);
 
-MC.alpha = MC.alphaaux;
+MC.varZ   = var(Z);
+
+MC.alpha  = MC.alphaaux;
 
 MC.impliedcorr...
-         = MC.alpha./((MC.varZ^.5).*MC.D(1,1));
+          = MC.alpha./((MC.varZ^.5).*MC.D(1,1));
 
 %MC.impliedfirststage ...
 %         = MC.T*((MC.alpha*MC.B(1,1))^2)./MC.sigma2Gamma1;
@@ -147,19 +146,21 @@ MC.impliedcorr...
 %MC.impliedfirststagelim...
 %         = MC.T*((MC.alpha*MC.B(1,1))^2)./(MC.Sigma(1,1)*((MC.muZ)^2+MC.varZ));     
 
-MC.sigmav=(MC.varZ-(((auxparamMC*MC.alpha).^2)/MC.D(1,1)))^.5;     
+MC.sigmav = (MC.varZ-(((auxparamMC*MC.alpha).^2)/MC.D(1,1)))^.5;   
+% Note that auxparamMC cannot be too large, otherwise
+% the sigmav becomes the square root of a negative number
 
 clear Z;
     
-MC.p    = RForm.p; 
+MC.p      = RForm.p; 
 
-MC.Y0   = RForm.Y0; 
+MC.Y0     = RForm.Y0; 
 
 MC.horizons = horizons;
 
-MC.x    = x; 
+MC.x      = scale; 
 
-clear RForm hori x
+clear RForm hori scale
 
 %% 5) Compute the true IRFs
 
@@ -180,6 +181,7 @@ MC.IRFZ(:,:,1)...
     
 MC.IRFZ(:,:,2)...
         =reshape(sum(bsxfun(@times,Ccum,B1'),2),[MC.n,MC.horizons+1]);
+
 
 %(:,:,1) Corresponds to noncumulative IRFs
 %(:,:,2) Corresponds to cumulative IRFs
@@ -203,7 +205,7 @@ clear Caux C Ccum B1 B1chol;
 
 %% 6) Set-up the residuals to generate a time series of the desired length from the SVAR-IV 
 
-seed    = load('seed/seedMay12.mat'); %The seed file is in the Seed folder
+seed    = load('seed/seedMay12_MC.mat'); %The seed file is in the Seed folder
 
 seed    = seed.seed;
 
@@ -235,292 +237,293 @@ FirstStageMC...
 
 for mcdraw = 1:MCdraws   
 
-lagsDATAMC...
-        =zeros(MC.n,MC.p,1+MC.T+burnout);
-    
-lagsDATAMC(:,:,1)...
-        =fliplr(MC.Y0'); %Y_{t-1},Y_{t-2}, ... Y_{t-p}
-    
-DATAMCaux ...
-        = zeros(MC.n,MC.T+burnout);  %Initialize the data
-    
-EIVMCaux...
-        = zeros(1,MC.T+burnout);      %Initialize the instrument
-    
-residuals...
-        = randn(1+MC.n,MC.T+burnout); %Structural Innovations 
-    
-for ix=1:MC.T+burnout
+    lagsDATAMC...
+            =zeros(MC.n,MC.p,1+MC.T+burnout);
 
-    
-    rformresiduals...
-        = ((MC.B))*((MC.D)^.5)*residuals(1:MC.n,ix);
-    
-    DATAMCaux(1:MC.n,ix) ...
-        = (MC.mu)+(MC.AL*reshape(lagsDATAMC(:,:,ix),[MC.n*MC.p,1]))...
-        +(rformresiduals);
-    
-    lagsDATAMC(:,1,ix+1) ...
-        = DATAMCaux(:,ix);
-    
-    lagsDATAMC(:,2:MC.p,ix+1) ...
-        = lagsDATAMC(:,1:MC.p-1,ix);
-    
-    EIVMCaux(1,ix)...
-        = MC.muZ+((auxparamMC*MC.alpha./(MC.D(1,1)^.5))*residuals(1,ix))+...
-          (MC.sigmav*residuals(MC.n+1,ix));
-    %Linear measurement error model for the external IV. Could be replaced
-    %if desired.
-    clear rformresiduals
-    
-end 
+    lagsDATAMC(:,:,1)...
+            =fliplr(MC.Y0'); %Y_{t-1},Y_{t-2}, ... Y_{t-p}
 
-%% 8) Drop the first burnout-p observations (burn-out period)
+    DATAMCaux ...
+            = zeros(MC.n,MC.T+burnout);  %Initialize the data
 
+    EIVMCaux...
+            = zeros(1,MC.T+burnout);      %Initialize the instrument
 
-YMC = DATAMCaux(:,(burnout-MC.p)+1:end);
+    residuals...
+            = randn(1+MC.n,MC.T+burnout); %Structural Innovations 
 
-ZMC = EIVMCaux(1,(burnout-MC.p)+1:end);
+    for ix=1:MC.T+burnout
 
-MCdata.Y=YMC';
-MCdata.Z=ZMC';
+        rformresiduals...
+            = ((MC.B))*((MC.D)^.5)*residuals(1:MC.n,ix);
 
-clearvars -except MC MCdata MCdraws mcdraw coverageMCMSW coverageMCdmethod burnout IRFMC FirstStageMC auxparamMC NWlags confidence coverageMCBoots application columnnames dataset_name cumselect IRFselect
+        DATAMCaux(1:MC.n,ix) ...
+            = (MC.mu)+(MC.AL*reshape(lagsDATAMC(:,:,ix),[MC.n*MC.p,1]))...
+            +(rformresiduals);
 
- %Thus, an MC data set consists of two parts:
-%i) The T times n vector YMC
-%ii)The T times 1 vector ZMC
+        lagsDATAMC(:,1,ix+1) ...
+            = DATAMCaux(:,ix);
 
-%These are the inputs required to construct the confidence interval
-%in Montiel-Olea, Stock, and Watson 2016
+        lagsDATAMC(:,2:MC.p,ix+1) ...
+            = lagsDATAMC(:,1:MC.p-1,ix);
 
-%% 9) Use YMC in MC data to estimate the reduced-form parameters
-%for the MC run.
-
-cd('functions/RForm')
-
-[RFormMC.mu,RFormMC.AL,RFormMC.Sigma,RFormMC.eta,RFormMC.X,RFormMC.Y] = RForm_VAR(MCdata.Y,MC.p);
-
-
-%% 10) Use YMC and Z in MC data to estimate What
-
-%a) Some definitions
-RFormMC.Gamma= RFormMC.eta*MCdata.Z(MC.p+1:end,1)/(size(RFormMC.eta,2)); %n times 1
-RFormMC.n=MC.n;
-RFormMC.p=MC.p;
-
-%b) Estimation of What
-
-[RFormMC.WHatall,RFormMC.WHat,RFormMC.V] = CovAhat_Sigmahat_Gamma(MC.p,RFormMC.X,MCdata.Z(MC.p+1:end,1),RFormMC.eta, NWlags);                
-
-cd ..
-
-cd ..
-
-
-%% 11) Some definitions for the next sections
-
-vechSigma = RFormMC.V * RFormMC.Sigma(:);
-
-%% 12) Make sure that Whatall is symmetric and positive semidefinite
-
-WHatall     = RFormMC.WHatall;
-
-dall        = size(WHatall,1);
-
-WHatall     = (WHatall + WHatall')/2;
-    
-[aux1,aux2] = eig(WHatall);
-    
-WHatall     = aux1*max(aux2,0)*aux1'; 
-
-%% 13) Generate Draws for the Bootsrap
-% Centered at (vec(AL)', Gamma')'
-
-gvar    = [mvnrnd(zeros(MC.NB,dall),(WHatall)/MC.T)',...
-                     zeros(dall,1)];
-    
-Draws   = bsxfun(@plus,gvar,...
-          [RFormMC.AL(:);vechSigma;RFormMC.Gamma(:)]);
-
-k       = size(RFormMC.Gamma,1)/RFormMC.n;        
-
-%% 14) Evaluate the parameter of interest  
-%(Note that analyzing coverage does not require computing the
-%full confidence interval, so instead of testing for the entire grid
-%of null hypotheses (lambdas) like we do in the GasydistbootsAR.m function
-%here we simply test whether the true IRF is covered or not (the true IRF
-%is our only lambda).
-
-ndraws        = size(Draws,2);
-     
-pdSigma       = zeros(1,ndraws);
-
-addpath('functions/StructuralIRF');
-
-RFormIRFBoots = zeros(RFormMC.n, MC.horizons + 1,ndraws,2); %4th dimension corresponds to non-cumulative and cumulative values.
-
-AlphaBoots    = zeros(1, ndraws);
-
-for idraws    = 1:ndraws
-
-    %i) Generate the draws for AL 
+        EIVMCaux(1,ix)...
+            = MC.muZ+((auxparamMC*MC.alpha./(MC.D(1,1)^.5))*residuals(1,ix))+...
+              (MC.sigmav*residuals(MC.n+1,ix));
+        %Linear measurement error model for the external IV. Could be replaced
+        %if desired.
+        clear rformresiduals
         
-    AL        = reshape(Draws(1:(RFormMC.n^2)*RFormMC.p,idraws),[RFormMC.n,RFormMC.n*RFormMC.p]);
-
-    %ii) Draws from Sigma
-
-    vechSigma = Draws((RFormMC.n^2)*RFormMC.p+1:(RFormMC.n^2)*RFormMC.p+(RFormMC.n*(RFormMC.n+1)/2),idraws);
-
-    Sigma     = tril(ones(RFormMC.n),0);
-    
-    Sigma(Sigma==1) = vechSigma';
-
-    Sigma     = Sigma + tril(Sigma,-1)';
-
-    %Check if the draws are positive definite
-
-    if min(eig(Sigma))>0
-
-        pdSigma(1,idraws) = 1;
-
-    else
-
-        pdSigma(1,idraws) = 0;
-
-    end
-
-    %iii) Draws from Gamma
-
-    Gamma = reshape(Draws(((RFormMC.n^2)*RFormMC.p)+(RFormMC.n*(RFormMC.n+1)/2)+1:end,idraws),...
-      [RFormMC.n,k]);  
-
-    [RFormIRFBoots(:,:,idraws,:), AlphaBoots(idraws)] = IRFSVARIV(AL,Sigma,Gamma,MC.horizons,MC.x,MC.norm);
-    
-    RFormIRFBoots(:,:,idraws,:) = RFormIRFBoots(:,:,idraws,:).*AlphaBoots(idraws);
-    % RFormIRFBoots(n,MC.horizons+1,idraws,2)
-    
-    clear AL vechSigma Gamma 
-    
-end
-
-grid_size       = 1;
-
-test_aux      = zeros(grid_size, ndraws, RFormMC.n, MC.horizons+1,2); % 5th dimension is for cumulative and non-cumulative
-
-for var         = 1:RFormMC.n
-
-    for horizon = 1:MC.horizons+1
-        
-        null_hyp = reshape(MC.IRFZ(var,horizon,:),[1,2]);
-        % MC.IRFZ(3x21x2)
-        
-        %null_vec = reshape(null_grid(var,horizon,:),[grid_size,1]);
-        
-        test_aux(:,:,var,horizon,:) = ARTestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, null_hyp, MC.T, ndraws);
-        
-    end
-    
-end
-
-%recentering
-
-AR_test         = (test_aux - test_aux(:,ndraws,:,:,:));
-%grid_size, ndraws, RFormMC.n, MC.horizons+1,2
-
-%% 15) Use RForm.MC to estimate the MSW confidence interval
-%(Note that analyzing coverage does not require computing the
-%full confidence interval, but we do it to keep the code as
-%simple as possible)
-
-addpath('functions/Inference')
-
-[InferenceMSWMC,PluginMC,~] = MSWfunction(.95,1,MC.x,MC.horizons,RFormMC,0);
-
-% Collect the plug-in estimators of the IRF to analyze its finite-sample
-% distribution (cumulative and non cumulative)
-for i = 1:RFormMC.n
-
-    IRFMC.IRFplugin(i,:,mcdraw, 1)     = PluginMC.IRF(i,:); % non cumulative
-
-    IRFMC.IRFplugin(i,:,mcdraw, 2)     = PluginMC.IRFcum(i,:); % cumulative
-
-    % Collect also the delta-method standard errors (not used). Cumulative
-    % and non cumulative
-
-    IRFMC.dmethodstderr(i,:,mcdraw, 1) = PluginMC.IRFstderror(i,:); % non cumulative
-
-    IRFMC.dmethodstderr(i,:,mcdraw, 2) = PluginMC.IRFstderrorcum(i,:); % cumulative
-
-end
-
-%First-stage Stat
-
-FirstStageMC(1,mcdraw) ...
-      = (((InferenceMSWMC.T^.5)...
-         *RFormMC.Gamma(1,1))^2)/...
-         RFormMC.WHat(((RFormMC.n^2)*RFormMC.p)+1,((RFormMC.n^2)*RFormMC.p)+1);
-
-clear MCdata RFormMC PluginMC
-
-%% 16)  Check if the true IRFs are covered (Bootstrap Inference and MSW)
-
-%Bootstrap Inference
-
-aux          = reshape(pdSigma,[1,ndraws]);
-
-bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
-                          [((1-confidence)/2),1-((1-confidence)/2)],2);      
-% bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
-
-test_T = test_aux(:,ndraws,:,:,:);
-% test_T(grid_size, 1, n, horizons+1,cumulative)
-
-reject       = (test_T(:,:,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,:,:,:,:) > bootsIRFs(:,2,:,:,:));
-% reject(grid_size, variables, horizons+1, cumulative)
-
-reject = squeeze(reject);
-%reject(n x horizons +1 x 2)
-
-not_reject = 1 - reject;
-
-coverageMCBoots(:,:,mcdraw,:) = not_reject;
-%coverageMCBoots(n,horizons + 1, mcdraws,2) = reject;
-
-%MSW
-
-%Coverage of MSW (using the coefficients of the quadratic equation described in the paper)
-    for i = 1:MC.n
-
-        %non-cumulative
-        clear aux;
-
-        aux = (MC.IRFZ(i,:,1).^2).*InferenceMSWMC.ahat(i,:) +... 
-              MC.IRFZ(i,:,1).*InferenceMSWMC.bhat(i,:) + InferenceMSWMC.chat(i,:);
-
-        if i == 1
-
-            aux(1,1) = -inf; %The first entry is always covered. 
-
-        end    
-
-        coverageMCMSW(i,:,mcdraw,1) = bsxfun(@le,aux,0); %clear aux1
-
-        %cumulative
-        clear aux_cum
-
-        aux_cum = (MC.IRFZ(i,:,2).^2).*InferenceMSWMC.ahatcum(i,:) +... 
-              MC.IRFZ(i,:,2).*InferenceMSWMC.bhatcum(i,:) + InferenceMSWMC.chatcum(i,:);
-
-        if i == 1
-
-            aux_cum(1,1) = -inf; %The first entry is always covered. 
-
-        end    
-
-        coverageMCMSW(i,:,mcdraw,2) = bsxfun(@le,aux_cum,0); %clear aux1
-
     end 
+
+    %% 8) Drop the first burnout-p observations (burn-out period)
+
+
+    YMC = DATAMCaux(:,(burnout-MC.p)+1:end);
+
+    ZMC = EIVMCaux(1,(burnout-MC.p)+1:end);
+
+    MCdata.Y=YMC';
+    
+    MCdata.Z=ZMC';
+
+    clearvars -except MC MCdata MCdraws mcdraw coverageMCMSW coverageMCdmethod burnout IRFMC FirstStageMC auxparamMC NWlags confidence coverageMCBoots application columnnames dataset_name cumselect IRFselect
+
+     %Thus, an MC data set consists of two parts:
+    %i) The T times n vector YMC
+    %ii)The T times 1 vector ZMC
+
+    %These are the inputs required to construct the confidence interval
+    %in Montiel-Olea, Stock, and Watson 2016
+
+    %% 9) Use YMC in MC data to estimate the reduced-form parameters
+    %for the MC run.
+
+    cd('functions/RForm')
+
+    [RFormMC.mu,RFormMC.AL,RFormMC.Sigma,RFormMC.eta,RFormMC.X,RFormMC.Y] = RForm_VAR(MCdata.Y,MC.p);
+
+
+    %% 10) Use YMC and Z in MC data to estimate What
+
+    %a) Some definitions
+    RFormMC.Gamma = RFormMC.eta*MCdata.Z(MC.p+1:end,1)/(size(RFormMC.eta,2)); %n times 1
+    
+    RFormMC.n     = MC.n;
+    
+    RFormMC.p     = MC.p;
+
+    %b) Estimation of What
+
+    [RFormMC.WHatall,RFormMC.WHat,RFormMC.V] = CovAhat_Sigmahat_Gamma(MC.p,RFormMC.X,MCdata.Z(MC.p+1:end,1),RFormMC.eta, NWlags);                
+
+    cd ..
+
+    cd ..
+
+    %% 11) Some definitions for the next sections
+
+    vechSigma = RFormMC.V * RFormMC.Sigma(:);
+
+    %% 12) Make sure that Whatall is symmetric and positive semidefinite
+
+    WHatall     = RFormMC.WHatall;
+
+    dall        = size(WHatall,1);
+
+    WHatall     = (WHatall + WHatall')/2;
+
+    [aux1,aux2] = eig(WHatall);
+
+    WHatall     = aux1*max(aux2,0)*aux1'; 
+
+    %% 13) Generate Draws for the Bootsrap
+    % Centered at (vec(AL)', Gamma')'
+
+    gvar    = [mvnrnd(zeros(MC.NB,dall),(WHatall)/MC.T)',...
+                         zeros(dall,1)];
+
+    Draws   = bsxfun(@plus,gvar,...
+              [RFormMC.AL(:);vechSigma;RFormMC.Gamma(:)]);
+
+    k       = size(RFormMC.Gamma,1)/RFormMC.n;        
+
+    %% 14) Evaluate the parameter of interest  
+    %(Note that analyzing coverage does not require computing the
+    %full confidence interval, so instead of testing for the entire grid
+    %of null hypotheses (lambdas) like we do in the GasydistbootsAR.m function
+    %here we simply test whether the true IRF is covered or not (the true IRF
+    %is our only lambda).
+
+    ndraws        = size(Draws,2);
+
+    pdSigma       = zeros(1,ndraws);
+
+    addpath('functions/StructuralIRF');
+
+    RFormIRFBoots = zeros(RFormMC.n, MC.horizons + 1,ndraws,2); %4th dimension corresponds to non-cumulative and cumulative values.
+
+    AlphaBoots    = zeros(1, ndraws);
+
+    for idraws    = 1:ndraws
+
+        %i) Generate the draws for AL 
+
+        AL        = reshape(Draws(1:(RFormMC.n^2)*RFormMC.p,idraws),[RFormMC.n,RFormMC.n*RFormMC.p]);
+
+        %ii) Draws from Sigma
+
+        vechSigma = Draws((RFormMC.n^2)*RFormMC.p+1:(RFormMC.n^2)*RFormMC.p+(RFormMC.n*(RFormMC.n+1)/2),idraws);
+
+        Sigma     = tril(ones(RFormMC.n),0);
+
+        Sigma(Sigma==1) = vechSigma';
+
+        Sigma     = Sigma + tril(Sigma,-1)';
+
+        %Check if the draws are positive definite
+
+        if min(eig(Sigma))>0
+
+            pdSigma(1,idraws) = 1;
+
+        else
+
+            pdSigma(1,idraws) = 0;
+
+        end
+
+        %iii) Draws from Gamma
+
+        Gamma = reshape(Draws(((RFormMC.n^2)*RFormMC.p)+(RFormMC.n*(RFormMC.n+1)/2)+1:end,idraws),...
+          [RFormMC.n,k]);  
+
+        [RFormIRFBoots(:,:,idraws,:), AlphaBoots(idraws)] = IRFSVARIV(AL,Sigma,Gamma,MC.horizons,MC.x,MC.norm);
+
+        RFormIRFBoots(:,:,idraws,:) = RFormIRFBoots(:,:,idraws,:).*AlphaBoots(idraws);
+        % RFormIRFBoots(n,MC.horizons+1,idraws,2)
+
+        clear AL vechSigma Gamma 
+
+    end
+
+    grid_size       = 1;
+
+    test_aux      = zeros(grid_size, ndraws, RFormMC.n, MC.horizons+1,2); % 5th dimension is for cumulative and non-cumulative
+
+    for var         = 1:RFormMC.n
+
+        for horizon = 1:MC.horizons+1
+
+            null_hyp = reshape(MC.IRFZ(var,horizon,:),[1,2]);
+            % MC.IRFZ(3x21x2)
+
+            %null_vec = reshape(null_grid(var,horizon,:),[grid_size,1]);
+
+            test_aux(:,:,var,horizon,:) = ARTestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, null_hyp, MC.T, ndraws);
+
+        end
+
+    end
+
+    %recentering
+
+    AR_test         = (test_aux - test_aux(:,ndraws,:,:,:));
+    %grid_size, ndraws, RFormMC.n, MC.horizons+1,2
+
+    %% 15) Use RForm.MC to estimate the MSW confidence interval
+    %(Note that analyzing coverage does not require computing the
+    %full confidence interval, but we do it to keep the code as
+    %simple as possible)
+
+    addpath('functions/Inference')
+
+    [InferenceMSWMC,PluginMC,~] = MSWfunction(.95,1,MC.x,MC.horizons,RFormMC,0);
+
+    % Collect the plug-in estimators of the IRF to analyze its finite-sample
+    % distribution (cumulative and non cumulative)
+    for i = 1:RFormMC.n
+
+        IRFMC.IRFplugin(i,:,mcdraw, 1)     = PluginMC.IRF(i,:); % non cumulative
+
+        IRFMC.IRFplugin(i,:,mcdraw, 2)     = PluginMC.IRFcum(i,:); % cumulative
+
+        % Collect also the delta-method standard errors (not used). Cumulative
+        % and non cumulative
+
+        IRFMC.dmethodstderr(i,:,mcdraw, 1) = PluginMC.IRFstderror(i,:); % non cumulative
+
+        IRFMC.dmethodstderr(i,:,mcdraw, 2) = PluginMC.IRFstderrorcum(i,:); % cumulative
+
+    end
+
+    %First-stage Stat
+
+    FirstStageMC(1,mcdraw) ...
+          = (((InferenceMSWMC.T^.5)...
+             *RFormMC.Gamma(1,1))^2)/...
+             RFormMC.WHat(((RFormMC.n^2)*RFormMC.p)+1,((RFormMC.n^2)*RFormMC.p)+1);
+
+    clear MCdata RFormMC PluginMC
+
+    %% 16)  Check if the true IRFs are covered (Bootstrap Inference and MSW)
+
+    %Bootstrap Inference
+
+    aux          = reshape(pdSigma,[1,ndraws]);
+
+    bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
+                              [((1-confidence)/2),1-((1-confidence)/2)],2);      
+    % bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
+
+    test_T = test_aux(:,ndraws,:,:,:);
+    % test_T(grid_size, 1, n, horizons+1,cumulative)
+
+    reject       = (test_T(:,:,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,:,:,:,:) > bootsIRFs(:,2,:,:,:));
+    % reject(grid_size, variables, horizons+1, cumulative)
+
+    reject = squeeze(reject);
+    %reject(n x horizons +1 x 2)
+
+    not_reject = 1 - reject;
+
+    coverageMCBoots(:,:,mcdraw,:) = not_reject;
+    %coverageMCBoots(n,horizons + 1, mcdraws,2) = reject;
+
+    %MSW
+
+    %Coverage of MSW (using the coefficients of the quadratic equation described in the paper)
+        for i = 1:MC.n
+
+            %non-cumulative
+            clear aux;
+
+            aux = (MC.IRFZ(i,:,1).^2).*InferenceMSWMC.ahat(i,:) +... 
+                  MC.IRFZ(i,:,1).*InferenceMSWMC.bhat(i,:) + InferenceMSWMC.chat(i,:);
+
+            if i == 1
+
+                aux(1,1) = -inf; %The first entry is always covered. 
+
+            end    
+
+            coverageMCMSW(i,:,mcdraw,1) = bsxfun(@le,aux,0); %clear aux1
+
+            %cumulative
+            clear aux_cum
+
+            aux_cum = (MC.IRFZ(i,:,2).^2).*InferenceMSWMC.ahatcum(i,:) +... 
+                  MC.IRFZ(i,:,2).*InferenceMSWMC.bhatcum(i,:) + InferenceMSWMC.chatcum(i,:);
+
+            if i == 1
+
+                aux_cum(1,1) = -inf; %The first entry is always covered. 
+
+            end    
+
+            coverageMCMSW(i,:,mcdraw,2) = bsxfun(@le,aux_cum,0); %clear aux1
+
+        end 
 
 end
 
