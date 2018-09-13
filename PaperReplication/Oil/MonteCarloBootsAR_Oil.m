@@ -532,7 +532,7 @@ plot(0:20,mean(coverageMCBoots(1,:,:,2),3),'o'); hold on
 
 plot(0:20,mean(coverageMCMSW(1,:,:,2),3),'rx'); hold on
 
-axis([0 MC.horizons 0.5 0.8]); 
+axis([0 MC.horizons 0.8 1]); 
 
 xlabel('Months after the shock');
 
@@ -548,7 +548,7 @@ plot(0:20,mean(coverageMCBoots(2,:,:,1),3),'o'); hold on
 
 plot(0:20,mean(coverageMCMSW(2,:,:,1),3),'rx'); hold on
 
-axis([0 MC.horizons 0.5 0.8]); 
+axis([0 MC.horizons 0.8 1]); 
 
 xlabel('Months after the shock');
 

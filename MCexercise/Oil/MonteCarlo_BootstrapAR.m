@@ -47,7 +47,7 @@ columnnames = [{'Percent Change in Global Crude Oil Production'}, ...
                {'Index of real economic activity'}, ...
                {'Real Price of Oil'}];
            
-aplication = 'Oil';       %Name of this empirical application. This name will be used for creating and accessing folders           
+application = 'Oil';       %Name of this empirical application. This name will be used for creating and accessing folders           
 
 horizons   = 20;         %Number of horizons for IRF analysis
 
@@ -66,6 +66,20 @@ MC.norm    = 1;          %Norm: normalizing variable
 % Set auxparaMC = 5^.5     to get an implied first-stage of 3.87
 
 confidence = 0.95; 
+
+IRFselect    = [2,3];
+% By default, the program generates a single figure with the MC coverage for ALL variables
+% in the VAR. However, IRFselect allows the user to generate an indepedent
+% figure displaying the coverage of some specific variables of interest. 
+% The program also saves the the coverage plots for the variables in IRFselect as separate .eps files 
+
+% Make sure to match the indices above and to the variables in your
+% dataset. E.g. the above vector will select the variables 
+% "Log(1/1-AMTR)","Log income", "Log Real GDP", "Unemployment Rate"
+
+cumselect = [1];
+% cumselect allows the user to generate the coverge for cumulative IRFs of
+% interest
 
 dataset_name = 'OilData'; %The name of the dataset used for generating the figures (used in the output label)
 
@@ -87,24 +101,23 @@ MC.Sigma = RForm.Sigma; %covariance matrix of residuals n x n
 
 %% 3) Set-up the matrix B for the Monte-Carlo study
 
-MC.Gamma = RForm.Gamma; %estimator of E[z_t eta_t]; n x 1;
+MC.Gamma    = RForm.Gamma; %estimator of E[z_t eta_t]; n x 1;
 
-MC.alphaaux...
-         = (RForm.Gamma'*(RForm.Sigma^(-1))*RForm.Gamma)^(.5);
-     
-eaux     = [1;1;-1];    %Direction of B1 used in our design
+MC.alphaaux = RForm.Gamma(1,1);
 
-B1       = eaux*((eaux'*(MC.Sigma)^(-1)*eaux)^(-.5)); %as described in our paper
+B1          = MC.Gamma./MC.alphaaux;
 
-clear eaux
+sigmae1     = abs(MC.alphaaux)./((MC.Gamma'*(MC.Sigma^(-1))*MC.Gamma)^.5); 
 
-Baux     = null(((MC.Sigma^(-1/2))*B1)'); %orthonormal basis for the ortho-
+Baux        = null(((MC.Sigma^(-1/2))*B1)'); %orthonormal basis for the ortho-
 %complement of Sigma^{-1/2} B_1 as described in the paper. 
 
-MC.B     = [B1,(MC.Sigma^(1/2))*Baux]; clear Baux B1
-%This is the matrix B that will be used to generate data from the SVAR     
+MC.B        = [B1,(MC.Sigma^(1/2))*Baux]; clear Baux B1
+%This is the matrix B that will be used to generate data from the SVAR
 
-MC.D     = diag([1,1,1],0); 
+MC.n        = size(MC.AL,1);
+
+MC.D        = diag([sigmae1^2,ones(1, MC.n-1)],0); clear sigmae1
 
 %% 4) Set-up the parameters of the measurement error model for the external IV
 
@@ -272,9 +285,9 @@ ZMC = EIVMCaux(1,(burnout-MC.p)+1:end);
 MCdata.Y=YMC';
 MCdata.Z=ZMC';
 
-clearvars -except MC MCdata MCdraws mcdraw coverageMCMSW coverageMCdmethod burnout IRFMC FirstStageMC auxparamMC NWlags confidence coverageMCBoots application columnnames dataset_name
+clearvars -except MC MCdata MCdraws mcdraw coverageMCMSW coverageMCdmethod burnout IRFMC FirstStageMC auxparamMC NWlags confidence coverageMCBoots application columnnames dataset_name cumselect IRFselect
 
-%Thus, an MC data set consists of two parts:
+ %Thus, an MC data set consists of two parts:
 %i) The T times n vector YMC
 %ii)The T times 1 vector ZMC
 
@@ -424,20 +437,22 @@ addpath('functions/Inference')
 
 [InferenceMSWMC,PluginMC,~] = MSWfunction(.95,1,MC.x,MC.horizons,RFormMC,0);
 
-%Collect the plug-in estimators of the IRF to analyze its finite-sample
-%distribution
-IRFMC.IRFplugin(1,:,mcdraw)=PluginMC.IRFcum(1,:);
+% Collect the plug-in estimators of the IRF to analyze its finite-sample
+% distribution (cumulative and non cumulative)
+for i = 1:RFormMC.n
 
-IRFMC.IRFplugin(2,:,mcdraw)=PluginMC.IRF(2,:);
+    IRFMC.IRFplugin(i,:,mcdraw, 1)     = PluginMC.IRF(i,:); % non cumulative
 
-IRFMC.IRFplugin(3,:,mcdraw)=PluginMC.IRF(3,:);
+    IRFMC.IRFplugin(i,:,mcdraw, 2)     = PluginMC.IRFcum(i,:); % cumulative
 
-%Collect also the delta-method standard errors (not used)
-IRFMC.dmethodstderr(1,:,mcdraw)=PluginMC.IRFstderrorcum(1,:);
+    % Collect also the delta-method standard errors (not used). Cumulative
+    % and non cumulative
 
-IRFMC.dmethodstderr(2,:,mcdraw)=PluginMC.IRFstderror(2,:);
+    IRFMC.dmethodstderr(i,:,mcdraw, 1) = PluginMC.IRFstderror(i,:); % non cumulative
 
-IRFMC.dmethodstderr(3,:,mcdraw)=PluginMC.IRFstderror(3,:);
+    IRFMC.dmethodstderr(i,:,mcdraw, 2) = PluginMC.IRFstderrorcum(i,:); % cumulative
+
+end
 
 %First-stage Stat
 
@@ -608,11 +623,23 @@ else
 
 end
 
+namdir = strcat(date,'_','K','_','p=',num2str(MC.p),num2str(confidence));
+
+if exist(namdir,'dir')
+    
+    cd(namdir);
+  
+else
+    
+    mkdir(namdir);
+    
+    cd(namdir);
+
+end
+
 output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'.eps');
 
 save_count = 1;
-
-namdir = strcat(date,'_','K','_','p=',num2str(MC.p),num2str(confidence));
 
 figure(graphcount-1)
 
@@ -636,6 +663,413 @@ cd ..
 
 cd ..
 
+cd ..
+
+%% 19) Plot Selected IRFs and Cumulatives
+
+% This section of the script plots selected non-cumulative graphs for
+% the selected IRF variables and selected cumulative graphs for the 
+% selected cumselect variables. These plots are simply displayed, but
+% not automatically saved. Section 17 generates the individual plots, which
+% are saved.
+if length(IRFselect) > 1
+    
+    figure(graphcount)
+
+    graphcount = graphcount + 1;
+
+    plots.order     = 1:length(IRFselect);
+
+    for i = 1:length(IRFselect) 
+
+        iplot = IRFselect(i);
+
+        if length(IRFselect) > ceil(sqrt(length(IRFselect))) * floor(sqrt(length(IRFselect)))
+
+            subplot(ceil(sqrt(length(IRFselect))),ceil(sqrt(length(IRFselect))),plots.order(1,i));
+
+        else
+
+            subplot(ceil(sqrt(length(IRFselect))),floor(sqrt(length(IRFselect))),plots.order(1,i));
+
+        end
+
+        plot(0:20,mean(coverageMCBoots(iplot,:,:,1),3),'o'); hold on
+
+        plot(0:20,mean(coverageMCMSW(iplot,:,:,1),3),'rx'); hold off
+
+        axis([0 MC.horizons .8 1]); 
+
+        xlabel('Months after the shock');
+
+        ylabel('MC Coverage');
+
+        title(columnnames(iplot));
+
+        if i == 1
+
+            legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+
+            legend('location','southeast')
 
 
+        end
+
+    end
+
+    clear title_master;
+
+    title_master = strcat('Selected MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')');
+
+    singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
+
+end
+
+%Cumulative plots
+
+if length(cumselect) > 1
+    
+    figure(graphcount)
+
+    graphcount = graphcount + 1;
+
+    plots.order = 1:length(cumselect);
+
+    for i = 1:length(cumselect) 
+
+        iplot = cumselect(i);
+
+        if length(IRFselect) > ceil(sqrt(length(IRFselect))) * floor(sqrt(length(IRFselect)))
+
+            subplot(ceil(sqrt(length(IRFselect))),ceil(sqrt(length(IRFselect))),plots.order(1,i));
+
+        else
+
+            subplot(ceil(sqrt(length(IRFselect))),floor(sqrt(length(IRFselect))),plots.order(1,i));
+
+        end
+
+        plot(0:20,mean(coverageMCBoots(iplot,:,:,2),3),'o'); hold on
+
+        plot(0:20,mean(coverageMCMSW(iplot,:,:,2),3),'rx'); hold off
+
+        axis([0 MC.horizons .8 1]); 
+
+        xlabel('Months after the shock');
+
+        ylabel('MC Coverage');
+
+        title(columnnames(iplot));
+        
+        if i == 1
+
+            legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+
+            legend('location','southeast')
+
+
+        end
+
+    end
+
+    title_master = strcat('Cumulative MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')');
+
+    singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
+    
+end
+
+
+%% 20) Generating separate IRF (cumulative and non) plots
+
+plots.order     = 1:length(IRFselect);
+
+for i = 1:length(IRFselect) 
+
+    iplot = IRFselect(i);
+    
+    figure(graphcount);
+    
+    graphcount = graphcount + 1;
+    
+    plot(0:20,mean(coverageMCBoots(iplot,:,:,1),3),'o'); hold on
+        
+    plot(0:20,mean(coverageMCMSW(iplot,:,:,1),3),'rx'); hold off
+    
+    axis([0 MC.horizons .8 1]);
+
+    xlabel('Months after the shock');
+
+    ylabel('MC Coverage');
+
+    title(strcat(columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')'));
+
+	legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+
+    legend('location','southeast')
+
+end
+
+plots.order = 1:length(cumselect);
+
+for i = 1:length(cumselect) 
+
+    iplot = cumselect(i);
+    
+    figure(graphcount);
+    
+    graphcount = graphcount + 1;
+    
+    plot(0:20,mean(coverageMCBoots(iplot,:,:,2),3),'o'); hold on
+    
+    plot(0:20,mean(coverageMCMSW(iplot,:,:,2),3),'rx'); hold off
+
+    axis([0 MC.horizons .8 1]);
+
+    xlabel('Months after the shock');
+
+    ylabel('MC Coverage');
+
+    title(strcat('Cumulative', {' '}, columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')'));
+
+    legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+
+	legend('location','southeast')
+
+end
+
+%% 21) Save separate selected IRF (cumulative and non) plots
+
+outdir = strcat('Output/',application,'/MC/Boots');
+
+if exist(outdir,'dir')
+    
+    cd(outdir);
+  
+else
+    
+    mkdir(outdir);
+    
+    cd(outdir);
+
+end
+
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'.eps');
+
+
+namdir = strcat(date,'_','K','_','p=',num2str(MC.p),num2str(confidence));
+
+if exist(namdir,'dir')
+    
+    cd(namdir);
+  
+else
+    
+    mkdir(namdir);
+    
+    cd(namdir);
+
+end
+
+for i = 1:(length(cumselect)) 
+    
+    figure(graphcount - i)
+    
+    print(gcf,'-depsc2',strcat(num2str(save_count),'MC_Coverage_Separate_Cumulative_', output_label));
+    
+    save_count = save_count + 1;
+
+end
+
+for i = length(cumselect)+1:(length(IRFselect)+length(cumselect))
+    
+    figure(graphcount - i)
+
+    print(gcf,'-depsc2',strcat(num2str(save_count),'MC_Coverage_Separate_', output_label, num2str(graphcount-i)));
+    
+    save_count = save_count + 1;
+    
+end
+
+cd ..
+    
+cd ..
+
+cd ..
+
+cd ..
+
+cd ..
+
+%% 22) Box&Whisker Type plot to summarize the finite-sample distribution of IRF coefficients
+
+figure(graphcount)
+
+graphcount = graphcount + 1;
+
+plots.order = 1:MC.n;
+
+addpath('functions/figuresfun');
+
+for iplot = 1:MC.n
+
+    if MC.n > ceil(sqrt(MC.n)) * floor(sqrt(MC.n))
+
+        subplot(ceil(sqrt(MC.n)),ceil(sqrt(MC.n)),plots.order(1,iplot));
+
+    else
+
+        subplot(ceil(sqrt(MC.n)),floor(sqrt(MC.n)),plots.order(1,iplot));
+
+    end
+    
+    IRFplugin = squeeze(IRFMC.IRFplugin(iplot,:,:,1))';
+    
+    for hori=1:MC.horizons+1
+       
+        scatter(hori*ones(MCdraws,1),IRFplugin(:,hori),'b','.'); hold on
+        
+        scatter(hori,median(IRFplugin(:,hori)),'r','o'); hold on
+        
+        scatter(hori,quantile(IRFplugin(:,hori),.975),'r','^'); hold on
+        
+        scatter(hori,quantile(IRFplugin(:,hori),.025),'r','v'); hold on
+        
+        scatter(hori,mean(IRFplugin(:,hori)),'r','*'); hold on
+  
+    end
+    
+    clear IRFplugin;
+    
+    plot(MC.IRFZ(iplot,:,1),'r'); hold on % non-cumulative
+    
+    plot(MC.IRFChol(iplot,:,1),'--r'); hold on % non-cumulative
+
+    hold off
+    
+    xlabel('Months after the shock');
+    
+    ylabel(strcat(columnnames(iplot),{' '},'estimators'));
+    
+end
+    
+title_master = strcat('IRF Plug-in Estimators',{' '},num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')');
+
+title_master = title_master{1};
+
+singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
+
+legend({'True IRF','Cholesky','Plug-in IRFs','Median','.975 quantile','.0275 quantile','Mean'},'Location','northeast')
+
+%Cumulative 
+
+figure(graphcount)
+
+graphcount = graphcount + 1;
+
+plots.order = 1:MC.n;
+
+for iplot = 1:MC.n
+
+    if MC.n > ceil(sqrt(MC.n)) * floor(sqrt(MC.n))
+
+        subplot(ceil(sqrt(MC.n)),ceil(sqrt(MC.n)),plots.order(1,iplot));
+
+    else
+
+        subplot(ceil(sqrt(MC.n)),floor(sqrt(MC.n)),plots.order(1,iplot));
+
+    end
+    
+    IRFplugin = squeeze(IRFMC.IRFplugin(iplot,:,:,2))';
+
+    for hori=1:MC.horizons+1
+       
+        scatter(hori*ones(MCdraws,1),IRFplugin(:,hori),'b','.'); hold on
+        
+        scatter(hori,median(IRFplugin(:,hori)),'r','o'); hold on
+        
+        scatter(hori,quantile(IRFplugin(:,hori),.975),'r','^'); hold on
+        
+        scatter(hori,quantile(IRFplugin(:,hori),.025),'r','v'); hold on
+        
+        scatter(hori,mean(IRFplugin(:,hori)),'r','*'); hold on
+  
+    end
+    
+    clear IRFplugin;
+    
+    plot(MC.IRFZ(iplot,:,2),'r'); hold on % cumulative
+    
+    plot(MC.IRFChol(iplot,:,2),'--r'); hold on % cumulative
+
+    hold off
+        
+    xlabel('Months after the shock');
+        
+    ylabel(strcat(columnnames(iplot),{' '},'estimators'));
+    
+end
+
+title_master = strcat('Cumulative IRF Plug-in Estimators',{' '},num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')');
+
+title_master = title_master{1};
+
+singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
+
+legend({'True IRF','Cholesky','Plug-in IRFs','Median','.975 quantile','.0275 quantile','Mean'},'Location','northeast')
+
+%% 23) Save Box&Whisker Type plots
+
+outdir = strcat('Output/',application,'/MC/Boots');
+
+if exist(outdir,'dir')
+    
+    cd(outdir);
+  
+else
+    
+    mkdir(outdir);
+    
+    cd(outdir);
+
+end
+
+namdir = strcat(date,'_','K','_','p=',num2str(MC.p),num2str(confidence));
+
+if exist(namdir,'dir')
+    
+    cd(namdir);
+  
+else
+    
+    mkdir(namdir);
+    
+    cd(namdir);
+
+end
+
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'.eps');
+
+figure(graphcount - 1)
+
+print(gcf,'-depsc2',strcat(num2str(save_count),'Box&Whisker_Cumulative', output_label));
+
+save_count = save_count + 1;
+
+figure(graphcount - 2)
+
+print(gcf,'-depsc2',strcat(num2str(save_count),'Box&Whisker', output_label)); % non-cumulative is not marked in the title
+
+save_count = save_count + 1;
+
+cd ..
+
+cd ..
+
+cd ..
+
+cd ..
+
+cd ..
+    
 
