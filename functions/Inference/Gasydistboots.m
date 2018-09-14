@@ -1,4 +1,4 @@
-function [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T, f, SVARinp, NWlags, AL, Sigma, Gamma, V, WHatall)
+function [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T, f, AL, Sigma, Gamma, V, WHatall,SVARinp, NWlags)
 %  -Provides inference for SVAR-IV based on samples from the asy. dist.
 %  -Syntax:
 %    [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T, f, SVARinp, NWlags, AL, Sigma, Gamma, V, Whatall)
@@ -32,8 +32,12 @@ function [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons
 % This version: July 17th, 2017
 % Last edited by José Luis Montiel-Olea
 
+
+
 %% 1) Create an RForm (if necessary)
 
+%check whether the inputs are correct
+Gasydistboots_Check(NB, n, p, norm, scale, horizons, confidence, T, f, NWlags, AL, Sigma, Gamma, V, WHatall)
 
 %a) Estimation of (AL, Sigma) and the reduced-form innovations
 if (nargin == 12)
@@ -49,7 +53,7 @@ if (nargin == 12)
      RForm.X,...
      RForm.Y]        = RForm_VAR(SVARinp.ydata, p);
  
- %RForm.AL(:),RForm.V*RForm.Sigma(:),RForm.Gamma(:), RForm.WHatall
+    %RForm.AL(:),RForm.V*RForm.Sigma(:),RForm.Gamma(:), RForm.WHatall
 
     %b) Estimation of Gammahat (n times 1)
 
@@ -68,6 +72,11 @@ if (nargin == 12)
     [RForm.WHatall,RForm.WHat,RForm.V] = ...
     CovAhat_Sigmahat_Gamma(p,RForm.X,SVARinp.Z(p+1:end,1),RForm.eta,NWlags);                
     
+    Sigma = RForm.Sigma;
+    
+    AL = RForm.AL;
+    
+    V = RForm.V;
 
 elseif (nargin == 17)
 
