@@ -3,9 +3,9 @@ function [mu,AL,Sigma,eta,X,Y] = RForm_VAR(TSL,p,W)
 % -Syntax:
 %       [mu,AL,Sigma,eta,X,Y] = RForm_VAR(TSL,p,W)
 % -Inputs:
-%     TSL: matrix of time series                           (T times n)
-%       p: number of lags in the VAR model                 (1 times 1)
-%       W: Matrix of exogenous regressors                  (T times m)
+%     TSL: matrix of time series                           (T x n)
+%       p: number of lags in the VAR model                 (1 x 1)
+%       W: Matrix of exogenous regressors                  (T x m)
 %          (could be dummies, deterministic time trends, etc)
 % -Output:
 %      AL: Least-squares estimator of the VAR coefficients (n x np)

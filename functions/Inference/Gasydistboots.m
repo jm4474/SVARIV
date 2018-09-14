@@ -1,33 +1,28 @@
 function [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T, f, AL, Sigma, Gamma, V, WHatall,SVARinp, NWlags)
 %  -Provides inference for SVAR-IV based on samples from the asy. dist.
 %  -Syntax:
-%    [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T, f, SVARinp, NWlags, AL, Sigma, Gamma, V, Whatall)
+%    [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T, f, AL, Sigma, Gamma, V, WHatall,SVARinp, NWlags)
 %  -Inputs:
 %     seed: seed structure  
-%       NB: number of samples from the asymptotic distribution
-%        n: number of variables in the VAR
-%        p: number of lags in the VAR
-%     norm: normalizing variable
-%    scale: scale of the shock
-% horizons: number of horizons (IRFs) (does not include the impact or horizon 0)
-%confidence: confidence level
-%        T: time periods
+%       NB: number of samples from the asymptotic distribution                      (1 x 1)
+%        n: number of variables in the VAR                                          (1 x 1)
+%        p: number of lags in the VAR                                               (1 x 1)
+%     norm: normalizing variable                                                    (1 x 1)
+%    scale: scale of the shock                                                      (1 x 1)
+% horizons: number of horizons (IRFs) (does not include the impact or horizon 0)    (1 x 1)
+%confidence: confidence level                                                       (1 x 1)
+%        T: time periods                                                            (1 x 1)
 %        f: function handle (depends on AL, Sigma, Gamma, hori, x, nvar)
-%   NWlags: Newey-West lags
 %       AL: point estimator of AL
-%vechSigma: point estimator of vech(Sigma)
+%    Sigma: point estimator of Sigma
 %    Gamma: point estimator of vec(Gamma)
-%  Whatall: Covariance mat of (vec(AL)', vech(Sigma)', vec(Gamma)')              
+%  Whatall: Covariance mat of (vec(AL)', vech(Sigma)', vec(Gamma)')
+%  SVARinp: structure containing ydata, z, & n
+%   NWlags: Newey-West lags                                                         (1 x 1)
 %
 %  -Output:
-%       AL: Least-squares estimator of the VAR coefficients
-%    Sigma: Least-squares estimator of the VAR residuals
-%      eta: VAR model residuals
-%        X: VAR model regressors
-%        Y: VAR matrix of endogenous regressors
-%  -Output:
 %     IRFs: 3d structure containing all of the bootstrap draws of IRF
-% bootsIRF: alpha/2 and 1-alpha/2 quantiles of IRFs
+% bootsIRF: alpha/2 and 1-alpha/2 quantiles of IRFs                                 5D
 % 
 % This version: July 17th, 2017
 % Last edited by José Luis Montiel-Olea

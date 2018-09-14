@@ -4,27 +4,26 @@ function [hd,hdistance,hdistance2] = Hausdorff_Distance(n, horizons, MSWlbound, 
 %    -Syntax:
 %       [hd,hdistance,hdistance2] = Hausdorff_Distance(n, horizons, MSWlbound, MSWubound,MSWlboundcum, MSWuboundcum, Dmethodlbound, Dmethodubound, Dmethodlboundcum, Dmethoduboundcum)
 %    -Inputs:
-%       n: Number of variables in the VAR model 
-%       horizons: Number of horizons for the Impulse Response Functions (IRFs)                       (1 times 1)  
-%                       (does not include the impact horizon 0)    
-%       MSWlbound: lower bounds of MSW confidence interval                                           (n x horizons+1)
-%       MSWubound: upper bounds of MSW confidence interval                                           (n x horizons+1)
-%       MSWlboundcum: lower bounds of MSW cumulative confidence interval                             (n x horizons+1)
-%       MSWuboundcum: upper bounds of MSW cumulative confidence interval                             (n x horizons+1)
-%       Dmethodlbound: lower bounds of delta method cumulative confidence interval                   (n x horizons+1)
-%       Dmethodubound: upper bounds of delta method cumulative confidence interval                   (n x horizons+1)
-%       Dmethodlboundcum: lower bounds of delta method cumulative confidence interval                (n x horizons+1)
-%       Dmethoduboundcum: upper bounds of delta method cumulative confidence interval                (n x horizons+1)
+%       n:                   Number of variables in the VAR model 
+%       horizons:            Number of horizons for the Impulse Response Functions (IRFs)               (1 x 1)  
+%                            (does not include the impact horizon 0)    
+%       MSWlbound:           lower bounds of MSW confidence interval                                    (n x horizons+1)
+%       MSWubound:           upper bounds of MSW confidence interval                                    (n x horizons+1)
+%       MSWlboundcum:        lower bounds of MSW cumulative confidence interval                         (n x horizons+1)
+%       MSWuboundcum:        upper bounds of MSW cumulative confidence interval                         (n x horizons+1)
+%       Dmethodlbound:       lower bounds of delta method cumulative confidence interval                (n x horizons+1)
+%       Dmethodubound:       upper bounds of delta method cumulative confidence interval                (n x horizons+1)
+%       Dmethodlboundcum:    lower bounds of delta method cumulative confidence interval                (n x horizons+1)
+%       Dmethoduboundcum:    upper bounds of delta method cumulative confidence interval                (n x horizons+1)
 %
 %   -Outputs:
 %       hd: Hausdorff distances computed for each variable (this was to
 %           check the way Pepe suggested doing it)
 %       hdistance: Grid of Hausdorff distances for each variable and each
-%           horizon (likely not the correct way, just keeping just in case) 
+%           horizon (likely not the correct way, keeping just in case) 
 %       hdistance2: Hausdorff distances computed for each variable (I think
 %           the way Pepe suggested doing it)
 
-%   Detailed explanation goes here
 
 %% Initial way of trying it out, creating Hausdorff distance for each
 % %variable, each horizon (THIS IS PROBABLY WRONG!!!)

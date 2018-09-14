@@ -1,32 +1,33 @@
-function [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,horizons,RForm,display_on)
+function [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,scale,horizons,RForm,display_on)
 % -Reports the confidence interval for IRF coefficients described in Montiel-Olea, Stock, and Watson (2017). This version: July 11th, 2017. 
 % -Syntax:
 %       [InferenceMSW,Plugin,Chol] = MSWfunction(confidence,nvar,x,hori,RForm,display_on)
 % -Inputs:
-%    confidence: confidence level                            (1 times 1)
-%          nvar: variable defining the normalization         (1 times 1)
-%             x: scale of the shock                          (1 times 1)
+%    confidence: confidence level                            (1 x 1)
+%          nvar: variable defining the normalization         (1 x 1)
+%         scale: scale of the shock                          (1 x 1)
 %      horizons: Number of horizons for the Impulse Response 
 %                Functions (IRFs) (does not include the 
-%                impact or horizon 0)                        (1 times 1)
+%                impact or horizon 0)                        (1 x 1)
 %         RForm: reduced-form structure.                     (structure)
 %                
 %                The structure must contain the following fields:
 %                AL= n x np matrix of reduced-form coefficients
 %                p = number of lags used in the estimation of AL
 %                n = dimension of the SVAR
-%             Sigma= n x n matrix of reduced-form residuals
-%        RForm.What= (n^2p + n) covariance matrix of vec(A),Gamma
-%         RForm.eta= n x T matrix of reduced-form residuals
-%       RForm.Gamma= Estimator of E[z_t eta_t]
-%
+%            Sigma = n x n matrix of reduced-form residuals
+%       RForm.What = (n^2p + n) covariance matrix of vec(A),Gamma
+%        RForm.eta = n x T matrix of reduced-form residuals
+%      RForm.Gamma = Estimator of E[z_t eta_t]
+
 %    display_on: dummy variable. 
 %
 % -Output:
 %  InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
-%        PLugin: Structure containing standard plug-in inference
+%        Plugin: Structure containing standard plug-in inference
 %          Chol: Cholesky IRFs
 %
+
 critval = norminv(1-((1-confidence)/2),0,1)^2;
 
 %% 1) Create the MA coefficients based on the AL matrix
@@ -56,7 +57,7 @@ Ccum        = cumsum(C,3);
 B1chol      = chol(RForm.Sigma)'; 
 %Compute the Cholesky estimator for comparison
 
-B1chol      = x*(B1chol(:,1)./B1chol(nvar,1));
+B1chol      = scale*(B1chol(:,1)./B1chol(nvar,1));
 
 Chol(:,:,1) = reshape(sum(bsxfun(@times,C,B1chol'),2),[RForm.n,horizons+1]);
 
@@ -103,15 +104,15 @@ for j =1:n
         
     ahat(j,ih)     = (T*(RForm.Gamma(nvar,1)^2))-(critval*W2(nvar,nvar));
     
-    bhat(j,ih)     = -2*T*x*(e(:,j)'*C(:,:,ih)*RForm.Gamma)*RForm.Gamma(nvar,1)...
-        + 2*critval*x*(kron(RForm.Gamma',e(:,j)'))*G(:,:,ih)*W12(:,nvar)...
-        + 2*critval*x*e(:,j)'*C(:,:,ih)*W2(:,nvar);
+    bhat(j,ih)     = -2*T*scale*(e(:,j)'*C(:,:,ih)*RForm.Gamma)*RForm.Gamma(nvar,1)...
+        + 2*critval*scale*(kron(RForm.Gamma',e(:,j)'))*G(:,:,ih)*W12(:,nvar)...
+        + 2*critval*scale*e(:,j)'*C(:,:,ih)*W2(:,nvar);
     
-    chat(j,ih)     = ((T^.5)*x*e(:,j)'*C(:,:,ih)*RForm.Gamma).^2 ...
-        -critval*(x^2)*(kron(RForm.Gamma',e(:,j)'))*G(:,:,ih)*W1*...
+    chat(j,ih)     = ((T^.5)*scale*e(:,j)'*C(:,:,ih)*RForm.Gamma).^2 ...
+        -critval*(scale^2)*(kron(RForm.Gamma',e(:,j)'))*G(:,:,ih)*W1*...
         ((kron(RForm.Gamma',e(:,j)'))*G(:,:,ih))' ...
-        -2*critval*(x^2)*(kron(RForm.Gamma',e(:,j)'))*G(:,:,ih)*W12*C(:,:,ih)'*e(:,j)...
-        -critval*(x^2)*e(:,j)'*C(:,:,ih)*W2*C(:,:,ih)'*e(:,j); 
+        -2*critval*(scale^2)*(kron(RForm.Gamma',e(:,j)'))*G(:,:,ih)*W12*C(:,:,ih)'*e(:,j)...
+        -critval*(scale^2)*e(:,j)'*C(:,:,ih)*W2*C(:,:,ih)'*e(:,j); 
     
     Deltahat(j,ih) = bhat(j,ih).^2-(4*ahat(j,ih)*chat(j,ih));
     
@@ -152,9 +153,9 @@ for j =1:n
     end
 end
 
-MSWlbound(nvar,1)=x;
+MSWlbound(nvar,1)=scale;
     
-MSWubound(nvar,1)=x;
+MSWubound(nvar,1)=scale;
     
 %% 5) Save all the output in the structure Inference.MSW    
     
@@ -194,11 +195,11 @@ for ih = 1:horizons + 1
     
     for ivar = 1:n
         
-        lambdahat(ivar,ih)     = x*e(:,ivar)'*C(:,:,ih)*RForm.Gamma./RForm.Gamma(nvar,1);
+        lambdahat(ivar,ih)     = scale*e(:,ivar)'*C(:,:,ih)*RForm.Gamma./RForm.Gamma(nvar,1);
         
-        d1                     = (kron(RForm.Gamma',e(:,ivar)')*x*G(:,:,ih));
+        d1                     = (kron(RForm.Gamma',e(:,ivar)')*scale*G(:,:,ih));
         
-        d2                     = (x*e(:,ivar)'*C(:,:,ih))-(lambdahat(ivar,ih)*e(:,nvar)');                                    
+        d2                     = (scale*e(:,ivar)'*C(:,:,ih))-(lambdahat(ivar,ih)*e(:,nvar)');                                    
          
         d                      = [d1,d2]';         
         
@@ -247,15 +248,15 @@ for j = 1:n
 
         ahatcum(j,ih)          = (T*(RForm.Gamma(nvar,1)^2))-(critval*W2(nvar,nvar));
 
-        bhatcum(j,ih)          = -2*T*x*(e(:,j)'*Ccum(:,:,ih)*RForm.Gamma)*RForm.Gamma(nvar,1)...
-            + 2*critval*x*(kron(RForm.Gamma',e(:,j)'))*Gcum(:,:,ih)*W12(:,nvar)...
-            + 2*critval*x*e(:,j)'*Ccum(:,:,ih)*W2(:,nvar);
+        bhatcum(j,ih)          = -2*T*scale*(e(:,j)'*Ccum(:,:,ih)*RForm.Gamma)*RForm.Gamma(nvar,1)...
+            + 2*critval*scale*(kron(RForm.Gamma',e(:,j)'))*Gcum(:,:,ih)*W12(:,nvar)...
+            + 2*critval*scale*e(:,j)'*Ccum(:,:,ih)*W2(:,nvar);
 
-        chatcum(j,ih)          = ((T^.5)*x*e(:,j)'*Ccum(:,:,ih)*RForm.Gamma).^2 ...
-            -critval*(x^2)*(kron(RForm.Gamma',e(:,j)'))*Gcum(:,:,ih)*W1*...
+        chatcum(j,ih)          = ((T^.5)*scale*e(:,j)'*Ccum(:,:,ih)*RForm.Gamma).^2 ...
+            -critval*(scale^2)*(kron(RForm.Gamma',e(:,j)'))*Gcum(:,:,ih)*W1*...
             ((kron(RForm.Gamma',e(:,j)'))*Gcum(:,:,ih))' ...
-            -2*critval*(x^2)*(kron(RForm.Gamma',e(:,j)'))*Gcum(:,:,ih)*W12*Ccum(:,:,ih)'*e(:,j)...
-            -critval*(x^2)*e(:,j)'*Ccum(:,:,ih)*W2*Ccum(:,:,ih)'*e(:,j); 
+            -2*critval*(scale^2)*(kron(RForm.Gamma',e(:,j)'))*Gcum(:,:,ih)*W12*Ccum(:,:,ih)'*e(:,j)...
+            -critval*(scale^2)*e(:,j)'*Ccum(:,:,ih)*W2*Ccum(:,:,ih)'*e(:,j); 
 
         Deltahatcum(j,ih)      = (bhatcum(j,ih).^2)-(4*ahatcum(j,ih)*chatcum(j,ih));
 
@@ -295,9 +296,9 @@ for j = 1:n
     end
 end
 
-MSWlboundcum(nvar,1) = x;
+MSWlboundcum(nvar,1) = scale;
 
-MSWuboundcum(nvar,1) = x;
+MSWuboundcum(nvar,1) = scale;
 
 %% 9) Save all the output in the structure Inference.MSW    
 
@@ -329,11 +330,11 @@ for ih = 1:horizons + 1
     
     for ivar = 1:n
         
-        lambdahatcum(ivar,ih)     = x*e(:,ivar)'*Ccum(:,:,ih)*RForm.Gamma./RForm.Gamma(nvar,1);
+        lambdahatcum(ivar,ih)     = scale*e(:,ivar)'*Ccum(:,:,ih)*RForm.Gamma./RForm.Gamma(nvar,1);
         
-        d1                        = (kron(RForm.Gamma',e(:,ivar)')*x*Gcum(:,:,ih));
+        d1                        = (kron(RForm.Gamma',e(:,ivar)')*scale*Gcum(:,:,ih));
         
-        d2                        = x*e(:,ivar)'*Ccum(:,:,ih)-lambdahatcum(ivar,ih)*e(:,nvar)';                                    
+        d2                        = scale*e(:,ivar)'*Ccum(:,:,ih)-lambdahatcum(ivar,ih)*e(:,nvar)';                                    
         
         d                         = [d1,d2]';         
         
@@ -401,7 +402,7 @@ end
 
 %e) Estimated shock:
     
-    Plugin.epsilonhat    = x*RForm.Gamma'*(RForm.Sigma^(-1))*RForm.eta./RForm.Gamma(nvar,1);
+    Plugin.epsilonhat    = scale*RForm.Gamma'*(RForm.Sigma^(-1))*RForm.eta./RForm.Gamma(nvar,1);
     
     Plugin.epsilonhatstd = (Plugin.epsilonhat-mean(Plugin.epsilonhat))./std(Plugin.epsilonhat);
     

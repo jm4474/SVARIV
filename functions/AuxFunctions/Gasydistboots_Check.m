@@ -154,18 +154,6 @@ if numel(scale) ~= 1
     
 end
 
-if scale <= 0
-    
-    error('scale must be > 0.');
-
-end
-
-if floor(scale) ~= scale
-    
-    error('scale must be an integer.');
-    
-end
-
 %check horizons
 if isempty(horizons)
     
@@ -384,12 +372,6 @@ if ismatrix(V) == 0
     error('V must be a matrix.');
 
 end 
-
-if size(V,1) ~= factorial(n)
-    
-    error('size(V,1) must be factorial(n)') ;
-    
-end
 
 if size(V,2) ~= n*n
     

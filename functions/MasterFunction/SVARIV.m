@@ -3,28 +3,34 @@ function [Plugin, InferenceMSW, Chol, RForm, figureorder, ARxlim, ARylim] = SVAR
 %-Syntax:
 %       [Plugin, InferenceMSW, Chol] = SVARIV(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir)
 % -Inputs:
-%       p:            Number of lags in the VAR model                                                    (1 times 1)                                          
-%       confidence:   Value for the standard and weak-IV robust confidence set                           (1 times 1) 
-%       ydata:        Endogenous variables from the VAR model                                            (T times n) 
-%       z:            External instrumental variable                                                     (T times 1)
-%       NWlags:       Newey-West lags                                                                    (1 times 1)
-%       norm:         Variable used for normalization                                                    (1 times 1)
-%       scale:        Scale of the shock                                                                 (1 times 1)
+%       p:            Number of lags in the VAR model                                                    (1 x 1)                                          
+%       confidence:   Value for the standard and weak-IV robust confidence set                           (1 x 1) 
+%       ydata:        Endogenous variables from the VAR model                                            (T x n) 
+%       z:            External instrumental variable                                                     (T x 1)
+%       NWlags:       Newey-West lags                                                                    (1 x 1)
+%       norm:         Variable used for normalization                                                    (1 x 1)
+%       scale:        Scale of the shock                                                                 (1 x 1)
 %       horizons:     Number of horizons for the Impulse Response Functions (IRFs) 
-%                     (does not include the impact horizon 0)                                            (1 times 1)
+%                     (does not include the impact horizon 0)                                            (1 x 1)
 %       savdir:       Directory where the figures generated will be saved                                (String)
-%       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 times n)
-%       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 times q)
+%       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 x n)
+%       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 x q)
 %       cumselect:    Indices for the variables that the user wants cumulative IRF plots for
 %       time:         Time unit for the dataset (e.g. year, month, etc.)                                 (String)
-%       RForm_user:   Structure containing the reduced form estimates (more details below).              (Structure)
 %       dataset_name: The name of the dataset used for generating the figures (used in the output label) (String)
+%       RForm:        Structure containing the reduced form estimates (more details below).              (Structure)
 %
 % -Output:
 %       PLugin:       Structure containing standard plug-in inference
 %       InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
 %       Chol:         Cholesky IRFs
 %       RForm:        Structure containing the reduced form parameters
+%       figureorder:  Scalar that keeps track of the number of figures                                   (1 x 1)   
+%                     generated
+%       ARxlim:       X-axes stored from figure with all IRFs plotted                                    (n x 2 x 2)
+%                     together (non-cumulative & cumulative)
+%       ARylim:       Y-axes stored from figure with all IRFs plotted                                    (n x 2 x 2)
+%                     together (non-cumulative & cumulative)
 %
 % Note: this function calls the functions MSWFunction, RForm_VAR, CovAhat_Sigmahat_Gamma and jbfill
 %
@@ -35,12 +41,12 @@ function [Plugin, InferenceMSW, Chol, RForm, figureorder, ARxlim, ARylim] = SVAR
 % following variables, with the described dimensions:
 
 %   RForm.n :         Number of variables
-%   RForm.mu:         The VAR forecast errors                                                 (n times 1)
-%   RForm.AL:         Least-squares estimator of the VAR coefficients                         (n times np)
-%   RForm.Sigma:      Least-squares estimator of the VAR variance-covariance residuals matrix (n times n)
-%   RForm.eta:        VAR model residuals                                                     (n times T)
-%   RForm.X:          Matrix of VAR covariates                                                (T times np + 1)
-%   RForm.Y:          VAR matrix of endogenous regressors                                     (T times n)
+%   RForm.mu:         The VAR forecast errors                                                 (n x 1)
+%   RForm.AL:         Least-squares estimator of the VAR coefficients                         (n x np)
+%   RForm.Sigma:      Least-squares estimator of the VAR variance-covariance residuals matrix (n x n)
+%   RForm.eta:        VAR model residuals                                                     (n x T)
+%   RForm.X:          Matrix of VAR covariates                                                (T x np + 1)
+%   RForm.Y:          VAR matrix of endogenous regressors                                     (T x n)
 %   RForm.Gamma:      RForm.eta*SVARinp.Z(p+1:end,1)/(size(RForm.eta,2)); Used for the computation of impulse response.
 %   RForm.externalIV: SVARinp.Z(p+1:end,1);
 

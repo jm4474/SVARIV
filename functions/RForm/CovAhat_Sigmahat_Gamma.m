@@ -3,12 +3,12 @@ function [WHataux,WHat,V] = CovAhat_Sigmahat_Gamma(p,X,Z,eta,lags)
 % -Syntax:
 %       [WHataux,WHat,V] = CovAhat_Sigmahat_Gamma(p,X,Z,eta,lags)
 % -Inputs:
-%       p: VAR lags                                    (1 times 1)
-%       X: VAR "right-hand" variables                  (T times (np+w))
+%       p: VAR lags                                    (1 x 1)
+%       X: VAR "right-hand" variables                  (T x (np+w))
 %          (w is the number of additional regs)
-%       Z: external instrument                         (T times k)
-%     eta: eta                                         (n times T)
-%    lags: Newey-West lags                             (1 times 1)
+%       Z: external instrument                         (T x k)
+%     eta: eta                                         (n x T)
+%    lags: Newey-West lags                             (1 x 1)
 % -Output:
 % WHataux: asymptotic variance of [vec(Ahat)',vech(Sigmahat)',vec(Gammahat)']'
 %    WHat: asymptotic variance of [vec(Ahat)',vec(Gammahat)']'

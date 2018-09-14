@@ -9,6 +9,7 @@ function [test] = ARTestStatistic(var, horizon, RFormIRFBoots, AlphaBoots, null_
 %     AlphaBoots    : Gama(1,1)
 %     grid          : Grid of lambdas for each variable and horizon.
 %     T             : Number of time periods
+%     ndraws        : Number of draws
 %
 %  -Output:
 %     test          : test statistic used in the bootstrap implementation

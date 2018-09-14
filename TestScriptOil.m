@@ -123,17 +123,18 @@ addpath(strcat(direct,'/functions/Inference'));
 % below:
 %
 % -Inputs:
-%       p:            Number of lags in the VAR model                                                    (1 times 1)                                          
-%       confidence:   Value for the standard and weak-IV robust confidence set                           (1 times 1) 
-%       ydata:        Endogenous variables from the VAR model                                            (T times n) 
-%       z:            External instrumental variable                                                     (T times 1)
-%       NWlags:       Newey-West lags                                                                    (1 times 1)
-%       norm:         Variable used for normalization                                                    (1 times 1)
-%       scale:        Scale of the shock                                                                 (1 times 1)
-%       horizons:     Number of horizons for the Impulse Response Functions(IRFs)                        (1 times 1)
+%       p:            Number of lags in the VAR model                                                    (1 x 1)                                          
+%       confidence:   Value for the standard and weak-IV robust confidence set                           (1 x 1) 
+%       ydata:        Endogenous variables from the VAR model                                            (T x n) 
+%       z:            External instrumental variable                                                     (T x 1)
+%       NWlags:       Newey-West lags                                                                    (1 x 1)
+%       norm:         Variable used for normalization                                                    (1 x 1)
+%       scale:        Scale of the shock                                                                 (1 x 1)
+%       horizons:     Number of horizons for the Impulse Response Functions(IRFs)                        (1 x 1)
 %       savdir:       Directory where the figures generated will be saved                                (String)
-%       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 times n)
-%       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 times q)
+%       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 x n)
+%       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 x q)
+%       cumselect:    Indices for the variables that the user wants cumulative IRF plots for             (1 x q)
 %       time:         Time unit for the dataset (e.g. year, month, etc.)                                 (String)
 %       dataset_name: The name of the dataset used for generating the figures (used in the output label) (String)
 %
@@ -192,7 +193,7 @@ disp('Section 7 in this script calls the GasydistbootsAR function to do the boot
 cd(strcat(direct,'/functions/Inference'));
 
 multiplier = 1.5;     %Scalar that GasydistbootsAR will use to create the "grid" of null hypothesis for IRFs
-                     %IRFhat +- multiplier*standard errors
+                     %IRFhat +- multiplier*ARylim 
 
 grid_size = 50;      % Number of mull hypotheses (lambdas) in the grid, for each variable and for each horizon.
 

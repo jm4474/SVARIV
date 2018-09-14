@@ -4,22 +4,27 @@ function [] = BootstrapAR_Plots(n,p,horizons,confidence,RForm, SVARinp, figureor
 %       [caux,InferenceMSW] = Bootstrap_Plots(n,p,horizons,confidence,RForm,SVARinp,figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
 %   -Inputs:
 %      n:               Number of variables in the VAR model 
-%      p:               Number of lags in the VAR model                                                    (1 times 1)
-%      horizons:        Number of horizons for the Impulse Response Functions (IRFs)                       (1 times 1)  
+%      p:               Number of lags in the VAR model                                                    (1 x 1)
+%      horizons:        Number of horizons for the Impulse Response Functions (IRFs)                       (1 x 1)  
 %                       (does not include the impact horizon 0)    
-%      confidence:      Value for the standard and weak-IV robust confidence set                           (1 times 1)
+%      confidence:      Value for the standard and weak-IV robust confidence set                           (1 x 1)
 %      RForm:           Structure containing the reduced form parameters
 %      SVARinp:         Structure containing ydata, z, & n
-%      figureorder:     Figure number                                                                      (1 times 1)
+%      figureorder:     Figure number                                                                      (1 x 1)
 %      Plugin:          Structure containing standard plug-in inference
 %      InferenceMSW:    InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
 %      time:            Time unit for the dataset (e.g. year, month, etc.)                                 (String)
-%      columnnames:     Vector with the names for the endogenous variables, in the same order as ydata     (1 times n)
+%      columnnames:     Vector with the names for the endogenous variables, in the same order as ydata     (1 x n)
 %      savdir:          Directory where the figures generated will be saved                                (String)
 %      direct:          Directory where TestScript.m is located                                            (String) 
 %      dataset_name:    The name of the dataset used for generating the figures (used in the output label) (String)
 %      IRFselect:       Indices for the variables that the user wants separate IRF plots for
 %      cumselect:       Indices for the variables that the user wants cumulative IRF plots for
+%      reject:          4d logical array for whether an IRF is rejected or not, for                        (multiplier x n x horizons+1 x 2)
+%                       each lambda, variable, horizon, cumulative and non-cumulative
+%      null_grid:       grid of lambdas used in testing whether an IRF is                                  (grid_size x n x 2)
+%                       rejected or not      
+%      norm:            normalizing variable                                                               (1 x 1)
 %
 %   -Output:
 %       caux:
