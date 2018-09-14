@@ -55,6 +55,11 @@ direct = pwd;
 
 cd(direct)
 
+%check inputs
+addpath('functions/AuxFunctions');
+
+GasydistbootsAR_check(ydata, T, n, NB, p, norm, scale, horizons, confidence, NWlags, AL, Sigma, Gamma, V, WHatall, multiplier, grid_size, ARylim)
+
 
 %% 2) Create an RForm (if necessary)
 
