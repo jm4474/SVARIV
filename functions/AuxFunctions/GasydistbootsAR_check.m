@@ -206,18 +206,6 @@ if numel(scale) ~= 1
     
 end
 
-if scale <= 0
-    
-    error('scale must be > 0.');
-
-end
-
-if floor(scale) ~= scale
-    
-    error('scale must be an integer.');
-    
-end
-
 %check horizons
 if isempty(horizons)
     
