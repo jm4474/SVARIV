@@ -30,6 +30,11 @@ function [caux,InferenceMSW,figureorder] = Bootstrap_Plots(n,p,horizons,confiden
 
 %% 1) Comparison of "standard" bootstrap inference and the delta-method
 
+%check inputs
+addpath('functions/AuxFunctions');
+
+Bootstrap_Plots_Check(n,p,horizons,confidence, figureorder,Plugin,InferenceMSW,time,columnnames,savdir,direct,dataset_name,IRFselect,cumselect)
+
 %Non-cumulative graphs 
 figureorder = figureorder + 1; 
 
