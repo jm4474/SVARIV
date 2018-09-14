@@ -1,7 +1,7 @@
 function [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T, f, SVARinp, NWlags, AL, Sigma, Gamma, V, WHatall)
 %  -Provides inference for SVAR-IV based on samples from the asy. dist.
 %  -Syntax:
-%    [IRFs, bootsIRFs] = Gasydistboots(seed, I, n, p, nvar, x, hori, confidence, vecAL, vechSigma, Gamma, Whatall)
+%    [IRFs, bootsIRFs] = Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T, f, SVARinp, NWlags, AL, Sigma, Gamma, V, Whatall)
 %  -Inputs:
 %     seed: seed structure  
 %       NB: number of samples from the asymptotic distribution

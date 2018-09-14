@@ -20,6 +20,8 @@ function SVARIV_Check(p,confidence, ydata, z, NWlags, norm, scale, horizons, sav
 %       time:         Time unit for the dataset (e.g. year, month, etc.)                                 (String)
 %       dataset_name: The name of the dataset used for generating the figures (used in the output label) (String)
 
+% This version: Semptember 14th, 2018
+% Last edited by José Luis Montiel-Olea
 %% 1) Check if the inputs are valid
 
 if ~strncmp(version, '9', 1)
@@ -371,9 +373,16 @@ if ischar(time) == 0
     
 end
 
-if numel(time) ~= 1
+%we need to check whether time's size is 1x(number of characters).
+if ismatrix(time) ~= 1
     
-    error('time must be a character array with only one dimension.');
+    error('time must be a character array.');
+    
+end
+
+if size(time,1) ~= 1
+    
+    error('time must be a character array.');
     
 end
 
@@ -385,9 +394,16 @@ if ischar(dataset_name) == 0
     
 end
 
-if numel(dataset_name) ~= 1
+%we need to check whether time's size is 1x(number of characters).
+if ismatrix(time) ~= 1
     
-    error('dataset_name must be a character array with only one dimension.');
+    error('dataset_name must be a character array.');
+    
+end
+
+if size(time,1) ~= 1
+    
+    error('dataset_name must be a character array.');
     
 end
 
