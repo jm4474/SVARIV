@@ -1,4 +1,26 @@
 function SVARIV_Check(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name)
+% Checks whether the inputs from SVARIV.m are valid.
+%-Syntax:
+%       SVARIV_Check(p,confidence, ydata, z, NWlags, norm, scale, horizons, savdir, columnnames, IRFselect, cumselect, time, dataset_name)
+%
+% -Inputs:
+%       p:            Number of lags in the VAR model                                                    (1 times 1)                                          
+%       confidence:   Value for the standard and weak-IV robust confidence set                           (1 times 1) 
+%       ydata:        Endogenous variables from the VAR model                                            (T times n) 
+%       z:            External instrumental variable                                                     (T times 1)
+%       NWlags:       Newey-West lags                                                                    (1 times 1)
+%       norm:         Variable used for normalization                                                    (1 times 1)
+%       scale:        Scale of the shock                                                                 (1 times 1)
+%       horizons:     Number of horizons for the Impulse Response Functions (IRFs) 
+%                     (does not include the impact horizon 0)                                            (1 times 1)
+%       savdir:       Directory where the figures generated will be saved                                (String)
+%       columnnames:  Vector with the names for the endogenous variables, in the same order as ydata     (1 times n)
+%       IRFselect:    Indices for the variables that the user wants separate IRF plots for               (1 times q)
+%       cumselect:    Indices for the variables that the user wants cumulative IRF plots for
+%       time:         Time unit for the dataset (e.g. year, month, etc.)                                 (String)
+%       dataset_name: The name of the dataset used for generating the figures (used in the output label) (String)
+
+%% 1) Check if the inputs are valid
 
 if ~strncmp(version, '9', 1)
     
@@ -9,76 +31,75 @@ end
 %check p value
 if isempty(p)
     
-    error('p should be assigned a value.');
+    error('p must be assigned a value.');
 
 end
 
 if isnumeric(p) == 0
     
-    error('p should be numeric.');
+    error('p must be numeric.');
 
 end
 
 if numel(p) ~= 1
     
-    error('p should have only one element');
+    error('p must have only one element');
     
 end
 
 if floor(p) ~= p
     
-    error('p should be an integer.');
+    error('p must be an integer.');
     
 end
 
 %check confidence value
-
 if isempty(confidence)
     
-    error('confidence should be assigned a value.');
+    error('confidence must be assigned a value.');
 
 end
 
 if isnumeric(confidence) == 0
     
-    error('confidence should be numeric.');
+    error('confidence must be numeric.');
 
 end
 
 if numel(confidence) ~= 1
     
-    error('confidence should have only one element');
+    error('confidence must have only one element');
     
 end
 
 if(confidence <= 0 || confidence >= 1)
     
-    error('confidence should be > 0 and < 1');
+    error('confidence must be > 0 and < 1');
     
 end
 
 %check ydata
 if isempty(ydata) == 1
     
-    error('ydata should be a (T times n) matrix. It is now empty');
+    error('ydata must be a (T times n) matrix. It is now empty');
 
 end
 
 if isnumeric(ydata) == 0
     
-    error('ydata should be numeric.');
+    error('ydata must be numeric.');
     
 end
 
 if ismatrix(ydata) == 0
     
-    error('ydata should be two dimensional (T times n).');
+    error('ydata must be two dimensional (T times n).');
 
 end 
 
 if size(ydata,1) < size(ydata,2)
     
-    warning('ydata: number of rows < number of columns. ydata should be a T times n.');
+    warning('ydata: number of rows < number of columns. ydata must be T times n.');
     
 end
 
@@ -87,124 +108,124 @@ T = size(ydata,1);
 %check z
 if isempty(z) == 1
     
-    error('z should be (T times 1) vector. It is now empty');
+    error('z must be (T times 1) vector. It is now empty');
 
 end
 
 if isnumeric(z) == 0
     
-    error('z should be numeric');
+    error('z must be numeric');
     
 end
 
 if ismatrix(z) == 0
     
-    error('z should be two dimensional (T times 1)');
+    error('z must be two dimensional (T times 1)');
     
 end
 
 if size(z,2) ~= 1
     
-    error('There should be only one instrument (z should have only one column) should be');
+    error('There must be only one instrument (z must have only one column)');
     
 end
 
 if size(z,1) ~= T
     
-    error('z should have T rows');
+    error('z must have T rows');
     
 end
 
 %check NWlags
 if isempty(NWlags)
     
-    error('NWlags should be assigned a value.');
+    error('NWlags must be assigned a value.');
 
 end
 
 if isnumeric(NWlags) == 0
     
-    error('NWlags should be numeric.');
+    error('NWlags must be numeric.');
 
 end
 
 if numel(NWlags) ~= 1
     
-    error('NWlags should have only one element');
+    error('NWlags must have only one element');
     
 end
 
 if floor(NWlags) ~= NWlags
     
-    error('NWlags should be an integer.');
+    error('NWlags must be an integer.');
     
 end
 
 %Check norm
 if isempty(norm)
     
-    error('norm should be assigned a value.');
+    error('norm must be assigned a value.');
 
 end
 
 if isnumeric(norm) == 0
     
-    error('norm should be numeric.');
+    error('norm must be numeric.');
 
 end
 
 if numel(norm) ~= 1
     
-    error('norm should have only one element');
+    error('norm must have only one element');
     
 end
 
 if floor(norm) ~= norm
     
-    error('norm should be an integer.');
+    error('norm must be an integer.');
     
 end
 
 if norm > size(ydata, 2)
     
-    error('norm should be smaller or equal to the total amount of variables');
+    error('norm must be smaller or equal to the total amount of variables');
     
 end
 
 if norm < 1
     
-    error('norm should be >= 1');
+    error('norm must be >= 1');
     
 end
 
 %check scale
 if isempty(scale)
     
-    error('scale should be assigned a value.');
+    error('scale must be assigned a value.');
 
 end
 
 if isnumeric(scale) == 0
     
-    error('scale should be numeric.');
+    error('scale must be numeric.');
 
 end
 
 if numel(scale) ~= 1
     
-    error('scale should have only one element');
+    error('scale must have only one element');
     
 end
 
 if scale <= 0
     
-    error('scale should be > 0.');
+    error('scale must be > 0.');
 
 end
 
 if floor(scale) ~= scale
     
-    error('scale should be an integer.');
+    error('scale must be an integer.');
     
 end
     
@@ -212,69 +233,69 @@ end
 
 if isempty(horizons)
     
-    error('horizons should be assigned a value.');
+    error('horizons must be assigned a value.');
 
 end
 
 if isnumeric(horizons) == 0
     
-    error('horizons should be numeric.');
+    error('horizons must be numeric.');
 
 end
 
 if numel(horizons) ~= 1
     
-    error('horizons should have only one element');
+    error('horizons must have only one element');
     
 end
 
 if horizons < 0
     
-    error('horizons should be >= 0.');
+    error('horizons must be >= 0.');
     
 end
 
 if floor(horizons) ~= horizons
     
-    error('horizons should be an integer.');
+    error('horizons must be an integer.');
     
 end
 
 %check savdir
 if isempty(savdir)
     
-    savdir('savdir should be assigned a value.');
+    savdir('savdir must be assigned a value.');
 
 end
 
 if ischar(savdir) == 0
     
-    error('savdir should be a character array.');
+    error('savdir must be a character array.');
 
 end
 
 if size(savdir,1) > 1
     
-    error('savdir should only contain one string');
+    error('savdir must only contain one string');
     
 end
 
 %columnnames
 if isempty(columnnames)
     
-    error('columnnames should be assigned a character array.');
+    error('columnnames must be assigned a character array.');
 
 end
 
 if iscellstr(columnnames) == 0
     
-    error('columnnames should be a cell array of character vectors.');
+    error('columnnames must be a cell array of character vectors.');
 
 end
 
 if size(columnnames,2) > size(ydata, 2)
     
-     error('columnames size should be smaller or equal to the total amount of variables');
+     error('columnames size must be smaller or equal to the total amount of variables');
      
 end
 
@@ -285,13 +306,13 @@ if isempty(IRFselect) ~= 0
     %follows the following criteria:
     if isnumeric(IRFselect) == 0
         
-        error('IRFselect should be a numeric array');
+        error('IRFselect must be a numeric array');
         
     end
     
     if ismatrix(IRFselect) ~= 2
         
-        error('IRFselect should be a row vector');
+        error('IRFselect must be a row vector');
     
     end
     
@@ -303,7 +324,7 @@ if isempty(IRFselect) ~= 0
     
     if size(IRFselect,2) > size(ydata, 2)
         
-        error('IRFselect size should be smaller or equal to the total amount of variables');
+        error('IRFselect size must be smaller or equal to the total amount of variables');
         
     end
     
@@ -318,25 +339,25 @@ if isempty(cumselect) ~= 0
     %follows the following criteria:
     if isnumeric(cumselect) == 0
         
-        error('cumselect should be a numeric array');
+        error('cumselect must be a numeric array');
         
     end
     
     if ismatrix(cumselect) ~= 2
         
-        error('cumselect should be a row vector');
+        error('cumselect must be a row vector');
     
     end
     
     if size(cumselect,1) > 1
         
-        error('cumselect should be a row vector');
+        error('cumselect must be a row vector');
         
     end
     
     if size(cumselect,2) > size(ydata, 2)
         
-        error('cumselect size should be smaller or equal to the total amount of variables');
+        error('cumselect size must be smaller or equal to the total amount of variables');
         
     end
     
@@ -346,40 +367,27 @@ end
 
 if ischar(time) == 0
     
-    error('time should be a character array');
+    error('time must be a character array');
     
 end
 
-if ismatrix(time) == 0
+if numel(time) ~= 1
     
-    error('time should be a character array. Dimension is > 2');
-    
-end
-
-if size(time, 1) > 1
-    
-    error('time should be a character array. It is a matrix');
+    error('time must be a character array with only one dimension.');
     
 end
 
 %check dataset_name
-
     
 if ischar(dataset_name) == 0
     
-    error('dataset_name should be a character array');
+    error('dataset_name must be a character array');
     
 end
 
-if ismatrix(dataset_name) == 0
+if numel(dataset_name) ~= 1
     
-    error('dataset_name should be a character array. Dimension is > 2');
-    
-end
-
-if size(dataset_name, 1) > 1
-    
-    error('dataset_name should be a character array. It is a matrix');
+    error('dataset_name must be a character array with only one dimension.');
     
 end
 
