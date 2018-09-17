@@ -11,7 +11,7 @@ tic
 
 direct = pwd;
 
-disp('(We would like to thank Qifan Han and Jianing Zhai for excellent research assistance)')
+disp('(We would like to thank Luigi Caloi, Qifan Han, Hamza Husain and Jianing Zhai for excellent research assistance)')
 
 %% 1) Set number of VAR Lags, Newey West lags and confidence level.
 
