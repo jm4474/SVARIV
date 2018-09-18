@@ -569,7 +569,7 @@ if confidence == 0.68
 
         if (normalize == 1)
 
-            plot(hor,1,'b--o')
+            l1 = plot(hor,1,'b--o');
 
         end
 
@@ -581,8 +581,11 @@ if confidence == 0.68
 
         if (isempty(unrejected_grid) == 0 && normalize == 0)
 
-            %plot %not rejected ones
-            plot(hor,unrejected_grid,'b--o'); hold on
+            %plot unrejected ones (also grouping points so that legend is
+            %clean)
+            l2 = plot(hor,unrejected_grid,'b--o'); hold on
+            l2_group = hggroup; 
+            set(l2,'Parent',l2_group)
 
         end
 
@@ -599,17 +602,19 @@ if confidence == 0.68
     title(strcat('Cumulative', {' '}, columnnames(iplot)));
 
     xlim([0 horizons]);
+    
+    set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+    set(get(get(l1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+    set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
 
     legend('SVAR-IV Estimator','CS^{AR}',...
             'Bootstrap CS^{AR}')
 
-    %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-    set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
     legend boxoff
 
-    legend('location','southwest')
+    legend('location','southeast')
         
     for iplot = 2:3    
         
@@ -631,7 +636,7 @@ if confidence == 0.68
 
             if (normalize == 1)
 
-                plot(hor,1,'b--o')
+                plot(hor,1,'b--o');
 
             end
 
@@ -675,7 +680,7 @@ if confidence == 0.68
  
     end
     
-    singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',16,'xoff',0,'yoff',0.04);
+    singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',15,'xoff',0,'yoff',0.03);
     
     addpath('functions/figuresfun'); 
 
@@ -710,7 +715,7 @@ elseif confidence == 0.90
 
             if (normalize == 1)
 
-                plot(hor,1,'b--o')
+                l1 = plot(hor,1,'b--o');
 
             end
 
@@ -722,11 +727,11 @@ elseif confidence == 0.90
 
             if (isempty(unrejected_grid) == 0 && normalize == 0)
 
-                %plot rejected ones
-                %plot(hor,rejected_grid,'r--x'); hold on
-
-                %plot %not rejected ones
-                plot(hor,unrejected_grid,'b--o'); hold on
+                %plot unrejected ones (also grouping points so that legend is
+                %clean)
+                l2 = plot(hor,unrejected_grid,'b--o'); hold on
+                l2_group = hggroup; 
+                set(l2,'Parent',l2_group)
 
             end
 
@@ -744,16 +749,18 @@ elseif confidence == 0.90
 
         xlim([0 horizons]);
         
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(l1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
+        
         legend('SVAR-IV Estimator','CS^{AR}',...
                 'Bootstrap CS^{AR}')
 
-        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
         legend boxoff
 
-        legend('location','southwest')
+        legend('location','southeast')
         
     for iplot = 2:3    
         
@@ -820,7 +827,7 @@ elseif confidence == 0.90
         xlim([0 horizons]);
  
     end
-    singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',16,'xoff',0,'yoff',0.04);
+    singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',15,'xoff',0,'yoff',0.03);
 
 elseif confidence == 0.95
 
@@ -853,7 +860,7 @@ elseif confidence == 0.95
 
             if (normalize == 1)
 
-                plot(hor,1,'b--o')
+                l1 = plot(hor,1,'b--o');
 
             end
 
@@ -865,11 +872,11 @@ elseif confidence == 0.95
 
             if (isempty(unrejected_grid) == 0 && normalize == 0)
 
-                %plot rejected ones
-                %plot(hor,rejected_grid,'r--x'); hold on
-
-                %plot %not rejected ones
-                plot(hor,unrejected_grid,'b--o'); hold on
+                %plot unrejected ones (also grouping points so that legend is
+                %clean)
+                l2 = plot(hor,unrejected_grid,'b--o'); hold on
+                l2_group = hggroup; 
+                set(l2,'Parent',l2_group)
 
             end
 
@@ -886,17 +893,19 @@ elseif confidence == 0.95
         title(strcat('Cumulative', {' '}, columnnames(iplot)));
 
         xlim([0 horizons]);
+        
+        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        
+        set(get(get(l1,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+        set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
 
         legend('SVAR-IV Estimator','CS^{AR}',...
                 'Bootstrap CS^{AR}')
-
-        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
-        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-
+            
         legend boxoff
 
-        legend('location','southwest')
+        legend('location','southeast')
            
     
         
@@ -967,7 +976,7 @@ elseif confidence == 0.95
 
         end
         
-        singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',16,'xoff',0,'yoff',0.04);
+        singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',15,'xoff',0,'yoff',0.03);
     
 end
    
