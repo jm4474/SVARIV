@@ -58,7 +58,7 @@ for iplot = 1:n
     
     if iplot == 2
         
-        legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+        legend('Bootstrap AR',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
         
         legend('location','southeast')
 
@@ -95,7 +95,7 @@ for iplot   = 1:n
     
     if iplot == 2
         
-        legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+        legend('Bootstrap AR',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
         
         legend('location','southeast')
     
@@ -208,7 +208,7 @@ if length(IRFselect) > 1
 
         if i == 1
 
-            legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+            legend('Bootstrap AR',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
 
             legend('location','southeast')
 
@@ -263,7 +263,7 @@ if length(cumselect) > 1
         
         if i == 1
 
-            legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+            legend('Bootstrap AR',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
 
             legend('location','southeast')
 
@@ -303,7 +303,7 @@ for i = 1:length(IRFselect)
 
     title(strcat(columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
 
-	legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+	legend('Bootstrap AR',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
 
     legend('location','southeast')
 
@@ -331,7 +331,7 @@ for i = 1:length(cumselect)
 
     title(strcat('Cumulative', {' '}, columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
 
-    legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+    legend('Bootstrap AR',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
 
 	legend('location','southeast')
 

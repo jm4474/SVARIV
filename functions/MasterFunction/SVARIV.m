@@ -244,7 +244,7 @@ for iplot = 1:SVARinp.n
     if iplot == 1
         
         legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
-            'CS^{Plug-in}')
+            'CS^{plug-in}')
         
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
@@ -322,7 +322,7 @@ for iplot = 1:SVARinp.n
     if iplot == 1
         
         legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
-            'CS^{Plug-in}')
+            'CS^{plug-in}')
         
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
@@ -465,7 +465,7 @@ if length(IRFselect) ~= 1
             if i == 1
 
                 legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
-                    'CS^{Plug-in}')
+                    'CS^{plug-in}')
 
                 set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -538,7 +538,7 @@ plots.order     = 1:length(IRFselect);
         xlim([0 horizons]);
 
         legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
-                'CS^{Plug-in}')
+                'CS^{plug-in}')
 
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -653,7 +653,7 @@ if length(cumselect) ~= 1
             if i == 1
 
                 legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
-                    'CS^{Plug-in}')
+                    'CS^{plug-in}')
 
                 set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -726,7 +726,7 @@ if isempty(cumselect) == 0
         xlim([0 horizons]);
 
         legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
-                'CS^{Plug-in}')
+                'CS^{plug-in}')
 
         set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 

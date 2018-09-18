@@ -1,5 +1,5 @@
 function plotMSW_dmethod(FirstStageMC, n, coverageMCMSW, coverageMCdmethod, horizons, columnnames, MCdraws, T, confidence, application, p, dataset_name, IRFselect, cumselect, IRFpluginMC, IRFZ, IRFChol)
-%  -Plots the MSW and D-method MC coverage.
+%  -Plots the MSW and d-method MC coverage.
 %  -Syntax:
 %       plotMSW_dmethod(FirstStageMC, n, coverageMCMSW, coverageMCdmethod, horizons, columnnames, MCdraws, T, confidence, application, p, dataset_name, IRFselect, cumselect, IRFpluginMC, IRFZ, IRFChol)
 %  -Inputs:
@@ -63,7 +63,7 @@ for i = 1:2
         
         if iplot == 1
         
-            legend(strcat('MSW C.I (',num2str(100*confidence),'%)'), 'D-method')
+            legend(strcat('CS^{AR} (',num2str(100*confidence),'%)'), 'CS^{plug-in}')
 
             legend('location','southeast')
             
@@ -197,7 +197,7 @@ if length(IRFselect) > 1
 
         if i == 1
 
-            legend(strcat('MSW C.I (',num2str(100*confidence),'%)'), 'D-method')
+            legend(strcat('CS^{AR} (',num2str(100*confidence),'%)'), 'CS^{plug-in}')
 
             legend('location','southeast')
 
@@ -246,7 +246,7 @@ if length(cumselect) > 1
 
         if i == 1
 
-            legend(strcat('MSW C.I (',num2str(100*confidence),'%)'), 'D-method')
+            legend(strcat('CS^{AR} (',num2str(100*confidence),'%)'), 'CS^{plug-in}')
 
             legend('location','southeast')
 
@@ -280,7 +280,7 @@ for i = 1:length(IRFselect)
 
     title(strcat(columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
         
-    legend(strcat('MSW C.I (',num2str(100*confidence),'%)'), 'D-method')
+    legend(strcat('CS^{AR} (',num2str(100*confidence),'%)'), 'CS^{plug-in}')
 
     legend('location','southeast')
 
@@ -309,7 +309,7 @@ for i = 1:length(cumselect)
 
     title(strcat('Cumulative', {' '}, columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
     
-    legend(strcat('MSW C.I (',num2str(100*confidence),'%)'), 'D-method')
+    legend(strcat('CS^{AR} (',num2str(100*confidence),'%)'), 'CS^{plug-in}')
 
     legend('location','southeast')
 

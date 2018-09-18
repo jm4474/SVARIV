@@ -82,8 +82,8 @@ for iplot = 1:n
     
     if iplot == 1
         
-        legend('SVAR-IV Estimator',strcat('Bootstrap CS^{Plug-in} (',num2str(100*confidence),'%)'),...
-            'CS^{Plug-in}')
+        legend('SVAR-IV Estimator',strcat('Bootstrap CS^{plug-in} (',num2str(100*confidence),'%)'),...
+            'CS^{plug-in}')
         
         set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
@@ -151,8 +151,8 @@ for iplot = 1:n
     
     if iplot == 1
         
-        legend('SVAR-IV Estimator',strcat('Bootstrap CS^{Plug-in} (',num2str(100*confidence),'%)'),...
-            'CS^{Plug-in}')
+        legend('SVAR-IV Estimator',strcat('Bootstrap CS^{plug-in} (',num2str(100*confidence),'%)'),...
+            'CS^{plug-in}')
         
         set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         
@@ -282,8 +282,8 @@ if length(IRFselect) ~= 1
 
             if i == 1
 
-                legend('SVAR-IV Estimator',strcat('Bootstrap CS^{Plug-in} (',num2str(100*confidence),'%)'),...
-                    'CS^{Plug-in}')
+                legend('SVAR-IV Estimator',strcat('Bootstrap CS^{plug-in} (',num2str(100*confidence),'%)'),...
+                    'CS^{plug-in}')
 
                 set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -346,8 +346,8 @@ if isempty(IRFselect) == 0
 
         xlim([0 horizons]);
 
-        legend('SVAR-IV Estimator',strcat('Bootstrap CS^{Plug-in} (',num2str(100*confidence),'%)'),...
-                'CS^{Plug-in}')
+        legend('SVAR-IV Estimator',strcat('Bootstrap CS^{plug-in} (',num2str(100*confidence),'%)'),...
+                'CS^{plug-in}')
 
         set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -455,8 +455,8 @@ if length(cumselect) ~= 1
 
             if i == 1
 
-                legend('SVAR-IV Estimator',strcat('Bootstrap CS^{Plug-in} (',num2str(100*confidence),'%)'),...
-                    'CS^{Plug-in}')
+                legend('SVAR-IV Estimator',strcat('Bootstrap CS^{plug-in} (',num2str(100*confidence),'%)'),...
+                    'CS^{plug-in}')
 
                 set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -522,8 +522,8 @@ if isempty(cumselect) == 0
 
         xlim([0 horizons]);
 
-        legend('SVAR-IV Estimator',strcat('Bootstrap CS^{Plug-in} (',num2str(100*confidence),'%)'),...
-                'CS^{Plug-in}')
+        legend('SVAR-IV Estimator',strcat('Bootstrap CS^{plug-in} (',num2str(100*confidence),'%)'),...
+                'CS^{plug-in}')
 
         set(get(get(g2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
