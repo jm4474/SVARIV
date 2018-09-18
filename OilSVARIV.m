@@ -143,16 +143,9 @@ addpath(strcat(direct,'/functions/Inference'));
 %       InferenceMSW: Structure containing the MSW weak-iv robust confidence interval
 %       Chol: Cholesky IRFs
 
-%% 4) Calculating the Hausdorff distance between MSW and Delta-Method CIs
-addpath(strcat(direct,'/functions/AuxFunctions'));
+%% 4) "Standard" bootstrap-type inference based on samples from the asy dist.
 
-disp('Section 4 calls the Hausdorff_Distance function to calculate the Hausdorff distance between MSW and Delta-Method CIs.')
-
-[hd,hdistance,hdistance2] = Hausdorff_Distance(RForm.n, horizons, InferenceMSW.MSWlbound, InferenceMSW.MSWubound, InferenceMSW.MSWlboundcum, InferenceMSW.MSWuboundcum, InferenceMSW.Dmethodlbound, InferenceMSW.Dmethodubound, InferenceMSW.Dmethodlboundcum, InferenceMSW.Dmethoduboundcum);
-
-%% 5) "Standard" bootstrap-type inference based on samples from the asy dist.
-
-disp('Section 5 calls the Gasydistboots function to provide inference for SVAR-IV based on samples from the asy. dist.')
+disp('Section 4 calls the Gasydistboots function to provide inference for SVAR-IV based on samples from the asy. dist.')
 
 seed            = load(strcat(direct,'/seed/seedMay12.mat')); 
     
@@ -177,18 +170,18 @@ addpath('functions/Inference');
                   Gasydistboots(seed, NB, n, p, norm, scale, horizons, confidence, T,...
                   @IRFSVARIV, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall,SVARinp, NWlags);
 
-%% 6) Bootstrap Plots
+%% 5) Bootstrap Plots
 
-disp('Section 6 calls the Bootstrap_Plots function.')
+disp('Section 5 calls the Bootstrap_Plots function.')
 
 addpath(strcat(direct,'/functions/figuresfun'));
 
 [caux,InferenceMSW, figureorder] = Bootstrap_Plots(n, p, horizons, confidence, RForm, SVARinp, figureorder, Plugin, InferenceMSW, time, columnnames, savdir, direct, dataset_name, IRFselect, cumselect);
 
 
-%% 7) AR confidence set using bootstrap implementation
+%% 6) AR confidence set using bootstrap implementation
 
-disp('Section 7 in this script calls the GasydistbootsAR function to do the bootstrap implementation of the Anderson-Rubin confidence set')
+disp('Section 6 in this script calls the GasydistbootsAR function to do the bootstrap implementation of the Anderson-Rubin confidence set')
 
 cd(strcat(direct,'/functions/Inference'));
 
@@ -199,9 +192,9 @@ grid_size = 50;      % Number of mull hypotheses (lambdas) in the grid, for each
 
 [reject, bootsIRFs, gridpointupperMSW, gridpointlowerMSW, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size, ARylim);
 
-%% 8) AR Bootstrap plots
+%% 7) AR Bootstrap plots
 
-disp('Section 8 calls the BootstrapAR_Plots function.')
+disp('Section 7 calls the BootstrapAR_Plots function.')
 
 addpath(strcat(direct,'/functions/figuresfun'));
 
