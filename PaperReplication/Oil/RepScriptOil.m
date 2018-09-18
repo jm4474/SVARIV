@@ -36,7 +36,7 @@ application = 'Oil';  % Name of this empirical application. This name will be us
 
 p           = 24;     %Number of lags in the VAR model
  
-confidence  = .95;    %Confidence Level for the standard and weak-IV robust confidence set,
+confidence  = .68;    %Confidence Level for the standard and weak-IV robust confidence set,
                         %This confidence level generates Figure 1A, change to 0.95 to generate Figure 1B!
 
 % Define the variables in the SVAR
@@ -134,7 +134,7 @@ addpath('functions/RForm');
 
 n            = RForm.n; % Number of endogenous variables
 
-T            = (size(RForm.eta,2)); % Number of observations (time periods)
+T            = (size(ydata,1)); % Number of observations (time periods)
 
 d            = ((n^2)*p)+(n);     %This is the size of (vec(A)',Gamma')'
 
@@ -217,8 +217,8 @@ if confidence == 0.68
 
             axis([0 20 -1 2]);
 
-            legend('Cholesky','SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-                    'D-Method C.I.')
+            legend('Cholesky','SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+                    'CS^{plug-in}')
 
             set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -353,10 +353,10 @@ elseif confidence == 0.95
 
             xlim([0 horizons]);
 
-            axis([0 20 -1 2]);
+            axis([0 20 -1 2]); 
 
-            legend('Cholesky','SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-                    'D-Method C.I.')
+            legend('Cholesky','SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+                    ' CS^{plug-in}')
 
             set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -398,7 +398,7 @@ elseif confidence == 0.95
 
             xlim([0 horizons]);
 
-            axis([0 20 -0.5 1.5]);
+            axis([0 20 -0.5 1.5]); 
 
         subplot(3,1,3)
 
@@ -432,7 +432,7 @@ elseif confidence == 0.95
 
             xlim([0 horizons]);
 
-            axis([0 20 -1 2]);
+            axis([0 20 -1 2]); 
             
             title = strcat('B. 95% Confidence Sets');
             
@@ -466,61 +466,64 @@ seed            = seed.seed;
 
 NB = 1000;                      % Number of bootstrap replications 
 
+ARylim(:,:,1) = [-1, 2; -0.5 1.5;-1 2];
+ARylim(:,:,2) = [-1, 2; -0.5 1.5;-1 2];
+
 cd(strcat(direct,'/functions/Inference'));
 
 if confidence == 0.68
 
-    multiplier = 100;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
 
-    grid_size = 700;      % Number of lambdas in the grid, for each variable and for each horizon.
+    grid_size = 50;       % Number of lambdas in the grid, for each variable and for each horizon.
 
 end
 
 if confidence == 0.90
 
-    multiplier = 100;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
 
-    grid_size = 600;      % Number of lambdas in the grid, for each variable and for each horizon.
+    grid_size = 35;       % Number of lambdas in the grid, for each variable and for each horizon.
 
 end
 
 if confidence == 0.95
 
-    multiplier = 50;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+
+    grid_size = 30;       % Number of lambdas in the grid, for each variable and for each horizon.
+
+end
+
+[reject, bootsIRFs, ~, ~, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size,ARylim);
+
+cd(strcat(direct,'/functions/Inference'));
+
+if confidence == 0.68
+    
+    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+
+    grid_size = 50;      % Number of lambdas in the grid, for each variable and for each horizon.
+
+end
+
+if confidence == 0.90
+    
+    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
 
     grid_size = 30;      % Number of lambdas in the grid, for each variable and for each horizon.
 
 end
 
-[reject, bootsIRFs, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size);
-
-cd(strcat(direct,'/functions/Inference'));
-
-if confidence == 0.68
-    
-    multiplier = 100;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
-
-    grid_size = 250;      % Number of lambdas in the grid, for each variable and for each horizon.
-
-end
-
-if confidence == 0.90
-    
-    multiplier = 50;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
-
-    grid_size = 100;      % Number of lambdas in the grid, for each variable and for each horizon.
-
-end
-
 if confidence == 0.95
     
-    multiplier = 50;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
 
-    grid_size = 20;      % Number of lambdas in the grid, for each variable and for each horizon.
+    grid_size = 30;      % Number of lambdas in the grid, for each variable and for each horizon.
 
 end
 
-[reject_cum, bootsIRFs_cum, null_grid_cum] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size);
+[reject_cum, bootsIRFs_cum, ~, ~, null_grid_cum] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size, ARylim);
 
         
 %% 9) AR Bootstrap plots
@@ -536,80 +539,73 @@ addpath('functions/figuresfun');
 
 if confidence == 0.68
 
-        caux            = norminv(1-((1-confidence)/2),0,1);
+    caux            = norminv(1-((1-confidence)/2),0,1);
 
-        figure(figureorder); 
-        
-        figureorder = figureorder + 1;
+    figure(figureorder); 
 
-        subplot(3,1,1)
+    figureorder = figureorder + 1;
 
-        iplot = 1; 
-        
-        plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
-    
-        [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
-            InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
-            [204/255 204/255 204/255],0,0.5); hold on
+    subplot(3,1,1)
 
+    iplot = 1; 
 
+    plot(0:1:horizons,Plugin.IRFcum(iplot,:),'b'); hold on
 
+    [~,~] = jbfill(0:1:horizons,InferenceMSW.MSWuboundcum(iplot,:),...
+        InferenceMSW.MSWlboundcum(iplot,:),[204/255 204/255 204/255],...
+        [204/255 204/255 204/255],0,0.5); hold on
 
-        for hor = 0:horizons
+    for hor = 0:horizons
 
-            rejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 1)));
+        rejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 1),iplot,2));
 
-            unrejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 0)));
+        unrejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 0),iplot,2));
 
-            normalize = (iplot == norm && hor == 0);
+        normalize = (iplot == norm && hor == 0);
 
-            if (normalize == 1)
+        if (normalize == 1)
 
-                plot(hor,1,'b--o')
-
-            end
-
-            if (isempty(rejected_grid) == 1 && normalize == 0)
-
-                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
-
-            end
-
-            if (isempty(unrejected_grid) == 0 && normalize == 0)
-
-                %plot rejected ones
-                %plot(hor,rejected_grid,'r--x'); hold on
-
-                %plot %not rejected ones
-                plot(hor,unrejected_grid,'b--o'); hold on
-
-            end
-
-            clear rejected_grid unrejected_grid
+            plot(hor,1,'b--o')
 
         end
 
+        if (isempty(rejected_grid) == 1 && normalize == 0)
 
+            disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
 
+        end
 
-        h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+        if (isempty(unrejected_grid) == 0 && normalize == 0)
 
-        xlabel(time)
+            %plot %not rejected ones
+            plot(hor,unrejected_grid,'b--o'); hold on
 
-        title(strcat('Cumulative', {' '}, columnnames(iplot)));
+        end
 
-        xlim([0 horizons]);
-        
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-                'AR Bootstrap')
+        clear rejected_grid unrejected_grid
 
-        %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+    end
 
-        set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+    h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
 
-        legend boxoff
+    xlabel(time)
+    
+    axis([0 20 -2 2]);
 
-        legend('location','southwest')
+    title(strcat('Cumulative', {' '}, columnnames(iplot)));
+
+    xlim([0 horizons]);
+
+    legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+            'Bootstrap CS-AR')
+
+    %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+    set(get(get(h3,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+
+    legend boxoff
+
+    legend('location','southwest')
         
     for iplot = 2:3    
         
@@ -621,14 +617,11 @@ if confidence == 0.68
             InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
             [204/255 204/255 204/255],0,0.5); hold on
 
-
-
-
         for hor = 0:horizons
 
-            rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+            rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 1),iplot,1));
 
-            unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+            unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 0),iplot,1)); 
 
             normalize = (iplot == norm && hor == 0);
 
@@ -655,24 +648,30 @@ if confidence == 0.68
             end
 
             clear rejected_grid unrejected_grid
-
+        
         end
-
-
-
 
         h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
 
         xlabel(time)
+        
+        if iplot == 2
+            
+            axis([0 20 -0.2 2]);
+            
+        else
+            
+            axis([0 20 -1 3]);
+            
+        end
 
         title(columnnames(iplot));
-
-
 
         xlim([0 horizons]);
  
     end
-    singletitle('Bootstrap AR vs. MSW C.I.','fontsize',16,'xoff',0,'yoff',0.04);    
+    
+    singletitle('Bootstrap CS-AR vs. CS-AR','fontsize',16,'xoff',0,'yoff',0.04);
     
     addpath('functions/figuresfun'); 
 
@@ -698,11 +697,11 @@ elseif confidence == 0.90
 
 
         for hor = 0:horizons
+            
+            rejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 1),iplot,2));
 
-            rejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 1)));
-
-            unrejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 0)));
-
+            unrejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 0),iplot,2));
+            
             normalize = (iplot == norm && hor == 0);
 
             if (normalize == 1)
@@ -730,9 +729,8 @@ elseif confidence == 0.90
             clear rejected_grid unrejected_grid
 
         end
-
-
-
+        
+        axis([0 20 -2 2]);
 
         h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
 
@@ -742,8 +740,8 @@ elseif confidence == 0.90
 
         xlim([0 horizons]);
         
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-                'AR Bootstrap')
+        legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+                'Bootstrap CS-AR')
 
         %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -763,14 +761,11 @@ elseif confidence == 0.90
             InferenceMSW.MSWlbound(iplot,:),[204/255 204/255 204/255],...
             [204/255 204/255 204/255],0,0.5); hold on
 
-
-
-
         for hor = 0:horizons
 
-            rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+            rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 1),iplot,1));
 
-            unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
+            unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 0),iplot,1)); 
 
             normalize = (iplot == norm && hor == 0);
 
@@ -799,9 +794,16 @@ elseif confidence == 0.90
             clear rejected_grid unrejected_grid
 
         end
-
-
-
+        
+        if iplot == 2
+            
+            axis([0 20 -0.2 2]);
+            
+        else
+            
+            axis([0 20 -1 3]);
+            
+        end
 
         h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
 
@@ -814,7 +816,7 @@ elseif confidence == 0.90
         xlim([0 horizons]);
  
     end
-    singletitle('Bootstrap AR vs. MSW C.I.','fontsize',16,'xoff',0,'yoff',0.04);
+    singletitle('Bootstrap CS-AR vs. CS-AR','fontsize',16,'xoff',0,'yoff',0.04);
 
 elseif confidence == 0.95
 
@@ -839,9 +841,9 @@ elseif confidence == 0.95
 
         for hor = 0:horizons
 
-            rejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 1)));
-
-            unrejected_grid = squeeze(null_grid_cum(iplot,hor+1,(reject_cum(:,iplot,hor+1,2) == 0)));
+            rejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 1),iplot,2));
+            
+            unrejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 0),iplot,2));
 
             normalize = (iplot == norm && hor == 0);
 
@@ -871,8 +873,7 @@ elseif confidence == 0.95
 
         end
 
-
-
+        axis([0 20 -2 2]);
 
         h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
 
@@ -882,8 +883,8 @@ elseif confidence == 0.95
 
         xlim([0 horizons]);
 
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-                'AR Bootstrap')
+        legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+                'Bootstrap CS-AR')
 
         %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -910,10 +911,10 @@ elseif confidence == 0.95
 
             for hor = 0:horizons
 
-                rejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 1)));
+                rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 1),iplot,1));
 
-                unrejected_grid = squeeze(null_grid(iplot,hor+1,(reject(:,iplot,hor+1,1) == 0)));
-
+                unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,1) == 0),iplot,1));            
+            
                 normalize = (iplot == norm && hor == 0);
 
                 if (normalize == 1)
@@ -942,21 +943,27 @@ elseif confidence == 0.95
 
             end
             
-        h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+            if iplot == 2
 
-        xlabel(time)
+                axis([0 20 -0.2 2]);
+                
+            else
 
-        title(columnnames(iplot));
+                axis([0 20 -1 3]);
 
-        xlim([0 horizons]);
+            end
+            
+            h3 = plot([0 horizons],[0 0],'black'); hold off % black line at y = 0
+
+            xlabel(time)
+
+            title(columnnames(iplot));
+
+            xlim([0 horizons]);
 
         end
-
-
-
-        singletitle('Bootstrap AR vs. MSW C.I.','fontsize',16,'xoff',0,'yoff',0.04);
-
-else
+        
+        singletitle('Bootstrap CS-AR vs. CS-AR','fontsize',16,'xoff',0,'yoff',0.04);
     
 end
    
