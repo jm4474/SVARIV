@@ -22,15 +22,23 @@ tic
 
 clear 
 
-cd .. 
+cd ..
+
 cd ..
 
 direct = pwd;
 %% 1) Set number of VAR Lags, Newey West lags and confidence level.
 
-disp('Section 1 sets values for VAR Lags, Newey West lags (if desired), confidence level, VAR variable names, time unit,');
+fprintf('Section 1 sets values for: \n')
 
-disp('variable used for normalization, scale of the shock and the number of horizons for the IRFs.'); 
+fprintf('-VAR Lags \n')
+fprintf('-Newey West lags (if desired) \n')
+fprintf('-Confidence level \n')
+fprintf('-VAR variable names \n')
+fprintf('-Time unit \n')
+fprintf('-Variable used for normalization \n')
+fprintf('-Scale of the shock \n')
+fprintf('-Number of horizons for the IRFs. \n')
 
 application = 'Oil';  % Name of this empirical application. This name will be used for creating and accessing folders
 
@@ -57,15 +65,13 @@ horizons    = 20; %Number of horizons for the Impulse Response Functions(IRFs)
                  %(does not include the impact or horizon 0)
                  
 %% 2) Load data (saved in structure "data")
-%  These are the variables that were defined in line 14 above. 
-%  The time units should be on a single.xls file called Time.xls
+ %  The time units should be on a single.xls file called Time.xls
 %  All the VAR variables should be on a single .xls file called Data.xls
 %  The external instrument should be in a single .xls file called ExtIV.xls
 
 disp('-')
 
-disp('Section 2 in this script loads the data necessary for the SVAR-IV analysis and specifies the name of the dataset.')
-
+disp('Section 2 loads the data and specifies the name of the dataset.')
 
 cd(strcat(direct,'/Data/',application));
 
@@ -217,7 +223,7 @@ if confidence == 0.68
 
             axis([0 20 -1 2]);
 
-            legend('Cholesky','SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+            legend('Cholesky estimate','SVAR-IV estimate','CS^{AR}',...
                     'CS^{plug-in}')
 
             set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
@@ -355,7 +361,7 @@ elseif confidence == 0.95
 
             axis([0 20 -1 2]); 
 
-            legend('Cholesky','SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+            legend('Cholesky estimate','SVAR-IV estimate','CS^{AR}',...
                     ' CS^{plug-in}')
 
             set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
@@ -528,8 +534,6 @@ end
         
 %% 9) AR Bootstrap plots
 
-
-
 disp('-')
 
 disp('Section 7 in this script plots the IRFs with different confidence intervals ')
@@ -596,8 +600,8 @@ if confidence == 0.68
 
     xlim([0 horizons]);
 
-    legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
-            'Bootstrap CS-AR')
+    legend('SVAR-IV Estimator','CS^{AR}',...
+            'Bootstrap CS^{AR}')
 
     %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -671,7 +675,7 @@ if confidence == 0.68
  
     end
     
-    singletitle('Bootstrap CS-AR vs. CS-AR','fontsize',16,'xoff',0,'yoff',0.04);
+    singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',16,'xoff',0,'yoff',0.04);
     
     addpath('functions/figuresfun'); 
 
@@ -740,8 +744,8 @@ elseif confidence == 0.90
 
         xlim([0 horizons]);
         
-        legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
-                'Bootstrap CS-AR')
+        legend('SVAR-IV Estimator','CS^{AR}',...
+                'Bootstrap CS^{AR}')
 
         %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -816,7 +820,7 @@ elseif confidence == 0.90
         xlim([0 horizons]);
  
     end
-    singletitle('Bootstrap CS-AR vs. CS-AR','fontsize',16,'xoff',0,'yoff',0.04);
+    singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',16,'xoff',0,'yoff',0.04);
 
 elseif confidence == 0.95
 
@@ -883,8 +887,8 @@ elseif confidence == 0.95
 
         xlim([0 horizons]);
 
-        legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
-                'Bootstrap CS-AR')
+        legend('SVAR-IV Estimator','CS^{AR}',...
+                'Bootstrap CS^{AR}')
 
         %set(get(get(h2,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
 
@@ -963,9 +967,7 @@ elseif confidence == 0.95
 
         end
         
-        singletitle('Bootstrap CS-AR vs. CS-AR','fontsize',16,'xoff',0,'yoff',0.04);
+        singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',16,'xoff',0,'yoff',0.04);
     
 end
    
-
-
