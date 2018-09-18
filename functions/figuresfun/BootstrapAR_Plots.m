@@ -109,8 +109,8 @@ for iplot = 1:n
         
         set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
         
-        legend('SVAR-IV Estimator',strcat('MSW C.I (',num2str(100*confidence),'%)'),...
-            'AR Bootstrap C.I.')
+        legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+            'Bootstrap CS-AR')
 
         legend boxoff
         
@@ -198,8 +198,8 @@ for iplot = 1:n
         
         set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
         
-        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
-            'AR Bootstrap C.I.')
+        legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+            'Bootstrap CS-AR')
         
         legend boxoff
         
@@ -349,8 +349,8 @@ if length(IRFselect) ~= 1
                 
                 set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
                 
-                legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
-                    'AR Bootstrap C.I.')
+                legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+                    'Bootstrap CS-AR')
 
                 legend boxoff
 
@@ -439,8 +439,8 @@ if isempty(IRFselect) == 0
 
         set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
 
-        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
-            'AR Bootstrap C.I.')
+        legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+            'Bootstrap CS-AR')
 
         legend boxoff
 
@@ -568,8 +568,8 @@ if length(cumselect) ~= 1
 
                 set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
 
-                legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
-                    'AR Bootstrap C.I.')
+                legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+                    'Bootstrap CS-AR')
 
                 legend boxoff
 
@@ -657,8 +657,8 @@ if isempty(cumselect) == 0
 
         set(get(get(l2_group,'Annotation'),'LegendInformation'),'IconDisplayStyle','on');
 
-        legend('SVAR-IV Estimator',strcat('MSW C.I. (',num2str(100*confidence),'%)'),...
-            'AR Bootstrap C.I.')
+        legend('SVAR-IV Estimator',strcat('CS-AR (',num2str(100*confidence),'%)'),...
+            'Bootstrap CS-AR')
 
         legend boxoff
 
