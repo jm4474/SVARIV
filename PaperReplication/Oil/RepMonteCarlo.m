@@ -1,8 +1,8 @@
 %% 1) READ ME
 
-%Last update: August 15th, 2018. 
+%Last update: Semptember 18th, 2018, 2018. 
 
-% This script replicates figures 2 from Montiel Olea, Stock and Watson (2018). It implements a Monte-Carlo study to analyze the finite-sample
+% This script replicates Monte Carlo figures from Montiel Olea, Stock and Watson (2018). It implements a Monte-Carlo study to analyze the finite-sample
 % coverage of the confidence interval suggested by Montiel-Olea, Stock,
 % and Watson (2016). The Monte Carlo design is explained in our paper.
 %(see MC design 1)
@@ -211,6 +211,9 @@ coverageMCBoots...
 coverageMCMSW...
         = zeros(MC.n,MC.horizons+1,MCdraws,2);
     
+coverageMCdmethod...
+        = zeros(MC.n,MC.horizons+1,MCdraws,2);
+
 IRFMC.IRFplugin...
         =zeros(MC.n,MC.horizons+1,MCdraws);
     
@@ -270,6 +273,7 @@ YMC = DATAMCaux(:,(burnout-MC.p)+1:end);
 ZMC = EIVMCaux(1,(burnout-MC.p)+1:end);
 
 MCdata.Y=YMC';
+
 MCdata.Z=ZMC';
 
 clearvars -except MC MCdata MCdraws mcdraw coverageMCMSW coverageMCdmethod burnout IRFMC FirstStageMC auxparamMC NWlags confidence coverageMCBoots application columnnames dataset_name application
@@ -292,9 +296,11 @@ cd('functions/RForm')
 %% 10) Use YMC and Z in MC data to estimate What
 
 %a) Some definitions
-RFormMC.Gamma= RFormMC.eta*MCdata.Z(MC.p+1:end,1)/(size(RFormMC.eta,2)); %n times 1
-RFormMC.n=MC.n;
-RFormMC.p=MC.p;
+RFormMC.Gamma = RFormMC.eta*MCdata.Z(MC.p+1:end,1)/(size(RFormMC.eta,2)); %n times 1
+
+RFormMC.n     = MC.n;
+
+RFormMC.p     = MC.p;
 
 %b) Estimation of What
 
@@ -332,7 +338,7 @@ Draws   = bsxfun(@plus,gvar,...
 
 k       = size(RFormMC.Gamma,1)/RFormMC.n;        
 
-%% 14) Evaluate the parameter of interest  
+%% 14) Evaluate the parameter of interest for the AR test
 %(Note that analyzing coverage does not require computing the
 %full confidence interval, so instead of testing for the entire grid
 %of null hypotheses (lambdas) like we do in the GasydistbootsAR.m function
@@ -448,33 +454,34 @@ FirstStageMC(1,mcdraw) ...
 
 clear MCdata RFormMC PluginMC
 
-%% 16)  Check if the true IRFs are covered (Bootstrap Inference and MSW)
 
-%Bootstrap Inference
+%% 16)  Check if the true IRFs are covered (Bootstrap Inference, MSW, and Delta)
 
-aux          = reshape(pdSigma,[1,ndraws]);
+    %Bootstrap Inference
 
-bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
-                          [((1-confidence)/2),1-((1-confidence)/2)],2);      
-% bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
+    aux          = reshape(pdSigma,[1,ndraws]);
 
-test_T = test_aux(:,ndraws,:,:,:);
-% test_T(grid_size, 1, n, horizons+1,cumulative)
+    bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
+                              [((1-confidence)/2),1-((1-confidence)/2)],2);      
+    % bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
 
-reject       = (test_T(:,:,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,:,:,:,:) > bootsIRFs(:,2,:,:,:));
-% reject(grid_size, variables, horizons+1, cumulative)
+    test_T = test_aux(:,ndraws,:,:,:);
+    % test_T(grid_size, 1, n, horizons+1,cumulative)
 
-reject = squeeze(reject);
-%reject(n x horizons +1 x 2)
+    reject       = (test_T(:,:,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,:,:,:,:) > bootsIRFs(:,2,:,:,:));
+    % reject(grid_size, variables, horizons+1, cumulative)
 
-not_reject = 1 - reject;
+    reject = squeeze(reject);
+    %reject(n x horizons +1 x 2)
 
-coverageMCBoots(:,:,mcdraw,:) = not_reject;
-%coverageMCBoots(n,horizons + 1, mcdraws,2) = reject;
+    not_reject = 1 - reject;
 
-%MSW
+    coverageMCBoots(:,:,mcdraw,:) = not_reject;
+    %coverageMCBoots(n,horizons + 1, mcdraws,2) = reject;
 
-%Coverage of MSW (using the coefficients of the quadratic equation described in the paper)
+    %MSW
+
+    %Coverage of MSW (using the coefficients of the quadratic equation described in the paper)
     for i = 1:MC.n
 
         %non-cumulative
@@ -505,12 +512,27 @@ coverageMCBoots(:,:,mcdraw,:) = not_reject;
 
         coverageMCMSW(i,:,mcdraw,2) = bsxfun(@le,aux_cum,0); %clear aux1
 
+        %Coverage of Dmethod
+    
+        coverageMCdmethod(i,:,mcdraw,1) = (MC.IRFZ(i,:,1)<=InferenceMSWMC.Dmethodubound(i,:))...
+                                          .*(InferenceMSWMC.Dmethodlbound(i,:)<=MC.IRFZ(i,:,1));
+    
+        coverageMCdmethod(i,:,mcdraw,2) = (MC.IRFZ(i,:,2)<=InferenceMSWMC.Dmethoduboundcum(i,:))...
+                                          .*(InferenceMSWMC.Dmethodlboundcum(i,:)<=MC.IRFZ(i,:,2));
+    
+        if i == 1
+       
+            coverageMCdmethod(i,1,mcdraw,1) = 1;
+        
+            coverageMCdmethod(i,1,mcdraw,2) = 1;
+
+        end
+        
     end 
 
 end
 
-%% 17) Plot coverage 
-
+%% 17) Plot coverage MSW and Boots
 plots.order     = 1:MC.n;
            
 graphcount = 1;
@@ -568,7 +590,7 @@ plot(0:20,mean(coverageMCBoots(3,:,:,1),3),'o'); hold on
 
 plot(0:20,mean(coverageMCMSW(3,:,:,1),3),'rx'); hold on
 
-axis([0 MC.horizons 0.5 0.8]);
+axis([0 MC.horizons 0.8 1]);
  
 xlabel('Months after the shock');
 
@@ -615,6 +637,42 @@ cd ..
 
 cd ..
 
+%% 19) Plot coverage MSW and Delta 
+
+figure(graphcount);
+
+graphcount = graphcount + 1;
+
+MC.impliedfirststage ...
+         = round(mean(FirstStageMC),2);
+     
+subplot(3,1,1)
+plot(mean(coverageMCMSW(1,:,:,2),3),'o'); hold on
+plot(mean(coverageMCdmethod(1,:,:,2),3),'rx'); hold off
+axis([0 MC.horizons .8 1]); 
+xlabel('Months after the shock');
+ylabel('MC Coverage');
+title(strcat('Cumulative Response of Oil Production (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
+%%the command ¡°round(MC.alpha,2)¡± is not available for the MATLAB 2014a but
+%%is viable and also recommended in later version, like MATLAB 2015a.
+%%In older version, the user should use the ¡°roundn(X,-N)¡± syntax of the MATLAB
+%%ROUND function instead. 
+%%Note that the sign of N is reversed: ¡°round(X,N)¡± should be replaced with ¡°roundn(X,-N)¡±.
 
 
-
+subplot(3,1,2)
+plot(mean(coverageMCMSW(2,:,:,1),3),'o'); hold on
+plot(mean(coverageMCdmethod(2,:,:,1),3),'rx'); hold off
+axis([1 MC.horizons .8 1]); 
+xlabel('Months after the shock');
+ylabel('MC Coverage');
+legend('MSW','Delta-Method','Location','southeast');
+title(strcat('Response of Global Real Activity (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
+ 
+subplot(3,1,3)
+plot(mean(coverageMCMSW(3,:,:,1),3),'o'); hold on
+plot(mean(coverageMCdmethod(3,:,:,1),3),'rx'); hold off
+axis([1 MC.horizons .8 1]); 
+xlabel('Months after the shock');
+ylabel('MC Coverage');
+title(strcat('Response of the Real Price of Oil (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
