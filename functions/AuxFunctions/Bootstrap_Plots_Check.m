@@ -394,7 +394,7 @@ if size(time,1) ~= 1
 end
 
 %Check IRFselect
-if isempty(IRFselect) ~= 0
+if isempty(IRFselect) ~= 1
    
     %IRFselect can be empty. If it isn't, then we need to check if it
     %follows the following criteria:
@@ -427,7 +427,7 @@ if isempty(IRFselect) ~= 0
 end
 
 %Check cumselect
-if isempty(cumselect) ~= 0
+if isempty(cumselect) ~= 1
    
     %cumselect can be empty. If it isn't, then we need to check if it
     %follows the following criteria:
