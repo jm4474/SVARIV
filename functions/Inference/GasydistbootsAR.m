@@ -151,54 +151,9 @@ vechSigma = V * Sigma(:);
 
 AL = AL(:);
 
-%% 3) Create a grid of lambdas
- 
-% null_grid = zeros(n,horizons+1,grid_size);
-%  
-% IRF = Plugin.IRF;
-%  
-% %critval = norminv(1-((1-confidence)/2),0,1)^2;
-%  
-% IRFstderror = Plugin.IRFstderror;
-%  
-% for var = 1:n
-%     
-%     for hor = 1:horizons+1
-%     
-%         % get the grid point. Subtract the inference. You are left with the
-%         % standard error * critical value. Divide by that number
-%         % to get the standard error. Then multiply that by lets say 4 and
-%         % add the inference point
-%         
-%         gridpointupper = IRF(var,hor) + IRFstderror(var,hor)*multiplier;
-%         
-%         gridpointlower = IRF(var,hor) - IRFstderror(var,hor)*multiplier;
-%         
-%         null_grid(var,hor,:) = linspace(gridpointlower, gridpointupper, grid_size);
-%         
-%         
-%     end
-%     
-% end
 
-%% 3.5) Create a grid of lambdas using MSW axes
 
-% gridpointupperMSW = zeros(AR_order-1,1);
-% gridpointlowerMSW = zeros(AR_order-1,1);
-% 
-% null_grid = zeros(grid_size,AR_order-1); 
-% 
-% for plot_match = 1:AR_order-1 
-%     
-%     gridpointupperMSW(plot_match,1) = ARylim(plot_match,2); 
-% 
-%     gridpointlowerMSW(plot_match,1) = ARylim(plot_match,1);
-%     
-%     null_grid(:,plot_match) = linspace(gridpointlowerMSW(plot_match,1), gridpointupperMSW(plot_match,1), grid_size); 
-% 
-% end
-
-%% 3.75) Create a grid of lambdas using MSW axes 2nd attempt
+%% 3) Create a grid of lambdas using MSW axes
 
 gridpointupperMSW = zeros(n,1,2);
 gridpointlowerMSW = zeros(n,1,2); 

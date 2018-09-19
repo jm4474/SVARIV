@@ -75,7 +75,7 @@ for iplot = 1:n
             
         if (isempty(rejected_grid) == 1 && normalize == 0)
             
-            disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+            disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'at horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
         
         end
         
@@ -164,7 +164,7 @@ for iplot = 1:n
             
         if (isempty(rejected_grid) == 1 && normalize == 0)
             
-            disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+            disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
         
         end
         
@@ -315,7 +315,7 @@ if length(IRFselect) ~= 1
 
                 if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                    disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+                    disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
                 end
 
@@ -407,7 +407,7 @@ if isempty(IRFselect) == 0
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
             end
 
@@ -533,7 +533,7 @@ if length(cumselect) ~= 1
 
                 if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                    disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+                    disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
                 end
 
@@ -625,7 +625,7 @@ if isempty(cumselect) == 0
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
             end
 

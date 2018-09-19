@@ -221,7 +221,7 @@ if confidence == 0.68
 
             xlim([0 horizons]);
 
-            axis([0 20 -1 2]);
+            axis([0 20 -2 2]);
 
             legend('Cholesky estimate','SVAR-IV estimate','CS^{AR}',...
                     'CS^{plug-in}')
@@ -266,7 +266,7 @@ if confidence == 0.68
 
             xlim([0 horizons]);
 
-            axis([0 20 -0.5 1.5]);
+            axis([0 20 -0.5 2]);
 
         subplot(3,1,3)
 
@@ -300,7 +300,7 @@ if confidence == 0.68
 
             xlim([0 horizons]);
 
-            axis([0 20 -1 2]);
+            axis([0 20 -1 3]);
             
             title = strcat('A. 68% Confidence Sets');
             
@@ -359,7 +359,7 @@ elseif confidence == 0.95
 
             xlim([0 horizons]);
 
-            axis([0 20 -1 2]); 
+            axis([0 20 -2 2]); 
 
             legend('Cholesky estimate','SVAR-IV estimate','CS^{AR}',...
                     ' CS^{plug-in}')
@@ -404,7 +404,7 @@ elseif confidence == 0.95
 
             xlim([0 horizons]);
 
-            axis([0 20 -0.5 1.5]); 
+            axis([0 20 -0.5 2]); 
 
         subplot(3,1,3)
 
@@ -438,7 +438,7 @@ elseif confidence == 0.95
 
             xlim([0 horizons]);
 
-            axis([0 20 -1 2]); 
+            axis([0 20 -1 3]); 
             
             title = strcat('B. 95% Confidence Sets');
             
@@ -546,7 +546,7 @@ if confidence == 0.68
 
         if (isempty(rejected_grid) == 1 && normalize == 0)
 
-            disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+            disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
         end
 
@@ -613,7 +613,7 @@ if confidence == 0.68
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
             end
 
@@ -637,7 +637,7 @@ if confidence == 0.68
         
         if iplot == 2
             
-            axis([0 20 -0.2 2]);
+            axis([0 20 -0.5 2]);
             
         else
             
@@ -692,7 +692,7 @@ elseif confidence == 0.90
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
             end
 
@@ -759,7 +759,7 @@ elseif confidence == 0.90
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
             end
 
@@ -779,7 +779,7 @@ elseif confidence == 0.90
         
         if iplot == 2
             
-            axis([0 20 -0.2 2]);
+            axis([0 20 -0.5 2]);
             
         else
             
@@ -837,7 +837,7 @@ elseif confidence == 0.95
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
             end
 
@@ -909,7 +909,7 @@ elseif confidence == 0.95
 
                 if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                    disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Increase the multiplier in MSWfunction.m'));
+                    disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
 
                 end
 
@@ -929,7 +929,7 @@ elseif confidence == 0.95
             
             if iplot == 2
 
-                axis([0 20 -0.2 2]);
+                axis([0 20 -0.5 2]);
                 
             else
 
