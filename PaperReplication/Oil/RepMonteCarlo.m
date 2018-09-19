@@ -607,7 +607,7 @@ singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
 cd('PaperReplication/Oil/Figures/MC');
 
-output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence));
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)));
 
 figure(graphcount-1)
 
@@ -666,7 +666,7 @@ title(strcat('Response of the Real Price of Oil (',num2str(MCdraws),'MC draws, T
 
 cd('PaperReplication/Oil/Figures/MC');
 
-output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence));
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)));
 
 figure(graphcount-1)
 
