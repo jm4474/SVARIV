@@ -647,8 +647,8 @@ MC.impliedfirststage ...
          = round(mean(FirstStageMC),2);
      
 subplot(3,1,1)
-plot(mean(coverageMCMSW(1,:,:,2),3),'o'); hold on
-plot(mean(coverageMCdmethod(1,:,:,2),3),'rx'); hold off
+plot(0:20,mean(coverageMCMSW(1,:,:,2),3),'o'); hold on
+plot(0:20,mean(coverageMCdmethod(1,:,:,2),3),'rx'); hold off
 axis([0 MC.horizons .8 1]); 
 xlabel('Months after the shock');
 ylabel('MC Coverage');
@@ -661,18 +661,18 @@ title(strcat('Cumulative Response of Oil Production (',num2str(MCdraws),'MC draw
 
 
 subplot(3,1,2)
-plot(mean(coverageMCMSW(2,:,:,1),3),'o'); hold on
-plot(mean(coverageMCdmethod(2,:,:,1),3),'rx'); hold off
-axis([1 MC.horizons .8 1]); 
+plot(0:20,mean(coverageMCMSW(2,:,:,1),3),'o'); hold on
+plot(0:20,mean(coverageMCdmethod(2,:,:,1),3),'rx'); hold off
+axis([0 MC.horizons .8 1]); 
 xlabel('Months after the shock');
 ylabel('MC Coverage');
 legend('MSW','Delta-Method','Location','southeast');
 title(strcat('Response of Global Real Activity (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
  
 subplot(3,1,3)
-plot(mean(coverageMCMSW(3,:,:,1),3),'o'); hold on
-plot(mean(coverageMCdmethod(3,:,:,1),3),'rx'); hold off
-axis([1 MC.horizons .8 1]); 
+plot(0:20,mean(coverageMCMSW(3,:,:,1),3),'o'); hold on
+plot(0:20,mean(coverageMCdmethod(3,:,:,1),3),'rx'); hold off
+axis([0 MC.horizons .8 1]); 
 xlabel('Months after the shock');
 ylabel('MC Coverage');
 title(strcat('Response of the Real Price of Oil (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
