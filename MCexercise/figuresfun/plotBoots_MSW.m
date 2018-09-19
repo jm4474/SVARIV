@@ -42,7 +42,15 @@ addpath('functions/figuresfun');
 %non-cumulative
 for iplot = 1:n
     
-    subplot(3,1,iplot)
+    if n > ceil(sqrt(n)) * floor(sqrt(n))
+
+        subplot(ceil(sqrt(n)),ceil(sqrt(n)),plots.order(1,iplot));
+
+    else
+        
+        subplot(ceil(sqrt(n)),floor(sqrt(n)),plots.order(1,iplot));
+
+    end
     
     plot(0:horizons,mean(coverageMCBoots(iplot,:,:,1),3),'o'); hold on
     
@@ -79,7 +87,15 @@ graphcount  = graphcount + 1;
  
 for iplot   = 1:n
     
-    subplot(3,1,iplot)
+    if n > ceil(sqrt(n)) * floor(sqrt(n))
+
+        subplot(ceil(sqrt(n)),ceil(sqrt(n)),plots.order(1,iplot));
+
+    else
+        
+        subplot(ceil(sqrt(n)),floor(sqrt(n)),plots.order(1,iplot));
+
+    end
     
     plot(0:horizons,mean(coverageMCBoots(iplot,:,:,2),3),'o'); hold on
     
@@ -105,7 +121,7 @@ end
 
 title_master = strcat('Cumulative MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
 
-singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
+singletitle(title_master,'fontsize',16,'xoff',-0.02,'yoff',.03);
 
 %% 2) Save Coverage Plot
 
@@ -219,9 +235,9 @@ if length(IRFselect) > 1
 
     clear title_master;
 
-    title_master = strcat('Selected MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
+    title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
 
-    singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
+    singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.04);
 
 end
 
@@ -274,7 +290,7 @@ if length(cumselect) > 1
 
     title_master = strcat('Cumulative MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
 
-    singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
+    singletitle(title_master,'fontsize',16,'xoff',-0.02,'yoff',.08);
     
 end
 
@@ -301,7 +317,7 @@ for i = 1:length(IRFselect)
 
     ylabel('MC Coverage');
 
-    title(strcat(columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
+    title(strcat(columnnames(iplot),{' ('},num2str(MCdraws),{' '},'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
 
 	legend('Bootstrap AR',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
 
@@ -329,7 +345,7 @@ for i = 1:length(cumselect)
 
     ylabel('MC Coverage');
 
-    title(strcat('Cumulative', {' '}, columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
+    title(strcat('Cumulative', {' '}, columnnames(iplot),{' ('},num2str(MCdraws),{' '},'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
 
     legend('Bootstrap AR',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
 
@@ -337,7 +353,7 @@ for i = 1:length(cumselect)
 
 end
 
-%% 21) Save separate selected IRF (cumulative and non) plots
+%% 5) Save separate selected IRF (cumulative and non) plots
 
 outdir = strcat('Output/',application,'/MC/Boots');
 

@@ -546,15 +546,15 @@ for mcdraw = 1:MCdraws
        
     end
 
-    clearvars -except MC coverageMCMSW coverageMCdmethod MCdraws mcdraw InferenceMSWMC burnout IRFMC FirstStageMC auxparamMC confidence NWlags MC.norm n dataset_name varNames IRFselect cumselect application columnnames
+    clearvars -except MC coverageMCMSW coverageMCdmethod MCdraws mcdraw InferenceMSWMC burnout IRFMC FirstStageMC auxparamMC confidence NWlags MC.norm n dataset_name varNames IRFselect cumselect application columnnames coverageMCBoots
 end
 
 %% 17) Plot coverage 
 
 addpath('MCexercise/figuresfun/');
-
+ 
 plotMSW_dmethod(FirstStageMC, MC.n, coverageMCMSW, coverageMCdmethod, MC.horizons, columnnames, MCdraws, InferenceMSWMC.T, confidence, application, MC.p, dataset_name, IRFselect, cumselect, IRFMC.IRFplugin, MC.IRFZ, MC.IRFChol);
-
+ 
 addpath('MCexercise/figuresfun/');
-
+ 
 plotBoots_MSW(FirstStageMC, MC.n, coverageMCMSW, coverageMCBoots, MC.horizons, columnnames, MCdraws, InferenceMSWMC.T, confidence, application, MC.p, dataset_name, IRFselect, cumselect);

@@ -59,7 +59,9 @@ for i = 1:2
         
         xlabel('Months after the shock');
         
-        ylabel(strcat(columnnames(iplot), 'MC Coverage'));
+        ylabel('MC Coverage');
+        
+        title(columnnames(iplot));
         
         if iplot == 1
         
@@ -73,11 +75,13 @@ for i = 1:2
     
     if i == 1
         
-        master_title = strcat('MC Coverage', num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
+        master_title = strcat('MC Coverage',{' ('}, num2str(MCdraws),{' '},'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
         %For non-cumulative plots, we do not include this label in the
         %title
 
         addpath('functions/figuresfun');
+        
+        master_title = master_title{1};
 
         singletitle(master_title,'fontsize',16,'xoff',0,'yoff',.03);
 
@@ -87,11 +91,11 @@ for i = 1:2
         
         addpath('functions/figuresfun');
 
-        master_title = strcat('Cumulative', {' '},'MC Coverage', {' '},columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
+        master_title = strcat('Cumulative', {' '},'MC Coverage', {' ('},num2str(MCdraws),{' '},'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
 
         master_title = master_title{1};
 
-        singletitle(master_title,'fontsize',16,'xoff',0,'yoff',.03);
+        singletitle(master_title,'fontsize',16,'xoff',-0.02,'yoff',.03);
 
         clear title;
     end
@@ -193,7 +197,7 @@ if length(IRFselect) > 1
 
         ylabel('MC Coverage');
 
-        title(strcat(columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
+        title(columnnames(iplot));
 
         if i == 1
 
@@ -205,10 +209,16 @@ if length(IRFselect) > 1
 
 
     end
+        
+    addpath('functions/figuresfun');
+
+    master_title = strcat('MC Coverage', {' ('},num2str(MCdraws),{' '},'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
+
+    master_title = master_title{1};
+
+    singletitle(master_title,'fontsize',16,'xoff',0,'yoff',.04);
 
 end
-
-
 
 plots.order = 1:length(cumselect);
 
@@ -242,7 +252,7 @@ if length(cumselect) > 1
 
         ylabel('MC Coverage');
 
-        title(strcat('Cumulative', {' '}, columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
+        title(columnnames(iplot));
 
         if i == 1
 
@@ -253,6 +263,14 @@ if length(cumselect) > 1
         end
 
     end
+    
+    addpath('functions/figuresfun');
+
+    master_title = strcat('Cumulative MC Coverage', {' ('},num2str(MCdraws),{' '},'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
+
+    master_title = master_title{1};
+
+    singletitle(master_title,'fontsize',16,'xoff',-0.02,'yoff',.09);
     
 end
 
@@ -278,7 +296,7 @@ for i = 1:length(IRFselect)
 
     ylabel('MC Coverage');
 
-    title(strcat(columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
+    title(strcat(columnnames(iplot), {' ('},num2str(MCdraws), {' '}, 'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
         
     legend(strcat('CS^{AR} (',num2str(100*confidence),'%)'), 'CS^{plug-in}')
 
@@ -307,7 +325,7 @@ for i = 1:length(cumselect)
 
     ylabel('MC Coverage');
 
-    title(strcat('Cumulative', {' '}, columnnames(iplot),num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
+    title(strcat('Cumulative', {' '}, columnnames(iplot), {' ('}, num2str(MCdraws), {' '},'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')'));
     
     legend(strcat('CS^{AR} (',num2str(100*confidence),'%)'), 'CS^{plug-in}')
 
@@ -415,14 +433,16 @@ for iplot = 1:n
     
     %ylabel('IRF Plug-in Estimators');
     
-    ylabel(strcat(columnnames(iplot),{' '},'estimators'));
+    ylabel('Estimators');
+    
+    title(columnnames(iplot));
     
     %title(strcat(varNames(iplot),num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
 
     
 end
 
-master_title = strcat('IRF Plug-in Estimators',{' '},num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
+master_title = strcat('IRF Plug-in Estimators',{' ('},num2str(MCdraws),{' '},'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
 
 master_title = master_title{1};
 
@@ -480,18 +500,21 @@ for iplot = 1:n
     
     %ylabel('IRF Plug-in Estimators');
     
-    ylabel(strcat(columnnames(iplot),{' '},'estimators'));
+    ylabel('Estimators');
+    
+    title(columnnames(iplot));
+
     
     %title(strcat('Cumulative', {' '},varNames(iplot),num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
 
     
 end
 
-master_title = strcat('Cumulative IRF Plug-in Estimators',{' '},num2str(MCdraws),'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
+master_title = strcat('Cum IRF Plug-in Estimators',{' ('},num2str(MCdraws),{' '},'MC draws, T=',num2str(T),', MC First Stage=',num2str(round(impliedfirststage,2)),')');
 
 master_title = master_title{1};
 
-singletitle(master_title,'fontsize',16,'xoff',0,'yoff',.03);
+singletitle(master_title,'fontsize',15,'xoff',0,'yoff',.03);
 
 legend({'True IRF','Cholesky','Plug-in IRFs','Median','.975 quantile','.0275 quantile','Mean'},'Location','northeast')
 
