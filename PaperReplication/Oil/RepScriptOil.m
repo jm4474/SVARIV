@@ -479,58 +479,29 @@ cd(strcat(direct,'/functions/Inference'));
 
 if confidence == 0.68
 
-    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+    multiplier = 1;         %Scalar that multiplies ARylim to incrase the lower and upper bounds for the grid of lambdas.
 
-    grid_size = 50;       % Number of lambdas in the grid, for each variable and for each horizon.
+    grid_size = 1000;       % Number of lambdas in the grid, for each variable and for each horizon.
 
 end
 
 if confidence == 0.90
 
-    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+    multiplier = 1;         %Scalar that multiplies ARylim to incrase the lower and upper bounds for the grid of lambdas.
 
-    grid_size = 35;       % Number of lambdas in the grid, for each variable and for each horizon.
+    grid_size = 1000;       % Number of lambdas in the grid, for each variable and for each horizon.
 
 end
 
 if confidence == 0.95
 
-    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
+    multiplier = 1;        %Scalar that multiplies ARylim to incrase the lower and upper bounds for the grid of lambdas.
 
-    grid_size = 30;       % Number of lambdas in the grid, for each variable and for each horizon.
+    grid_size = 1000;      % Number of lambdas in the grid, for each variable and for each horizon.
 
 end
 
 [reject, bootsIRFs, ~, ~, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size,ARylim);
-
-cd(strcat(direct,'/functions/Inference'));
-
-if confidence == 0.68
-    
-    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
-
-    grid_size = 50;      % Number of lambdas in the grid, for each variable and for each horizon.
-
-end
-
-if confidence == 0.90
-    
-    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
-
-    grid_size = 30;      % Number of lambdas in the grid, for each variable and for each horizon.
-
-end
-
-if confidence == 0.95
-    
-    multiplier = 1.5;     % Scalar that GasydistbootsAR will use to multiply the delta method standard errors, to create lower and upper bounds for the grid of lambdas.
-
-    grid_size = 30;      % Number of lambdas in the grid, for each variable and for each horizon.
-
-end
-
-[reject_cum, bootsIRFs_cum, ~, ~, null_grid_cum] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size, ARylim);
-
         
 %% 9) AR Bootstrap plots
 
@@ -561,9 +532,9 @@ if confidence == 0.68
 
     for hor = 0:horizons
 
-        rejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 1),iplot,2));
+        rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 1),iplot,2));
 
-        unrejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 0),iplot,2));
+        unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 0),iplot,2));
 
         normalize = (iplot == norm && hor == 0);
 
@@ -707,9 +678,9 @@ elseif confidence == 0.90
 
         for hor = 0:horizons
             
-            rejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 1),iplot,2));
+            rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 1),iplot,2));
 
-            unrejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 0),iplot,2));
+            unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 0),iplot,2));
             
             normalize = (iplot == norm && hor == 0);
 
@@ -852,9 +823,9 @@ elseif confidence == 0.95
 
         for hor = 0:horizons
 
-            rejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 1),iplot,2));
+            rejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 1),iplot,2));
             
-            unrejected_grid = squeeze(null_grid_cum((reject_cum(:,iplot,hor+1,2) == 0),iplot,2));
+            unrejected_grid = squeeze(null_grid((reject(:,iplot,hor+1,2) == 0),iplot,2));
 
             normalize = (iplot == norm && hor == 0);
 
