@@ -532,7 +532,7 @@ clear MCdata RFormMC PluginMC
 
 end
 
-%% 17) Plot coverage MSW and Boots
+%% 17) Plot coverage MSW and Boots AR
 plots.order     = 1:MC.n;
            
 graphcount = 1;
@@ -605,37 +605,22 @@ singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
 %% 18) Save Coverage Plot
 
-outdir = strcat('Output/',application,'/MC/Boots');
+cd('PaperReplication/Oil/Figures/MC');
 
-if exist(outdir,'dir')
-    
-    cd(outdir);
-  
-else
-    
-    mkdir(outdir);
-    
-    cd(outdir);
-
-end
-
-output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'.eps');
-
-save_count = 1;
-
-namdir = strcat(date,'_','K','_','p=',num2str(MC.p),num2str(confidence));
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence));
 
 figure(graphcount-1)
 
-print(gcf,'-depsc2',strcat(num2str(save_count),'MC_Coverage_Cumulative_', output_label));
+print(gcf,'-depsc2',strcat('MC_Coverage_BootsAR_CSAR_',output_label,'.eps'));
 
-cd ..
+cd .. 
 
-cd ..
+cd .. 
 
-cd ..
+cd .. 
 
-cd ..
+cd .. 
+
 
 %% 19) Plot coverage MSW and Delta 
 
@@ -676,3 +661,22 @@ axis([0 MC.horizons .8 1]);
 xlabel('Months after the shock');
 ylabel('MC Coverage');
 title(strcat('Response of the Real Price of Oil (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
+
+%% 18) Save Coverage Plot
+
+cd('PaperReplication/Oil/Figures/MC');
+
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence));
+
+figure(graphcount-1)
+
+print(gcf,'-depsc2',strcat('MC_Coverage_CSPlugin_CSAR_',output_label,'.eps'));
+
+cd .. 
+
+cd .. 
+
+cd .. 
+
+cd .. 
+
