@@ -47,7 +47,7 @@ application = 'Oil';  % Name of this empirical application. This name will be us
 
 p           = 24;     %Number of lags in the VAR model
  
-confidence  = .68;    %Confidence Level for the standard and weak-IV robust confidence set,
+confidence  = .95;    %Confidence Level for the standard and weak-IV robust confidence set,
                         %This confidence level generates Figure 1A, change to 0.95 to generate Figure 1B!
 
 % Define the variables in the SVAR
@@ -552,8 +552,12 @@ if confidence == 0.68
 
         if (isempty(rejected_grid) == 1 && normalize == 0)
 
-            disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
-
+            columnname = columnnames(iplot);
+                
+            columnname = columnname{1};
+                
+            fprintf(strcat('No values were rejected for the variable:\n"', columnname,'"', ' at horizon ', num2str(hor), '.\nTry increasing the multiplier in section 8.\n'));
+            
         end
 
         if (isempty(unrejected_grid) == 0 && normalize == 0)
@@ -619,7 +623,11 @@ if confidence == 0.68
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
+                columnname = columnnames(iplot);
+                
+                columnname = columnname{1};
+                
+                fprintf(strcat('No values were rejected for the variable:\n"', columnname,'"', ' at horizon ', num2str(hor), '.\nTry increasing the multiplier in section 8.\n'));
 
             end
 
@@ -698,8 +706,12 @@ elseif confidence == 0.90
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
-
+                columnname = columnnames(iplot);
+                
+                columnname = columnname{1};
+                
+                fprintf(strcat('No values were rejected for the variable:\n"', columnname,'"', ' at horizon ', num2str(hor), '.\nTry increasing the multiplier in section 8.\n'));
+                
             end
 
             if (isempty(unrejected_grid) == 0 && normalize == 0)
@@ -765,8 +777,12 @@ elseif confidence == 0.90
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
-
+                columnname = columnnames(iplot);
+                
+                columnname = columnname{1};
+                
+                fprintf(strcat('No values were rejected for the variable:\n"', columnname,'"', ' at horizon ', num2str(hor), '.\nTry increasing the multiplier in section 8.\n'));
+            
             end
 
             if (isempty(unrejected_grid) == 0 && normalize == 0)
@@ -842,9 +858,13 @@ elseif confidence == 0.95
             end
 
             if (isempty(rejected_grid) == 1 && normalize == 0)
-
-                disp(strcat('No values were rejected for the variable "Cumulative', {' '}, columnnames(iplot), '"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
-
+                
+                columnname = columnnames(iplot);
+                
+                columnname = columnname{1};
+                
+                fprintf(strcat('No values were rejected for the variable:\n"', columnname,'"', ' at horizon ', num2str(hor), '.\nTry increasing the multiplier in section 8.\n'));
+            
             end
 
             if (isempty(unrejected_grid) == 0 && normalize == 0)
@@ -915,8 +935,12 @@ elseif confidence == 0.95
 
                 if (isempty(rejected_grid) == 1 && normalize == 0)
 
-                    disp(strcat('No values were rejected for the variable', {' '}, '"', columnnames(iplot),'"', {' '}, 'horizon', {' '}, num2str(hor), '. Try increasing the multiplier in GasydistbootsAR.m'));
-
+                    columnname = columnnames(iplot);
+                
+                    columnname = columnname{1};
+                
+                    fprintf(strcat('No values were rejected for the variable:\n"', columnname,'"', ' at horizon ', num2str(hor), '.\nTry increasing the multiplier in section 8.\n'));
+                
                 end
 
                 if (isempty(unrejected_grid) == 0 && normalize == 0)
