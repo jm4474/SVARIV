@@ -13,7 +13,7 @@
 %                  
 %               2) A MacBook pro @2.4 GHz Intel Core i7 (8 GB 1600 MHz DDR3)
 %                  Running Matlab R2016b.
-%                  This script runs in about 60 seconds.
+%                  This script runs in about 80 seconds.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %MAKE SURE TO CHANGE THE CONFIDENCE LEVEL TO 95% TO GENERATE FIGURE 1B.
@@ -47,7 +47,7 @@ application = 'Oil';  % Name of this empirical application. This name will be us
 
 p           = 24;     %Number of lags in the VAR model
  
-confidence  = .68;    %Confidence Level for the standard and weak-IV robust confidence set,
+confidence  = .95;    %Confidence Level for the standard and weak-IV robust confidence set,
                         %This confidence level generates Figure 1A, change to 0.95 to generate Figure 1B!
 
 % Define the variables in the SVAR
@@ -177,8 +177,7 @@ addpath(strcat(direct,'/functions/Inference'));
 
 disp('-')
 
-disp('Section 7 in this script plots the IRFs with different confidence intervals ')
-disp('in Figures 1A & 1B') 
+disp('Section 7 in this script plots the CR-AR and the CS-Plug-in confidence intervals')
 
 addpath('functions/figuresfun'); 
 
@@ -469,6 +468,12 @@ toc
 
 %% 8) AR confidence set using bootstrap implementation
 
+disp('-')
+
+disp('Section 8 implements the bootstrap version of the CS-AR')
+
+disp('-')
+
 seed            = load(strcat(direct,'/seed/seedMay12.mat')); 
     
 seed            = seed.seed;
@@ -510,8 +515,8 @@ end
 
 disp('-')
 
-disp('Section 7 in this script plots the IRFs with different confidence intervals ')
-disp('in Figures 1A & 1B') 
+disp('Section 9 compares the CS-AR and the bootstrap CR')
+ 
 
 addpath('functions/figuresfun'); 
 
