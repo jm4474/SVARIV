@@ -47,7 +47,7 @@ application = 'Oil';  % Name of this empirical application. This name will be us
 
 p           = 24;     %Number of lags in the VAR model
  
-confidence  = .95;    %Confidence Level for the standard and weak-IV robust confidence set,
+confidence  = .68;    %Confidence Level for the standard and weak-IV robust confidence set,
                         %This confidence level generates Figure 1A, change to 0.95 to generate Figure 1B!
 
 % Define the variables in the SVAR
@@ -513,7 +513,7 @@ end
         
 %% 9) AR Bootstrap plots
 
-disp('Section 9 compares the CS-AR and the bootstrap CR')
+disp('Section 9 compares the CS-AR and the bootstrap CS-AR')
  
 
 addpath('functions/figuresfun'); 
