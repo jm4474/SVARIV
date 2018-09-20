@@ -480,8 +480,8 @@ seed            = seed.seed;
 
 NB = 1000;                      % Number of bootstrap replications 
 
-ARylim(:,:,1) = [-1, 2; -0.5 1.5;-1 2];
-ARylim(:,:,2) = [-1, 2; -0.5 1.5;-1 2];
+ARylim(:,:,1) = [-2, 2; -0.5 2;-1 3];
+ARylim(:,:,2) = [-2, 2; -0.5 2;-1 3];
 
 cd(strcat(direct,'/functions/Inference'));
 
@@ -512,8 +512,6 @@ end
 [reject, bootsIRFs, ~, ~, null_grid] = GasydistbootsAR(ydata, T, seed, RForm.n, NB, p, norm, scale, horizons, confidence, SVARinp, NWlags, RForm.AL, RForm.Sigma, RForm.Gamma, RForm.V, RForm.WHatall, Plugin, multiplier, grid_size,ARylim);
         
 %% 9) AR Bootstrap plots
-
-disp('-')
 
 disp('Section 9 compares the CS-AR and the bootstrap CR')
  
