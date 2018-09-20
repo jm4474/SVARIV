@@ -310,12 +310,44 @@ cd ..
 
 cd ..
 
+%% 11) Use RForm.MC to estimate the MSW confidence interval
+%(Note that analyzing coverage does not require computing the
+%full confidence interval, but we do it to keep the code as
+%simple as possible)
 
-%% 11) Some definitions for the next sections
+addpath('functions/Inference')
+
+[InferenceMSWMC,PluginMC,~]     = MSWfunction(confidence,1,MC.x,MC.horizons,RFormMC,0);
+
+%Collect the plug-in estimators of the IRF to analyze its finite-sample
+%distribution
+IRFMC.IRFplugin(1,:,mcdraw)     = PluginMC.IRFcum(1,:);
+
+IRFMC.IRFplugin(2,:,mcdraw)     = PluginMC.IRF(2,:);
+
+IRFMC.IRFplugin(3,:,mcdraw)     = PluginMC.IRF(3,:);
+
+%Collect also the delta-method standard errors (not used)
+IRFMC.dmethodstderr(1,:,mcdraw) = PluginMC.IRFstderrorcum(1,:);
+
+IRFMC.dmethodstderr(2,:,mcdraw) = PluginMC.IRFstderror(2,:);
+
+IRFMC.dmethodstderr(3,:,mcdraw) = PluginMC.IRFstderror(3,:);
+
+%First-stage Stat
+
+FirstStageMC(1,mcdraw) ...
+      = (((InferenceMSWMC.T^.5)...
+         *RFormMC.Gamma(1,1))^2)/...
+         RFormMC.WHat(((RFormMC.n^2)*RFormMC.p)+1,((RFormMC.n^2)*RFormMC.p)+1);
+
+%% 12) Definitions for the next sections
 
 vechSigma = RFormMC.V * RFormMC.Sigma(:);
 
-%% 12) Make sure that Whatall is symmetric and positive semidefinite
+clear MCdata PluginMC
+
+%% 13) Make sure that Whatall is symmetric and positive semidefinite
 
 WHatall     = RFormMC.WHatall;
 
@@ -327,7 +359,7 @@ WHatall     = (WHatall + WHatall')/2;
     
 WHatall     = aux1*max(aux2,0)*aux1'; 
 
-%% 13) Generate Draws for the Bootsrap
+%% 14) Generate Draws for the Bootsrap
 % Centered at (vec(AL)', Gamma')'
 
 gvar    = [mvnrnd(zeros(MC.NB,dall),(WHatall)/MC.T)',...
@@ -338,7 +370,7 @@ Draws   = bsxfun(@plus,gvar,...
 
 k       = size(RFormMC.Gamma,1)/RFormMC.n;        
 
-%% 14) Evaluate the parameter of interest for the AR test
+%% 15) Evaluate the parameter of interest for the AR test
 %(Note that analyzing coverage does not require computing the
 %full confidence interval, so instead of testing for the entire grid
 %of null hypotheses (lambdas) like we do in the GasydistbootsAR.m function
@@ -421,63 +453,7 @@ end
 AR_test         = (test_aux - test_aux(:,ndraws,:,:,:));
 %grid_size, ndraws, RFormMC.n, MC.horizons+1,2
 
-%% 15) Use RForm.MC to estimate the MSW confidence interval
-%(Note that analyzing coverage does not require computing the
-%full confidence interval, but we do it to keep the code as
-%simple as possible)
-
-addpath('functions/Inference')
-
-[InferenceMSWMC,PluginMC,~] = MSWfunction(.95,1,MC.x,MC.horizons,RFormMC,0);
-
-%Collect the plug-in estimators of the IRF to analyze its finite-sample
-%distribution
-IRFMC.IRFplugin(1,:,mcdraw)=PluginMC.IRFcum(1,:);
-
-IRFMC.IRFplugin(2,:,mcdraw)=PluginMC.IRF(2,:);
-
-IRFMC.IRFplugin(3,:,mcdraw)=PluginMC.IRF(3,:);
-
-%Collect also the delta-method standard errors (not used)
-IRFMC.dmethodstderr(1,:,mcdraw)=PluginMC.IRFstderrorcum(1,:);
-
-IRFMC.dmethodstderr(2,:,mcdraw)=PluginMC.IRFstderror(2,:);
-
-IRFMC.dmethodstderr(3,:,mcdraw)=PluginMC.IRFstderror(3,:);
-
-%First-stage Stat
-
-FirstStageMC(1,mcdraw) ...
-      = (((InferenceMSWMC.T^.5)...
-         *RFormMC.Gamma(1,1))^2)/...
-         RFormMC.WHat(((RFormMC.n^2)*RFormMC.p)+1,((RFormMC.n^2)*RFormMC.p)+1);
-
-clear MCdata RFormMC PluginMC
-
-
-%% 16)  Check if the true IRFs are covered (Bootstrap Inference, MSW, and Delta)
-
-    %Bootstrap Inference
-
-    aux          = reshape(pdSigma,[1,ndraws]);
-
-    bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
-                              [((1-confidence)/2),1-((1-confidence)/2)],2);      
-    % bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
-
-    test_T = test_aux(:,ndraws,:,:,:);
-    % test_T(grid_size, 1, n, horizons+1,cumulative)
-
-    reject       = (test_T(:,:,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,:,:,:,:) > bootsIRFs(:,2,:,:,:));
-    % reject(grid_size, variables, horizons+1, cumulative)
-
-    reject = squeeze(reject);
-    %reject(n x horizons +1 x 2)
-
-    not_reject = 1 - reject;
-
-    coverageMCBoots(:,:,mcdraw,:) = not_reject;
-    %coverageMCBoots(n,horizons + 1, mcdraws,2) = reject;
+%% 16)  Check if the true IRFs are covered (Delta, MSW, and Bootstrap Inference)
 
     %MSW
 
@@ -529,13 +505,113 @@ clear MCdata RFormMC PluginMC
         end
         
     end 
+    
+    %Bootstrap Inference
+
+    aux          = reshape(pdSigma,[1,ndraws]);
+
+    bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
+                              [((1-confidence)/2),1-((1-confidence)/2)],2);      
+    % bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
+
+    test_T = test_aux(:,ndraws,:,:,:);
+    % test_T(grid_size, 1, n, horizons+1,cumulative)
+
+    reject       = (test_T(:,:,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,:,:,:,:) > bootsIRFs(:,2,:,:,:));
+    % reject(grid_size, variables, horizons+1, cumulative)
+
+    reject = squeeze(reject);
+    %reject(n x horizons +1 x 2)
+
+    not_reject = 1 - reject;
+
+    coverageMCBoots(:,:,mcdraw,:) = not_reject;
+    %coverageMCBoots(n,horizons + 1, mcdraws,2) = reject;
 
 end
 
-%% 17) Plot coverage MSW and Boots AR
-plots.order     = 1:MC.n;
-           
+%% 17) Plot coverage Delta and MSW
+
 graphcount = 1;
+
+figure(graphcount);
+
+graphcount = graphcount + 1;
+
+MC.impliedfirststage ...
+         = round(mean(FirstStageMC),2);
+     
+subplot(3,1,1)
+
+plot(0:20,mean(coverageMCMSW(1,:,:,2),3),'o'); hold on
+
+plot(0:20,mean(coverageMCdmethod(1,:,:,2),3),'rx'); hold off
+
+axis([0 MC.horizons .8 1]); 
+
+xlabel('Months after the shock');
+
+ylabel('MC Coverage');
+
+title(strcat('Cumulative Response of Oil Production (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
+%%the command ¡°round(MC.alpha,2)¡± is not available for the MATLAB 2014a but
+%%is viable and also recommended in later version, like MATLAB 2015a.
+%%In older version, the user should use the ¡°roundn(X,-N)¡± syntax of the MATLAB
+%%ROUND function instead. 
+%%Note that the sign of N is reversed: ¡°round(X,N)¡± should be replaced with ¡°roundn(X,-N)¡±.
+
+
+subplot(3,1,2)
+
+plot(0:20,mean(coverageMCMSW(2,:,:,1),3),'o'); hold on
+
+plot(0:20,mean(coverageMCdmethod(2,:,:,1),3),'rx'); hold off
+
+axis([0 MC.horizons .8 1]); 
+
+xlabel('Months after the shock');
+
+ylabel('MC Coverage');
+
+legend('CS^{AR}','CS^{plug-in}','Location','southeast');
+
+title(strcat('Response of Global Real Activity (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
+ 
+
+subplot(3,1,3)
+
+plot(0:20,mean(coverageMCMSW(3,:,:,1),3),'o'); hold on
+
+plot(0:20,mean(coverageMCdmethod(3,:,:,1),3),'rx'); hold off
+
+axis([0 MC.horizons .8 1]); 
+
+xlabel('Months after the shock');
+
+ylabel('MC Coverage');
+
+title(strcat('Response of the Real Price of Oil (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
+
+%% 18) Save Delta and MSW Coverage Plot
+
+cd('PaperReplication/Oil/Figures/MC');
+
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)));
+
+figure(graphcount-1)
+
+print(gcf,'-depsc2',strcat('MC_Coverage_CSPlugin_CSAR_',output_label,'.eps'));
+
+cd .. 
+
+cd .. 
+
+cd .. 
+
+cd .. 
+
+%% 19) Plot coverage MSW and Boots AR
+plots.order     = 1:MC.n;
 
 figure(graphcount);
 
@@ -578,7 +654,7 @@ ylabel('MC Coverage');
 
 title(columnnames(2)); 
 
-legend('Bootstrap AR',strcat('MSW C.I (',num2str(100*confidence),'%)'))
+legend('Bootstrap CS^{AR}',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
 
 legend('location','southeast')
 
@@ -603,7 +679,7 @@ title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(I
 singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
 
-%% 18) Save Coverage Plot
+%% 20) Save MSW and Boots AR Coverage Plot
 
 cd('PaperReplication/Oil/Figures/MC');
 
@@ -621,62 +697,4 @@ cd ..
 
 cd .. 
 
-
-%% 19) Plot coverage MSW and Delta 
-
-figure(graphcount);
-
-graphcount = graphcount + 1;
-
-MC.impliedfirststage ...
-         = round(mean(FirstStageMC),2);
-     
-subplot(3,1,1)
-plot(0:20,mean(coverageMCMSW(1,:,:,2),3),'o'); hold on
-plot(0:20,mean(coverageMCdmethod(1,:,:,2),3),'rx'); hold off
-axis([0 MC.horizons .8 1]); 
-xlabel('Months after the shock');
-ylabel('MC Coverage');
-title(strcat('Cumulative Response of Oil Production (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
-%%the command ¡°round(MC.alpha,2)¡± is not available for the MATLAB 2014a but
-%%is viable and also recommended in later version, like MATLAB 2015a.
-%%In older version, the user should use the ¡°roundn(X,-N)¡± syntax of the MATLAB
-%%ROUND function instead. 
-%%Note that the sign of N is reversed: ¡°round(X,N)¡± should be replaced with ¡°roundn(X,-N)¡±.
-
-
-subplot(3,1,2)
-plot(0:20,mean(coverageMCMSW(2,:,:,1),3),'o'); hold on
-plot(0:20,mean(coverageMCdmethod(2,:,:,1),3),'rx'); hold off
-axis([0 MC.horizons .8 1]); 
-xlabel('Months after the shock');
-ylabel('MC Coverage');
-legend('MSW','Delta-Method','Location','southeast');
-title(strcat('Response of Global Real Activity (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
- 
-subplot(3,1,3)
-plot(0:20,mean(coverageMCMSW(3,:,:,1),3),'o'); hold on
-plot(0:20,mean(coverageMCdmethod(3,:,:,1),3),'rx'); hold off
-axis([0 MC.horizons .8 1]); 
-xlabel('Months after the shock');
-ylabel('MC Coverage');
-title(strcat('Response of the Real Price of Oil (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
-
-%% 18) Save Coverage Plot
-
-cd('PaperReplication/Oil/Figures/MC');
-
-output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)));
-
-figure(graphcount-1)
-
-print(gcf,'-depsc2',strcat('MC_Coverage_CSPlugin_CSAR_',output_label,'.eps'));
-
-cd .. 
-
-cd .. 
-
-cd .. 
-
-cd .. 
 
