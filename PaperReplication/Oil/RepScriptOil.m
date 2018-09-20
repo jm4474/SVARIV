@@ -6,11 +6,14 @@
 % by José L. Montiel Olea, James H. Stock, and Mark W. Watson
 % Working Paper, Columbia University (2018).
 
-% This version: August 28th, 2018
-% Comment:      We have tested this function on an iMac 
-%               @3.4 GHz Intel Core i5 (16 GB 2400 MHz DDR4)
-%               Running Matlab R2018a.
-%               This script runs in about 1 second. 
+% This version: September 20th, 2018
+% Comment:      We have tested this function on 
+%               1) An iMac @3.4 GHz Intel Core i5 (16 GB 2400 MHz DDR4)
+%                  Running Matlab R2018a.
+%                  
+%               2) A MacBook pro @2.4 GHz Intel Core i7 (8 GB 1600 MHz DDR3)
+%                  Running Matlab R2016b.
+%                  This script runs in about 60 seconds.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %MAKE SURE TO CHANGE THE CONFIDENCE LEVEL TO 95% TO GENERATE FIGURE 1B.
