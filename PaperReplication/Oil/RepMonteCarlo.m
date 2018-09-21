@@ -56,7 +56,7 @@ x          = -20;        %Scale
 NWlags     = 0;          %Newey-West lags
 
 auxparamMC...
-           = (5.5)^.5;   %Controls the size of the first-stage in the MC
+           = (5.5)^.5;   %Controls the size of the concentration parameter (first-stage) in the MC
  
 MC.NB      = 1000;       %Number of samples from the asymptotic distribution
 
@@ -128,10 +128,10 @@ MC.alpha = MC.alphaaux;
 MC.impliedcorr...
          = MC.alpha./((MC.varZ^.5).*MC.D(1,1));
 
-%MC.impliedfirststage ...
+%MC.cparameter ...
 %         = MC.T*((MC.alpha*MC.B(1,1))^2)./MC.sigma2Gamma1;
      
-%MC.impliedfirststagelim...
+%MC.cparameterlim...
 %         = MC.T*((MC.alpha*MC.B(1,1))^2)./(MC.Sigma(1,1)*((MC.muZ)^2+MC.varZ));     
 
 MC.sigmav=(MC.varZ-(((auxparamMC*MC.alpha).^2)/MC.D(1,1)))^.5;     
@@ -220,7 +220,7 @@ IRFMC.IRFplugin...
 IRFMC.dmethodstderr...
         =zeros(MC.n,MC.horizons+1,MCdraws);
 
-FirstStageMC...
+CParameterMC...
         = zeros(1,MCdraws);
 
 for mcdraw = 1:MCdraws   
@@ -276,7 +276,7 @@ MCdata.Y=YMC';
 
 MCdata.Z=ZMC';
 
-clearvars -except MC MCdata MCdraws mcdraw coverageMCMSW coverageMCdmethod burnout IRFMC FirstStageMC auxparamMC NWlags confidence coverageMCBoots application columnnames dataset_name application
+clearvars -except MC MCdata MCdraws mcdraw coverageMCMSW coverageMCdmethod burnout IRFMC CParameterMC auxparamMC NWlags confidence coverageMCBoots application columnnames dataset_name application
 
 %Thus, an MC data set consists of two parts:
 %i) The T times n vector YMC
@@ -334,9 +334,9 @@ IRFMC.dmethodstderr(2,:,mcdraw) = PluginMC.IRFstderror(2,:);
 
 IRFMC.dmethodstderr(3,:,mcdraw) = PluginMC.IRFstderror(3,:);
 
-%First-stage Stat
+%Concentration Parameter (First-stage Stat)
 
-FirstStageMC(1,mcdraw) ...
+CParameterMC(1,mcdraw) ...
       = (((InferenceMSWMC.T^.5)...
          *RFormMC.Gamma(1,1))^2)/...
          RFormMC.WHat(((RFormMC.n^2)*RFormMC.p)+1,((RFormMC.n^2)*RFormMC.p)+1);
@@ -512,13 +512,13 @@ AR_test         = (test_aux - test_aux(:,ndraws,:,:,:));
 
     bootsIRFs    = quantile(AR_test(:,aux==1,:,:,:),...
                               [((1-confidence)/2),1-((1-confidence)/2)],2);      
-    % bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
+    %bootsIRFs(grid_size, confidence intervals, variables, horizons+1, cumulative)
 
     test_T = test_aux(:,ndraws,:,:,:);
-    % test_T(grid_size, 1, n, horizons+1,cumulative)
+    %test_T(grid_size, 1, n, horizons+1,cumulative)
 
     reject       = (test_T(:,:,:,:,:) < bootsIRFs(:,1,:,:,:)) | (test_T(:,:,:,:,:) > bootsIRFs(:,2,:,:,:));
-    % reject(grid_size, variables, horizons+1, cumulative)
+    %reject(grid_size, variables, horizons+1, cumulative)
 
     reject = squeeze(reject);
     %reject(n x horizons +1 x 2)
@@ -538,8 +538,8 @@ figure(graphcount);
 
 graphcount = graphcount + 1;
 
-MC.impliedfirststage ...
-         = round(mean(FirstStageMC),2);
+MC.cparameter ...
+         = round(mean(CParameterMC),2);
      
 subplot(3,1,1)
 
@@ -553,7 +553,7 @@ xlabel('Months after the shock');
 
 ylabel('MC Coverage');
 
-title(strcat('Cumulative Response of Oil Production (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
+title('Cumulative Response of Oil Production'); 
 %%the command ¡°round(MC.alpha,2)¡± is not available for the MATLAB 2014a but
 %%is viable and also recommended in later version, like MATLAB 2015a.
 %%In older version, the user should use the ¡°roundn(X,-N)¡± syntax of the MATLAB
@@ -573,9 +573,9 @@ xlabel('Months after the shock');
 
 ylabel('MC Coverage');
 
-legend('CS^{AR}','CS^{plug-in}','Location','southeast');
+legend('CS^{AR}',strcat('CS^{plug-in} (',num2str(100*confidence),'%)'),'Location','southeast');
 
-title(strcat('Response of Global Real Activity (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
+title('Response of Global Real Activity'); 
  
 
 subplot(3,1,3)
@@ -590,13 +590,17 @@ xlabel('Months after the shock');
 
 ylabel('MC Coverage');
 
-title(strcat('Response of the Real Price of Oil (',num2str(MCdraws),'MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')')); 
+title('Response of the Real Price of Oil'); 
+
+title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', MC C. Parameter=',num2str(round(MC.cparameter,2)),')');
+
+singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
 %% 18) Save Delta and MSW Coverage Plot
 
 cd('PaperReplication/Oil/Figures/MC');
 
-output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)));
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCCParameter=',num2str(round(MC.cparameter,2)));
 
 figure(graphcount-1)
 
@@ -617,8 +621,8 @@ figure(graphcount);
 
 graphcount = graphcount + 1;
 
-MC.impliedfirststage ...
-         = round(mean(FirstStageMC),2);
+MC.cparameter ...
+         = round(mean(CParameterMC),2);
 
 addpath('functions/figuresfun');
 
@@ -674,7 +678,7 @@ ylabel('MC Coverage');
 
 title(columnnames(3)); 
 
-title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', MC First Stage=',num2str(round(MC.impliedfirststage,2)),')');
+title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', MC C. Parameter=',num2str(round(MC.cparameter,2)),')');
 
 singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
@@ -683,7 +687,7 @@ singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
 cd('PaperReplication/Oil/Figures/MC');
 
-output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCFirstStage=',num2str(round(MC.impliedfirststage,2)));
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCCParameter=',num2str(round(MC.cparameter,2)));
 
 figure(graphcount-1)
 
