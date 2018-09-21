@@ -236,7 +236,7 @@ IRFMC.IRFplugin...
 IRFMC.dmethodstderr...
         = zeros(MC.n,MC.horizons+1,MCdraws, 2);
 
-FirstStageMC...
+CParameterMC...
         = zeros(1,MCdraws);
     
 for mcdraw = 1:MCdraws   
@@ -291,7 +291,7 @@ for mcdraw = 1:MCdraws
     
     MCdata.Z = ZMC';
 
-    clearvars -except MC MCdata MCdraws mcdraw coverageMCMSW coverageMCdmethod burnout IRFMC FirstStageMC auxparamMC confidence NWlags MC.norm dataset_name coverageMCBoots columnnames IRFselect cumselect application
+    clearvars -except MC MCdata MCdraws mcdraw coverageMCMSW coverageMCdmethod burnout IRFMC CParameterMC auxparamMC confidence NWlags MC.norm dataset_name coverageMCBoots columnnames IRFselect cumselect application
 
     %Thus, an MC data set consists of two parts:
     %i) The T times n vector YMC
@@ -353,7 +353,7 @@ for mcdraw = 1:MCdraws
     end
     %First-stage Stat
 
-    FirstStageMC(1,mcdraw) ...
+    CParameterMC(1,mcdraw) ...
           = (((InferenceMSWMC.T^.5)...
              *RFormMC.Gamma(1,1))^2)/...
              RFormMC.WHat(((RFormMC.n^2)*RFormMC.p)+1,((RFormMC.n^2)*RFormMC.p)+1);
@@ -546,15 +546,15 @@ for mcdraw = 1:MCdraws
        
     end
 
-    clearvars -except MC coverageMCMSW coverageMCdmethod MCdraws mcdraw InferenceMSWMC burnout IRFMC FirstStageMC auxparamMC confidence NWlags MC.norm n dataset_name varNames IRFselect cumselect application columnnames coverageMCBoots
+    clearvars -except MC coverageMCMSW coverageMCdmethod MCdraws mcdraw InferenceMSWMC burnout IRFMC CParameterMC auxparamMC confidence NWlags MC.norm n dataset_name varNames IRFselect cumselect application columnnames coverageMCBoots
 end
 
 %% 17) Plot coverage 
 
 addpath('MCexercise/figuresfun/');
  
-plotMSW_dmethod(FirstStageMC, MC.n, coverageMCMSW, coverageMCdmethod, MC.horizons, columnnames, MCdraws, InferenceMSWMC.T, confidence, application, MC.p, dataset_name, IRFselect, cumselect, IRFMC.IRFplugin, MC.IRFZ, MC.IRFChol);
+plotMSW_dmethod(CParameterMC, MC.n, coverageMCMSW, coverageMCdmethod, MC.horizons, columnnames, MCdraws, InferenceMSWMC.T, confidence, application, MC.p, dataset_name, IRFselect, cumselect, IRFMC.IRFplugin, MC.IRFZ, MC.IRFChol);
  
 addpath('MCexercise/figuresfun/');
  
-plotBoots_MSW(FirstStageMC, MC.n, coverageMCMSW, coverageMCBoots, MC.horizons, columnnames, MCdraws, InferenceMSWMC.T, confidence, application, MC.p, dataset_name, IRFselect, cumselect);
+plotBoots_MSW(CParameterMC, MC.n, coverageMCMSW, coverageMCBoots, MC.horizons, columnnames, MCdraws, InferenceMSWMC.T, confidence, application, MC.p, dataset_name, IRFselect, cumselect);
