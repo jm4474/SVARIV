@@ -56,7 +56,7 @@ x          = -20;        %Scale
 NWlags     = 0;          %Newey-West lags
 
 auxparamMC...
-           = (6.2)^.5;   %Controls the size of the concentration parameter (first-stage) in the MC
+           = (19.75)^.5;   %Controls the size of the concentration parameter (first-stage) in the MC
  
 MC.NB      = 1000;       %Number of samples from the asymptotic distribution
 
@@ -574,8 +574,6 @@ xlabel('Months after the shock');
 
 ylabel('MC Coverage');
 
-legend('CS^{AR}',strcat('CS^{plug-in} (',num2str(100*confidence),'%)'),'Location','southeast');
-
 title('Response of Global Real Activity'); 
  
 
@@ -590,6 +588,8 @@ axis([0 MC.horizons .8 1]);
 xlabel('Months after the shock');
 
 ylabel('MC Coverage');
+
+legend('CS^{AR}',strcat('CS^{plug-in} (',num2str(100*confidence),'%)'),'Location','southeast');
 
 title('Response of the Real Price of Oil'); 
 
@@ -659,10 +659,6 @@ ylabel('MC Coverage');
 
 title(columnnames(2)); 
 
-legend('Bootstrap CS^{AR}',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
-
-legend('location','southeast')
-
 %3) Response of the Real Price of Oil
 
 subplot(3,1,3)
@@ -678,6 +674,10 @@ xlabel('Months after the shock');
 ylabel('MC Coverage');
 
 title(columnnames(3)); 
+
+legend('Bootstrap CS^{AR}',strcat('CS^{AR} (',num2str(100*confidence),'%)'))
+
+legend('location','southeast')
 
 title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', C. Parameter=',num2str(round(MC.cparameter,2)),')');
 
