@@ -118,7 +118,7 @@ MC.WHat   = RForm.WHat;
 MC.sigma2Gamma1...
           = MC.WHat(((MC.n^2)*(RForm.p))+1,((MC.n^2)*(RForm.p))+1);
 
-MC.T      = 356; %(change, if you want a larger sample size)
+MC.T      = 1500; %(change, if you want a larger sample size)
                                %(default is: size(RForm.eta,2))
 MC.muZ  = mean(Z);
 
