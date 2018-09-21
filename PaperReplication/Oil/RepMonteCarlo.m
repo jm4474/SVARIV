@@ -56,14 +56,14 @@ x          = -20;        %Scale
 NWlags     = 0;          %Newey-West lags
 
 auxparamMC...
-           = (5.5)^.5;   %Controls the size of the concentration parameter (first-stage) in the MC
+           = (6.2)^.5;   %Controls the size of the concentration parameter (first-stage) in the MC
  
 MC.NB      = 1000;       %Number of samples from the asymptotic distribution
 
 MC.norm    = 1;          %Norm: normalizing variable  
      
-% Set auxparaMC = 18.95^.5 to get an implied first-stage of 10.17 
-% Set auxparaMC = 5^.5     to get an implied first-stage of 3.87
+% Set auxparaMC = 19.75^.5 to get an implied first-stage of 10.09 
+% Set auxparaMC = 6.2^.5     to get an implied first-stage of 4.02
 
 confidence = 0.95; 
 
