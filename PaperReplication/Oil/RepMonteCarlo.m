@@ -56,7 +56,7 @@ x          = -20;        %Scale
 NWlags     = 0;          %Newey-West lags
 
 auxparamMC...
-           = (19.75)^.5;   %Controls the size of the concentration parameter (first-stage) in the MC
+           = (18.95)^.5;   %Controls the size of the concentration parameter (first-stage) in the MC
  
 MC.NB      = 1000;       %Number of samples from the asymptotic distribution
 
