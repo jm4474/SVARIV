@@ -47,7 +47,7 @@ application = 'Oil';  % Name of this empirical application. This name will be us
 
 p           = 24;     %Number of lags in the VAR model
  
-confidence  = .95;    %Confidence Level for the standard and weak-IV robust confidence set,
+confidence  = .90;    %Confidence Level for the standard and weak-IV robust confidence set,
                         %This confidence level generates Figure 1A, change to 0.95 to generate Figure 1B!
 
 % Define the variables in the SVAR
@@ -668,6 +668,17 @@ if confidence == 0.68
     singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',15,'xoff',0,'yoff',0.03);
     
     addpath('functions/figuresfun'); 
+    
+    output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
+                    num2str(100*confidence));
+                   
+    figure(figureorder-1)
+
+    cd('PaperReplication/Oil/Figures');
+
+    print(gcf,'-depsc2',strcat('Appendix',output_label,'.eps'));
+
+    cd .. ;
 
 elseif confidence == 0.90
 
@@ -820,7 +831,19 @@ elseif confidence == 0.90
         xlim([0 horizons]);
  
     end
+    
     singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',15,'xoff',0,'yoff',0.03);
+    
+    output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
+                 num2str(100*confidence));
+                   
+    figure(figureorder-1)
+
+    cd('PaperReplication/Oil/Figures');
+
+    print(gcf,'-depsc2',strcat('Appendix',output_label,'.eps'));
+
+    cd .. ;
 
 elseif confidence == 0.95
 
@@ -978,6 +1001,17 @@ elseif confidence == 0.95
         end
         
         singletitle('Bootstrap CS^{AR} vs. CS^{AR}','fontsize',15,'xoff',0,'yoff',0.03);
+        
+        output_label = strcat('_p=',num2str(p),'_',dataset_name,'_',...
+                num2str(100*confidence));
+                   
+        figure(figureorder-1)
+
+        cd('PaperReplication/Oil/Figures');
+
+        print(gcf,'-depsc2',strcat('Appendix',output_label,'.eps'));
+
+        cd .. ;
     
 end
    
