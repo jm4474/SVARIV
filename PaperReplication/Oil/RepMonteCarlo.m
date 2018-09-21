@@ -1,15 +1,15 @@
 %% 1) READ ME
 
-%Last update: Semptember 18th, 2018, 2018. 
+%Last update: September 20th, 2018. 
 
-% This script replicates Monte Carlo figures from Montiel Olea, Stock and Watson (2018). It implements a Monte-Carlo study to analyze the finite-sample
-% coverage of the confidence interval suggested by Montiel-Olea, Stock,
-% and Watson (2016). The Monte Carlo design is explained in our paper.
-%(see MC design 1)
+% This script replicates the Monte Carlo figures in Montiel Olea, Stock and Watson (2018). 
+% This script implements a Monte-Carlo study to analyze the finite-sample
+% coverage of the CS_AR. The Monte Carlo design is explained in the paper.
+
 % Please change the auxparamMC value in Section 1 to generate the
 % appropriate figure.
 
-% The script takes approximately 380 seconds in MacBook Pro @ 2.4
+% The script takes approximately 760 seconds in MacBook Pro @ 2.4
 % 2.4 GHz Intel Core i7 with 8 GB in Memory (OSX High Sierra)
 
 %MATLAB Version: 9.1.0.441655 (R2016b)
