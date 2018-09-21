@@ -71,6 +71,7 @@ dataset_name = 'OilData'; %The name of the dataset used for generating the figur
 
 
 
+
 %% 2) Loading the main inputs for the Monte-Carlo design
 %--------------------------------------
 %(All the inputs are saved in the MCparameters folder)
@@ -592,7 +593,7 @@ ylabel('MC Coverage');
 
 title('Response of the Real Price of Oil'); 
 
-title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', MC C. Parameter=',num2str(round(MC.cparameter,2)),')');
+title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', C. Parameter=',num2str(round(MC.cparameter,2)),')');
 
 singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
@@ -600,7 +601,7 @@ singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
 cd('PaperReplication/Oil/Figures/MC');
 
-output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCCParameter=',num2str(round(MC.cparameter,2)));
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_CParameter=',num2str(round(MC.cparameter,2)));
 
 figure(graphcount-1)
 
@@ -678,7 +679,7 @@ ylabel('MC Coverage');
 
 title(columnnames(3)); 
 
-title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', MC C. Parameter=',num2str(round(MC.cparameter,2)),')');
+title_master = strcat('MC Coverage (',num2str(MCdraws),' MC draws, T=',num2str(InferenceMSWMC.T),', C. Parameter=',num2str(round(MC.cparameter,2)),')');
 
 singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
@@ -687,7 +688,7 @@ singletitle(title_master,'fontsize',16,'xoff',0,'yoff',.03);
 
 cd('PaperReplication/Oil/Figures/MC');
 
-output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_MCCParameter=',num2str(round(MC.cparameter,2)));
+output_label = strcat(dataset_name,'_p=',num2str(MC.p),'_T=',num2str(InferenceMSWMC.T),'_confidence=',num2str(confidence),'_CParameter=',num2str(round(MC.cparameter,2)));
 
 figure(graphcount-1)
 
