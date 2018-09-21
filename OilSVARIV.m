@@ -1,5 +1,5 @@
 %% This script file implements standard and weak-IV robust SVAR-IV inference.
-% This version: August 28th, 2018
+% This version: September 21st, 2018
 % Comment: We have tested this function on an iMac 
 %         @3.4 GHz Intel Core i5 (16 GB 2400 MHz DDR4)
 %         Running Matlab R2018a.
