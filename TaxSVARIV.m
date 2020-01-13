@@ -68,7 +68,7 @@ IRFselect   = [1,2,3,4];
 
 % Make sure to match the indices above and to the variables in your
 % dataset. E.g. the IRFselect   = [1,2] will select the variables 
-% "Index of real economic activity" and the "Real Price of Oil".
+% "Log(1/1-AMTR)" and the "Log Income".
 
 cumselect = [5,6]; 
 %cumselect allows the user to generate cumulative IRF plots displaying only 
