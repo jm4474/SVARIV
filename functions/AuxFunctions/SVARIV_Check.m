@@ -300,7 +300,7 @@ if isempty(IRFselect) ~= 1
         
     end
     
-    if ismatrix(IRFselect) ~= 2
+    if isrow(IRFselect) ~= 1
         
         error('IRFselect must be a row vector');
     
