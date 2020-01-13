@@ -333,7 +333,7 @@ if isempty(cumselect) ~= 1
         
     end
     
-    if ismatrix(cumselect) ~= 2
+    if isrow(cumselect) ~= 1
         
         error('cumselect must be a row vector');
     
