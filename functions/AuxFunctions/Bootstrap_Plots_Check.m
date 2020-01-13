@@ -416,7 +416,7 @@ if isempty(IRFselect) ~= 1
         
     end
     
-    if size(IRFselect,2) > size(ydata, 2)
+    if size(IRFselect,2) - size(columnnames, 2) > 0
         
         error('IRFselect size must be smaller or equal to the total amount of variables');
         
@@ -449,7 +449,7 @@ if isempty(cumselect) ~= 1
         
     end
     
-    if size(cumselect,2) > size(ydata, 2)
+    if size(cumselect,2) > size(columnnames, 2)
         
         error('cumselect size must be smaller or equal to the total amount of variables');
         
