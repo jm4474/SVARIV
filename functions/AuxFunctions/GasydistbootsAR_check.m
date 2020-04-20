@@ -393,12 +393,6 @@ if ismatrix(V) == 0
 
 end 
 
-if size(V,1) ~= factorial(n)
-    
-    error('size(V,1) must be factorial(n)') ;
-    
-end
-
 if size(V,2) ~= n*n
     
     error('size(V,2) must be n*n');
