@@ -67,7 +67,7 @@ scale       = 1; % Scale of the shock
 horizons    = 20; %Number of horizons for the Impulse Response Functions(IRFs)
                  %(does not include the impact or horizon 0)
                  
-%% 2) Load data (saved in structure "data")
+%% 2) Load data 
  %  The time units should be on a single.xls file called Time.xls
 %  All the VAR variables should be on a single .xls file called Data.xls
 %  The external instrument should be in a single .xls file called ExtIV.xls
